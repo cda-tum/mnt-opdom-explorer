@@ -11,16 +11,16 @@ class DragDropWidget(QWidget):
     def initUI(self):
         self.setAcceptDrops(True)
         layout = QVBoxLayout()
-        self.label = QLabel("Drag & Drop\nor\nBrowse", self)
+        self.label = QLabel('Drag & Drop\nor\nBrowse', self)
         self.label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.browse_button = QPushButton("Browse", self)
+        self.browse_button = QPushButton('Browse', self)
         self.browse_button.clicked.connect(self.openFileDialog)
         layout.addWidget(self.label)
         layout.addWidget(self.browse_button)
         self.setLayout(layout)
 
     def openFileDialog(self):
-        fileName, _ = QFileDialog.getOpenFileName(self, "Open file", "", "All Files (*);;SiQAD files (*.sqd)")
+        fileName, _ = QFileDialog.getOpenFileName(self, 'Open file', '', 'All Files (*);;SiQAD files (*.sqd)')
         if fileName:
             self.file_parsed_callback(fileName)
 

@@ -10,7 +10,7 @@ class RangeSelector(QWidget):
         # Main layout for this custom widget
         layout = QVBoxLayout()
 
-        # Label for the whole range selector, e.g., "Parameter Range:"
+        # Label for the whole range selector, e.g., 'Parameter Range:'
         self.label = QLabel(label_text)
         layout.addWidget(self.label)
 
@@ -26,7 +26,7 @@ class RangeSelector(QWidget):
         self.min_spinbox.setSingleStep(0.5)
         self.min_spinbox.setValue(default_min)
 
-        spinbox_layout.addRow("Min:", self.min_spinbox)
+        spinbox_layout.addRow('Min:', self.min_spinbox)
 
         # Spinbox for maximum value
         self.max_spinbox = QDoubleSpinBox()
@@ -34,7 +34,7 @@ class RangeSelector(QWidget):
         self.max_spinbox.setDecimals(2)
         self.max_spinbox.setSingleStep(0.5)
         self.max_spinbox.setValue(default_max)
-        spinbox_layout.addRow("Max:", self.max_spinbox)
+        spinbox_layout.addRow('Max:', self.max_spinbox)
 
         # Spinbox for step value
         self.step_spinbox = QDoubleSpinBox()
@@ -42,7 +42,7 @@ class RangeSelector(QWidget):
         self.step_spinbox.setDecimals(2)
         self.step_spinbox.setSingleStep(0.01)
         self.step_spinbox.setValue(default_step)
-        spinbox_layout.addRow("Step:", self.step_spinbox)
+        spinbox_layout.addRow('Step:', self.step_spinbox)
 
         # Add the spinbox layout to the main layout
         layout.addLayout(spinbox_layout)

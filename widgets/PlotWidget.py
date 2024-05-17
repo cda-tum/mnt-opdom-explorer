@@ -1,7 +1,7 @@
 from mnt import pyfiction
 from plot import create_plot
 
-from PyQt6.QtWidgets import QWidget, QVBoxLayout
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton
 
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 
@@ -14,19 +14,19 @@ class PlotWidget(QWidget):
 
         # Map the Boolean function string to the corresponding pyfiction function
         self.boolean_function_map = {
-            "AND": [pyfiction.create_and_tt()],
-            "OR": [pyfiction.create_or_tt()],
-            "NAND": [pyfiction.create_nand_tt()],
-            "NOR": [pyfiction.create_nor_tt()],
-            "XOR": [pyfiction.create_xor_tt()],
-            "XNOR": [pyfiction.create_xnor_tt()]
+            'AND': [pyfiction.create_and_tt()],
+            'OR': [pyfiction.create_or_tt()],
+            'NAND': [pyfiction.create_nand_tt()],
+            'NOR': [pyfiction.create_nor_tt()],
+            'XOR': [pyfiction.create_xor_tt()],
+            'XNOR': [pyfiction.create_xnor_tt()]
         }
 
         # Map the sweep dimension string to the corresponding pyfiction sweep dimension
         self.sweep_dimension_map = {
-            "epsilon_r": pyfiction.sweep_parameter.EPSILON_R,
-            "lambda_TF": pyfiction.sweep_parameter.LAMBDA_TF,
-            "mu_": pyfiction.sweep_parameter.MU_MINUS
+            'epsilon_r': pyfiction.sweep_parameter.EPSILON_R,
+            'lambda_TF': pyfiction.sweep_parameter.LAMBDA_TF,
+            'mu_': pyfiction.sweep_parameter.MU_MINUS
         }
 
         self.initUI()
@@ -37,10 +37,10 @@ class PlotWidget(QWidget):
         op_dom = self.operational_domain_computation()
 
         write_op_dom_params = pyfiction.write_operational_domain_params()
-        write_op_dom_params.operational_tag = "1"
-        write_op_dom_params.non_operational_tag = "0"
+        write_op_dom_params.operational_tag = '1'
+        write_op_dom_params.non_operational_tag = '0'
 
-        pyfiction.write_operational_domain(op_dom, "op_dom.csv", write_op_dom_params)
+        pyfiction.write_operational_domain(op_dom, 'op_dom.csv', write_op_dom_params)
 
         # Generate the plot
         plt = create_plot()
@@ -48,6 +48,10 @@ class PlotWidget(QWidget):
         layout.addWidget(canvas)
 
         layout.addWidget(canvas)
+
+        # Add a 'Back' button
+        self.back_button = QPushButton('Run Another Simulation')
+        self.layout().addWidget(self.back_button)
 
         self.setLayout(layout)
 
@@ -72,21 +76,21 @@ class PlotWidget(QWidget):
 
         algo = self.settings_widget.get_algorithm()
 
-        if algo == "Grid Search":
+        if algo == 'Grid Search':
             return pyfiction.operational_domain_grid_search(cds,
                                                             gate_func,
                                                             op_dom_params)
-        elif algo == "Random Sampling":
+        elif algo == 'Random Sampling':
             return pyfiction.operational_domain_random_sampling(cds,
                                                                 gate_func,
                                                                 self.settings_widget.get_random_samples(),
                                                                 op_dom_params)
-        elif algo == "Flood Fill":
+        elif algo == 'Flood Fill':
             return pyfiction.operational_domain_flood_fill(cds,
                                                            gate_func,
                                                            self.settings_widget.get_random_samples(),
                                                            op_dom_params)
-        elif algo == "Contour Tracing":
+        elif algo == 'Contour Tracing':
             return pyfiction.operational_domain_contour_tracing(cds,
                                                                 gate_func,
                                                                 self.settings_widget.get_random_samples(),

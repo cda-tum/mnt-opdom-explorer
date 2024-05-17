@@ -7,30 +7,30 @@ import matplotlib.pyplot as plt
 
 def create_plot():
     # Read data from CSV file
-    csv_file = "op_dom.csv"  # Replace with your CSV file path
+    csv_file = 'op_dom.csv'  # Replace with your CSV file path
     data = pd.read_csv(csv_file)
 
     # Separate data based on operational status
-    operational_data = data[data["operational status"] == 1]
-    non_operational_data = data[data["operational status"] == 0]
+    operational_data = data[data['operational status'] == 1]
+    non_operational_data = data[data['operational status'] == 0]
 
     # Extract epsilon_r and lambda_tf values for each group
-    epsilon_r_operational = operational_data["epsilon_r"]
-    # mu_minus_operational = operational_data["mu_minus"]
-    lambda_tf_operational = operational_data["lambda_tf"]
-    epsilon_r_non_operational = non_operational_data["epsilon_r"]
-    # mu_minus_non_operational = non_operational_data["mu_minus"]
-    lambda_tf_non_operational = non_operational_data["lambda_tf"]
+    epsilon_r_operational = operational_data['epsilon_r']
+    # mu_minus_operational = operational_data['mu_minus']
+    lambda_tf_operational = operational_data['lambda_tf']
+    epsilon_r_non_operational = non_operational_data['epsilon_r']
+    # mu_minus_non_operational = non_operational_data['mu_minus']
+    lambda_tf_non_operational = non_operational_data['lambda_tf']
 
     # Plot the data with different colors for each group
     plt.figure(dpi=300)
-    # plt.plot(mu_minus_non_operational, epsilon_r_non_operational, "s", markersize=2, color="lightgray", label="non-operational")
-    # plt.plot(mu_minus_non_operational, lambda_tf_non_operational, "s", markersize=2, color="lightgray", label="non-operational")
-    plt.plot(epsilon_r_non_operational, lambda_tf_non_operational, "s", markersize=2, color="lightgray",
-             label="non-operational")
-    # plt.plot(mu_minus_operational, epsilon_r_operational, "s", markersize=2, color="purple", label="operational")
-    # plt.plot(mu_minus_operational, lambda_tf_operational, "s", markersize=2, color="purple", label="operational")
-    plt.plot(epsilon_r_operational, lambda_tf_operational, "s", markersize=2, color="purple", label="operational")
+    # plt.plot(mu_minus_non_operational, epsilon_r_non_operational, 's', markersize=2, color='lightgray', label='non-operational')
+    # plt.plot(mu_minus_non_operational, lambda_tf_non_operational, 's', markersize=2, color='lightgray', label='non-operational')
+    plt.plot(epsilon_r_non_operational, lambda_tf_non_operational, 's', markersize=2, color='lightgray',
+             label='non-operational')
+    # plt.plot(mu_minus_operational, epsilon_r_operational, 's', markersize=2, color='purple', label='operational')
+    # plt.plot(mu_minus_operational, lambda_tf_operational, 's', markersize=2, color='purple', label='operational')
+    plt.plot(epsilon_r_operational, lambda_tf_operational, 's', markersize=2, color='purple', label='operational')
     plt.xlabel(r'$\epsilon_r$', fontsize=10)
     # plt.xlabel(r'$\mu_{-}$', fontsize=14)
     plt.ylabel(r'$\lambda_{tf}$ [nm]', fontsize=10)
@@ -51,7 +51,7 @@ def create_plot():
     # plt.show()
 
 # fig = plt.figure(dpi=300)
-# ax = plt.axes(projection ="3d")
+# ax = plt.axes(projection ='3d')
 #
 # # Scatter plot
 # # ax.scatter3D(epsilon_r_non_operational, lambda_tf_non_operational, mu_minus_non_operational, color='lightgray', label='Non-Operational')

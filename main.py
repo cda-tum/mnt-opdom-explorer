@@ -81,11 +81,24 @@ class MainWindow(QMainWindow):
         # Create the plot view
         self.plotWidget = PlotWidget(self.contentSettingsWidget, self.lyt)
 
+        # Store the QSplitter widget in a class variable
+        self.splitter = self.stacked_widget.currentWidget()
+
         # Get the index of the ContentSettingsWidget in the QSplitter
-        index = self.stacked_widget.currentWidget().indexOf(self.contentSettingsWidget)
+        index = self.splitter.indexOf(self.contentSettingsWidget)
 
         # Replace the ContentSettingsWidget with the PlotWidget in the QSplitter
-        self.stacked_widget.currentWidget().replaceWidget(index, self.plotWidget)
+        self.splitter.replaceWidget(index, self.plotWidget)
+
+        # Connect the "Back" button's clicked signal to the go_back_to_settings method
+        self.plotWidget.back_button.clicked.connect(self.go_back_to_settings)
+
+    def go_back_to_settings(self):
+        # Get the index of the PlotWidget in the QSplitter
+        index = self.splitter.indexOf(self.plotWidget)
+
+        # Replace the PlotWidget with the ContentSettingsWidget in the QSplitter
+        self.splitter.replaceWidget(index, self.contentSettingsWidget)
 
 
 def main():
