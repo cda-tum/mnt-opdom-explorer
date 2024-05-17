@@ -70,4 +70,24 @@ class PlotWidget(QWidget):
 
         cds = pyfiction.charge_distribution_surface(self.lyt)
 
-        return pyfiction.operational_domain_grid_search(cds, gate_func, op_dom_params)
+        algo = self.settings_widget.get_algorithm()
+
+        if algo == "Grid Search":
+            return pyfiction.operational_domain_grid_search(cds,
+                                                            gate_func,
+                                                            op_dom_params)
+        elif algo == "Random Sampling":
+            return pyfiction.operational_domain_random_sampling(cds,
+                                                                gate_func,
+                                                                self.settings_widget.get_random_samples(),
+                                                                op_dom_params)
+        elif algo == "Flood Fill":
+            return pyfiction.operational_domain_flood_fill(cds,
+                                                           gate_func,
+                                                           self.settings_widget.get_random_samples(),
+                                                           op_dom_params)
+        elif algo == "Contour Tracing":
+            return pyfiction.operational_domain_contour_tracing(cds,
+                                                                gate_func,
+                                                                self.settings_widget.get_random_samples(),
+                                                                op_dom_params)

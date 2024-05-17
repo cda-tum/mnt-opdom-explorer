@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QLabel, QFrame, QGroupBox, QHBoxLayout, QComboBox, QDoubleSpinBox,
-                             QPushButton)
+                             QPushButton, QSpinBox)
 from PyQt6.QtCore import Qt
 
 from widgets.RangeSelector import RangeSelector
@@ -145,6 +145,20 @@ class SettingsWidget(QWidget):
         algorithm_layout.addWidget(self.algorithm_dropdown, 70)
         operational_domain_layout.addLayout(algorithm_layout)  # Add to the group's QVBoxLayout
 
+        # Random Samples spinbox
+        random_samples_layout = QHBoxLayout()
+        random_samples_label = QLabel("Random Samples")
+        self.random_samples_spinbox = QSpinBox()
+        self.random_samples_spinbox.setRange(0, 0)
+        self.random_samples_spinbox.setValue(0)
+        self.random_samples_spinbox.setDisabled(True)  # Disable by default
+        random_samples_layout.addWidget(random_samples_label, 30)
+        random_samples_layout.addWidget(self.random_samples_spinbox, 70)
+        operational_domain_layout.addLayout(random_samples_layout)  # Add to the group's QVBoxLayout
+
+        # Connect the currentTextChanged signal of the algorithm_dropdown to the new slot method
+        self.algorithm_dropdown.currentTextChanged.connect(self.update_random_samples_spinbox)
+
         # X-Dimension sweep parameter drop-down
         x_dimension_layout = QHBoxLayout()
         x_dimension_label = QLabel("X-Dimension Sweep")
@@ -188,6 +202,21 @@ class SettingsWidget(QWidget):
         layout.addWidget(settings_widget)
         self.setLayout(layout)
 
+    # New slot method to enable or disable the random_samples_spinbox based on the selected algorithm
+    def update_random_samples_spinbox(self, selected_algorithm):
+        if selected_algorithm == "Grid Search":
+            self.random_samples_spinbox.setDisabled(True)
+        else:
+            self.random_samples_spinbox.setRange(1, 10000)
+            self.random_samples_spinbox.setEnabled(True)
+
+        if selected_algorithm == "Random Sampling":
+            self.random_samples_spinbox.setValue(1000)
+            self.random_samples_spinbox.setSingleStep(100)
+        else:
+            self.random_samples_spinbox.setValue(100)
+            self.random_samples_spinbox.setSingleStep(10)
+
     # Getter methods to retrieve the settings
     def get_engine(self):
         return self.engine_dropdown.currentText()
@@ -206,6 +235,9 @@ class SettingsWidget(QWidget):
 
     def get_algorithm(self):
         return self.algorithm_dropdown.currentText()
+
+    def get_random_samples(self):
+        return self.random_samples_spinbox.value()
 
     def get_x_dimension(self):
         return self.x_dimension_dropdown.currentText()
