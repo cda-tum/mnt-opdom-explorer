@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools", "wheel", "PyQt6", "matplotlib", "mnt.pyfiction", "ansi2html"]
+requires = ["setuptools", "wheel", "PyQt6", "matplotlib", "mnt.pyfiction", "ansi2html", "pandas"]
 build-backend = "setuptools.build_meta"
 
 [project]

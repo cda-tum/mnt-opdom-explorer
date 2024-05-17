@@ -3,11 +3,13 @@ from pathlib import Path
 
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QLabel, QPushButton,
                              QFileDialog, QSplitter, QTextEdit, QLineEdit, QHBoxLayout, QComboBox, QDoubleSpinBox,
-                             QFrame, QGroupBox, QFormLayout)
+                             QFrame, QGroupBox, QFormLayout, QStackedWidget)
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont
 from mnt import pyfiction
 from ansi2html import Ansi2HTMLConverter
+from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
+from plot import create_plot
 
 
 class DragDropWidget(QWidget):
@@ -60,6 +62,8 @@ class RangeSelector(QWidget):
         # Layout for the spinboxes
         spinbox_layout = QFormLayout()
 
+        # TODO use double-range slider from https://github.com/djeada/Qt-Widgets
+
         # Spinbox for minimum value
         self.min_spinbox = QDoubleSpinBox()
         self.min_spinbox.setRange(0.0, 10.0)
@@ -97,20 +101,9 @@ class ContentSettingsWidget(QWidget):
         self.initUI()
 
     def initUI(self):
-        # Horizontal splitter
-        splitter = QSplitter(Qt.Orientation.Horizontal)
-
-        # Text edit to display file content
-        self.content_display = QTextEdit()
-        self.content_display.setReadOnly(True)
-        splitter.addWidget(self.content_display)
-
-        # Create a QFont object for monospace font
-        monospace_font = QFont("Monospace")
-        monospace_font.setStyleHint(QFont.StyleHint.TypeWriter)
-
-        # Set the font of the content_display to the monospace font
-        self.content_display.setFont(monospace_font)
+        # Right panel for settings wrapped in a widget for the splitter
+        settings_widget = QWidget()
+        self.settings_layout = QVBoxLayout(settings_widget)
 
         # Right panel for settings wrapped in a widget for the splitter
         settings_widget = QWidget()
@@ -150,46 +143,46 @@ class ContentSettingsWidget(QWidget):
         # engine drop-down
         engine_layout = QHBoxLayout()
         engine_label = QLabel("Engine")
-        engine_dropdown = QComboBox()
-        engine_dropdown.addItems(["ExGS", "QuickExact", "QuickSim"])
+        self.engine_dropdown = QComboBox()
+        self.engine_dropdown.addItems(["ExGS", "QuickExact", "QuickSim"])
         engine_layout.addWidget(engine_label, 30)  # 30% of the space goes to the label
-        engine_layout.addWidget(engine_dropdown, 70)  # 70% of the space goes to the dropdown
+        engine_layout.addWidget(self.engine_dropdown, 70)  # 70% of the space goes to the dropdown
         physical_simulation_layout.addLayout(engine_layout)  # Add to the group's QVBoxLayout
 
         # µ_ number selector
         mu_layout = QHBoxLayout()
         mu_label = QLabel("µ_")
-        mu_selector = QDoubleSpinBox()
-        mu_selector.setRange(-1.0, 1.0)
-        mu_selector.setDecimals(2)
-        mu_selector.setSingleStep(0.01)
-        mu_selector.setValue(-0.28)
+        self.mu_minus_selector = QDoubleSpinBox()
+        self.mu_minus_selector.setRange(-1.0, 1.0)
+        self.mu_minus_selector.setDecimals(2)
+        self.mu_minus_selector.setSingleStep(0.01)
+        self.mu_minus_selector.setValue(-0.28)
         mu_layout.addWidget(mu_label, 30)  # 30% of the space goes to the label
-        mu_layout.addWidget(mu_selector, 70)  # 70% of the space goes to the selector
+        mu_layout.addWidget(self.mu_minus_selector, 70)  # 70% of the space goes to the selector
         physical_simulation_layout.addLayout(mu_layout)  # Add to the group's QVBoxLayout
 
         # epsilon_r number selector
         epsilon_r_layout = QHBoxLayout()
         epsilon_r_label = QLabel("epsilon_r")
-        epsilon_r_selector = QDoubleSpinBox()
-        epsilon_r_selector.setRange(1.0, 10.0)
-        epsilon_r_selector.setDecimals(2)
-        epsilon_r_selector.setSingleStep(0.1)
-        epsilon_r_selector.setValue(5.6)
+        self.epsilon_r_selector = QDoubleSpinBox()
+        self.epsilon_r_selector.setRange(1.0, 10.0)
+        self.epsilon_r_selector.setDecimals(2)
+        self.epsilon_r_selector.setSingleStep(0.1)
+        self.epsilon_r_selector.setValue(5.6)
         epsilon_r_layout.addWidget(epsilon_r_label, 30)  # 30% of the space goes to the label
-        epsilon_r_layout.addWidget(epsilon_r_selector, 70)  # 70% of the space goes to the selector
+        epsilon_r_layout.addWidget(self.epsilon_r_selector, 70)  # 70% of the space goes to the selector
         physical_simulation_layout.addLayout(epsilon_r_layout)  # Add to the group's QVBoxLayout
 
         # lambda_TF number selector
         lambda_tf_layout = QHBoxLayout()
         lambda_tf_label = QLabel("lambda_TF")
-        lambda_tf_selector = QDoubleSpinBox()
-        lambda_tf_selector.setRange(1.0, 10.0)
-        lambda_tf_selector.setDecimals(2)
-        lambda_tf_selector.setSingleStep(0.1)
-        lambda_tf_selector.setValue(5.0)
+        self.lambda_tf_selector = QDoubleSpinBox()
+        self.lambda_tf_selector.setRange(1.0, 10.0)
+        self.lambda_tf_selector.setDecimals(2)
+        self.lambda_tf_selector.setSingleStep(0.1)
+        self.lambda_tf_selector.setValue(5.0)
         lambda_tf_layout.addWidget(lambda_tf_label, 30)  # 30% of the space goes to the label
-        lambda_tf_layout.addWidget(lambda_tf_selector, 70)  # 70% of the space goes to the selector
+        lambda_tf_layout.addWidget(self.lambda_tf_selector, 70)  # 70% of the space goes to the selector
         physical_simulation_layout.addLayout(lambda_tf_layout)  # Add to the group's QVBoxLayout
 
         # After setting up the group, set its layout
@@ -197,6 +190,31 @@ class ContentSettingsWidget(QWidget):
 
         # Add the group box to the settings layout
         self.settings_layout.addWidget(self.physical_simulation_group)
+
+        # Gate Function settings
+        self.gate_function_group = QGroupBox("Gate Function")
+        # Get the current font of the group box title
+        gate_function_font = self.gate_function_group.font()
+        # Increase the font size by an amount of your choice
+        gate_function_font.setPointSize(gate_function_font.pointSize() + 2)
+        # Apply the new font to the group box title
+        self.gate_function_group.setFont(gate_function_font)
+        gate_function_layout = QVBoxLayout()  # Create a QVBoxLayout for this group
+
+        # Boolean Function drop-down
+        boolean_function_layout = QHBoxLayout()
+        boolean_function_label = QLabel("Boolean Function")
+        self.boolean_function_dropdown = QComboBox()
+        self.boolean_function_dropdown.addItems(["AND", "OR", "NAND", "NOR", "XOR", "XNOR"])
+        boolean_function_layout.addWidget(boolean_function_label, 30)
+        boolean_function_layout.addWidget(self.boolean_function_dropdown, 70)
+        gate_function_layout.addLayout(boolean_function_layout)  # Add to the group's QVBoxLayout
+
+        # Set the layout for the "Gate Function" group
+        self.gate_function_group.setLayout(gate_function_layout)
+
+        # Add the group box to the settings layout
+        self.settings_layout.addWidget(self.gate_function_group)
 
         # Operational Domain settings
         self.operational_domain_group = QGroupBox("Operational Domain")
@@ -255,22 +273,81 @@ class ContentSettingsWidget(QWidget):
         self.run_button = QPushButton('RUN')
         self.settings_layout.addWidget(self.run_button)
 
-        # Add the settings widget to the splitter
-        splitter.addWidget(settings_widget)
-
-        # Set splitter sizes, for example, 70% for the content and 30% for the settings
-        splitter.setSizes([80, 20])
-
         # Layout for the whole widget
         layout = QVBoxLayout(self)
-        layout.addWidget(splitter)
+        layout.addWidget(settings_widget)
         self.setLayout(layout)
 
-    def load_file(self, file_path):
-        conv = Ansi2HTMLConverter()
-        lyt = pyfiction.read_sqd_layout(file_path, Path(file_path).stem)
-        html = conv.convert(lyt.__repr__().strip())
-        self.content_display.setHtml(html)
+    # Getter methods to retrieve the settings
+    def get_engine(self):
+        return self.engine_dropdown.currentText()
+
+    def get_mu_minus(self):
+        return self.mu_minus_selector.value()
+
+    def get_epsilon_r(self):
+        return self.epsilon_r_selector.value()
+
+    def get_lambda_tf(self):
+        return self.lambda_tf_selector.value()
+
+    def get_boolean_function(self):
+        return self.boolean_function_dropdown.currentText()
+
+
+class PlotWidget(QWidget):
+    def __init__(self, settings_widget, lyt):
+        super().__init__()
+        self.settings_widget = settings_widget
+        self.lyt = lyt
+
+        # Map the Boolean function string to the corresponding pyfiction function
+        self.boolean_function_map = {
+            "AND": [pyfiction.create_and_tt()],
+            "OR": [pyfiction.create_or_tt()],
+            "NAND": [pyfiction.create_nand_tt()],
+            "NOR": [pyfiction.create_nor_tt()],
+            "XOR": [pyfiction.create_xor_tt()],
+            "XNOR": [pyfiction.create_xnor_tt()]
+        }
+
+        self.initUI()
+
+    def initUI(self):
+        layout = QVBoxLayout(self)
+
+        op_dom = self.operational_domain_computation()
+
+        write_op_dom_params = pyfiction.write_operational_domain_params()
+        write_op_dom_params.operational_tag = "1"
+        write_op_dom_params.non_operational_tag = "0"
+
+        pyfiction.write_operational_domain(op_dom, "op_dom.csv", write_op_dom_params)
+
+        # Generate the plot
+        plt = create_plot()
+        canvas = FigureCanvas(plt.gcf())
+        layout.addWidget(canvas)
+
+        layout.addWidget(canvas)
+
+        self.setLayout(layout)
+
+    def operational_domain_computation(self):
+        op_dom_params = pyfiction.operational_domain_params()
+
+        sim_params = pyfiction.sidb_simulation_parameters()
+        sim_params.epsilon_r = self.settings_widget.get_epsilon_r()
+        sim_params.mu_minus = self.settings_widget.get_mu_minus()
+        sim_params.lambda_tf = self.settings_widget.get_lambda_tf()
+
+        # TODO set the simulation parameters
+        # op_dom_params.simulation_parameters = sim_params
+
+        gate_func = self.boolean_function_map[self.settings_widget.get_boolean_function()]
+
+        return pyfiction.operational_domain_grid_search(pyfiction.charge_distribution_surface(self.lyt), gate_func,
+                                                        op_dom_params)
 
 
 class MainWindow(QMainWindow):
@@ -282,9 +359,15 @@ class MainWindow(QMainWindow):
         self.setWindowTitle('Operational Domain Explorer')
         self.setGeometry(100, 100, 1200, 800)
 
+        # Initialize the QStackedWidget
+        self.stacked_widget = QStackedWidget()
+
         # Start with the drag-and-drop widget
         self.dragDropWidget = DragDropWidget(self.file_parsed)
-        self.setCentralWidget(self.dragDropWidget)
+        self.stacked_widget.addWidget(self.dragDropWidget)
+
+        # Set the stacked widget as the central widget
+        self.setCentralWidget(self.stacked_widget)
         self.show()
 
     def keyPressEvent(self, event):
@@ -294,10 +377,51 @@ class MainWindow(QMainWindow):
             super().keyPressEvent(event)  # Call the parent class method to ensure default behavior
 
     def file_parsed(self, file_path):
-        # Switch to the content and settings view
+        # Create a QSplitter
+        splitter = QSplitter(Qt.Orientation.Horizontal)
+
+        # Create the content display
+        self.content_display = QTextEdit()
+        self.content_display.setReadOnly(True)
+        splitter.addWidget(self.content_display)
+
+        # Create a QFont object for monospace font
+        monospace_font = QFont("Monospace")
+        monospace_font.setStyleHint(QFont.StyleHint.TypeWriter)
+
+        # Set the font of the content_display to the monospace font
+        self.content_display.setFont(monospace_font)
+
+        # Load the file content into the QTextEdit
+        conv = Ansi2HTMLConverter()
+        self.lyt = pyfiction.read_sqd_layout(file_path, Path(file_path).stem)
+        html = conv.convert(self.lyt.__repr__().strip())
+        self.content_display.setHtml(html)
+
+        # Create the content and settings view
         self.contentSettingsWidget = ContentSettingsWidget()
-        self.setCentralWidget(self.contentSettingsWidget)
-        self.contentSettingsWidget.load_file(file_path)
+
+        # Connect the RUN button's clicked signal to the show_plot method
+        self.contentSettingsWidget.run_button.clicked.connect(self.plot_operational_domain)
+
+        # Add the content and settings view to the splitter
+        splitter.addWidget(self.contentSettingsWidget)
+
+        # Add the splitter to the stacked widget
+        self.stacked_widget.addWidget(splitter)
+
+        # Switch to the splitter
+        self.stacked_widget.setCurrentWidget(splitter)
+
+    def plot_operational_domain(self):
+        # Create the plot view
+        self.plotWidget = PlotWidget(self.contentSettingsWidget, self.lyt)
+
+        # Get the index of the ContentSettingsWidget in the QSplitter
+        index = self.stacked_widget.currentWidget().indexOf(self.contentSettingsWidget)
+
+        # Replace the ContentSettingsWidget with the PlotWidget in the QSplitter
+        self.stacked_widget.currentWidget().replaceWidget(index, self.plotWidget)
 
 
 def main():
