@@ -26,11 +26,13 @@ def create_plot():
     plt.figure(dpi=300)
     # plt.plot(mu_minus_non_operational, epsilon_r_non_operational, 's', markersize=2, color='lightgray', label='non-operational')
     # plt.plot(mu_minus_non_operational, lambda_tf_non_operational, 's', markersize=2, color='lightgray', label='non-operational')
-    plt.plot(epsilon_r_non_operational, lambda_tf_non_operational, 's', markersize=2, color='lightgray',
-             label='non-operational')
+    # plt.plot(epsilon_r_non_operational, lambda_tf_non_operational, 's', markersize=2, color='lightgray',
+    #          label='non-operational')
     # plt.plot(mu_minus_operational, epsilon_r_operational, 's', markersize=2, color='purple', label='operational')
     # plt.plot(mu_minus_operational, lambda_tf_operational, 's', markersize=2, color='purple', label='operational')
-    plt.plot(epsilon_r_operational, lambda_tf_operational, 's', markersize=2, color='purple', label='operational')
+    # plt.plot(epsilon_r_operational, lambda_tf_operational, 's', markersize=2, color='purple', label='operational')
+    plt.scatter(epsilon_r_non_operational, lambda_tf_non_operational, s=4, color='lightgray', label='non-operational')
+    plt.scatter(epsilon_r_operational, lambda_tf_operational, s=4, color='purple', label='operational')
     plt.xlabel(r'$\epsilon_r$', fontsize=10)
     # plt.xlabel(r'$\mu_{-}$', fontsize=14)
     plt.ylabel(r'$\lambda_{tf}$ [nm]', fontsize=10)

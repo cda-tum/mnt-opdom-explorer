@@ -43,9 +43,12 @@ class PlotWidget(QWidget):
         pyfiction.write_operational_domain(op_dom, 'op_dom.csv', write_op_dom_params)
 
         # Generate the plot
-        plt = create_plot()
-        canvas = FigureCanvas(plt.gcf())
+        self.plt = create_plot()
+        canvas = FigureCanvas(self.plt.gcf())
         layout.addWidget(canvas)
+
+        # Connect the 'button_press_event' to the 'on_click' function
+        self.plt.gcf().canvas.mpl_connect('button_press_event', self.on_click)
 
         layout.addWidget(canvas)
 
@@ -95,3 +98,28 @@ class PlotWidget(QWidget):
                                                                 gate_func,
                                                                 self.settings_widget.get_random_samples(),
                                                                 op_dom_params)
+
+    def on_click(self, event):
+        # Check if the click was on the plot
+        if event.inaxes is not None:
+            # Get the step sizes for the x and y dimensions
+            x_min, x_max, x_step = self.settings_widget.get_x_parameter_range()
+            y_min, y_max, y_step = self.settings_widget.get_y_parameter_range()
+
+            # Round the clicked coordinates to the nearest plotted point
+            x = round(event.xdata / x_step) * x_step
+            y = round(event.ydata / y_step) * y_step
+
+            # Print the rounded coordinates
+            print('x = {}, y = {}'.format(x, y))
+
+            # Highlight the clicked point
+            scatter = self.plt.scatter(x, y, s=4, color='yellow')
+
+            # Update the axes limits to include the new scatter plot
+            scatter.axes.autoscale_view()
+
+            # Redraw the plot
+            self.plt.gcf().canvas.draw()
+        else:
+            print('Clicked outside axes bounds but inside plot window')
