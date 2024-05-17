@@ -1,5 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
+
+
 # from mpl_toolkits.mplot3d import Axes3D
 
 
@@ -33,7 +35,7 @@ def create_plot():
     # plt.xlabel(r'$\mu_{-}$', fontsize=14)
     plt.ylabel(r'$\lambda_{tf}$ [nm]', fontsize=10)
     # plt.ylabel(r'$\epsilon_r$', fontsize=14)
-    # plt.title(r'Operational Domain XNOR SiQAD (Contour Tracing)', fontsize=16)
+    plt.title(r'Operational Domain', fontsize=10)
     plt.grid(False)
     # plt.legend(loc='upper left', fontsize=15)
     # Set the limits of the axes
@@ -42,7 +44,7 @@ def create_plot():
     # set the tick font size
     plt.tick_params(labelsize=10)
     # Adjust subplot parameters
-    plt.subplots_adjust(left=0.12, right=0.98, bottom=0.13, top=0.98)
+    # plt.subplots_adjust(left=0.12, right=0.98, bottom=0.13, top=0.98)
 
     return plt
 

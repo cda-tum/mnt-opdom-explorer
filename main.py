@@ -2,7 +2,7 @@ import sys
 from pathlib import Path
 
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QLabel, QPushButton,
-                             QFileDialog, QSplitter, QTextEdit, QLineEdit, QHBoxLayout, QComboBox, QDoubleSpinBox,
+                             QFileDialog, QSplitter, QTextEdit, QHBoxLayout, QComboBox, QDoubleSpinBox,
                              QFrame, QGroupBox, QFormLayout, QStackedWidget)
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont
