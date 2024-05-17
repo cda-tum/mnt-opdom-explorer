@@ -48,3 +48,6 @@ class RangeSelector(QWidget):
         layout.addLayout(spinbox_layout)
 
         self.setLayout(layout)
+
+    def get_range(self):
+        return self.min_spinbox.value(), self.max_spinbox.value(), self.step_spinbox.value()

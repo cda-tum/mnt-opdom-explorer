@@ -139,36 +139,36 @@ class SettingsWidget(QWidget):
         # Algorithm drop-down
         algorithm_layout = QHBoxLayout()
         algorithm_label = QLabel("Algorithm")
-        algorithm_dropdown = QComboBox()
-        algorithm_dropdown.addItems(["Grid Search", "Random Sampling", "Flood Fill", "Contour Tracing"])
+        self.algorithm_dropdown = QComboBox()
+        self.algorithm_dropdown.addItems(["Grid Search", "Random Sampling", "Flood Fill", "Contour Tracing"])
         algorithm_layout.addWidget(algorithm_label, 30)
-        algorithm_layout.addWidget(algorithm_dropdown, 70)
+        algorithm_layout.addWidget(self.algorithm_dropdown, 70)
         operational_domain_layout.addLayout(algorithm_layout)  # Add to the group's QVBoxLayout
 
         # X-Dimension sweep parameter drop-down
         x_dimension_layout = QHBoxLayout()
         x_dimension_label = QLabel("X-Dimension Sweep")
-        x_dimension_dropdown = QComboBox()
-        x_dimension_dropdown.addItems(["espilon_r", "lambda_TF", "µ_"])
+        self.x_dimension_dropdown = QComboBox()
+        self.x_dimension_dropdown.addItems(["epsilon_r", "lambda_TF", "µ_"])
         x_dimension_layout.addWidget(x_dimension_label, 30)
-        x_dimension_layout.addWidget(x_dimension_dropdown, 70)
+        x_dimension_layout.addWidget(self.x_dimension_dropdown, 70)
         operational_domain_layout.addLayout(x_dimension_layout)  # Add to the group's QVBoxLayout
 
-        x_parameter_range_selector = RangeSelector("X-Parameter Range", 0.0, 10.0, 0.1)
-        operational_domain_layout.addWidget(x_parameter_range_selector)
+        self.x_parameter_range_selector = RangeSelector("X-Parameter Range", 0.0, 10.0, 0.1)
+        operational_domain_layout.addWidget(self.x_parameter_range_selector)
 
         # Y-Dimension sweep parameter drop-down
         y_dimension_layout = QHBoxLayout()
         y_dimension_label = QLabel("Y-Dimension Sweep")
-        y_dimension_dropdown = QComboBox()
-        y_dimension_dropdown.addItems(["espilon_r", "lambda_TF", "µ_"])
-        y_dimension_dropdown.setCurrentIndex(1)  # set lambda_TF as default
+        self.y_dimension_dropdown = QComboBox()
+        self.y_dimension_dropdown.addItems(["epsilon_r", "lambda_TF", "µ_"])
+        self.y_dimension_dropdown.setCurrentIndex(1)  # set lambda_TF as default
         y_dimension_layout.addWidget(y_dimension_label, 30)
-        y_dimension_layout.addWidget(y_dimension_dropdown, 70)
+        y_dimension_layout.addWidget(self.y_dimension_dropdown, 70)
         operational_domain_layout.addLayout(y_dimension_layout)  # Add to the group's QVBoxLayout
 
-        y_parameter_range_selector = RangeSelector("Y-Parameter Range", 0.0, 10.0, 0.1)
-        operational_domain_layout.addWidget(y_parameter_range_selector)
+        self.y_parameter_range_selector = RangeSelector("Y-Parameter Range", 0.0, 10.0, 0.1)
+        operational_domain_layout.addWidget(self.y_parameter_range_selector)
 
         # Set the layout for the "Operational Domain" group
         self.operational_domain_group.setLayout(operational_domain_layout)
@@ -203,3 +203,18 @@ class SettingsWidget(QWidget):
 
     def get_boolean_function(self):
         return self.boolean_function_dropdown.currentText()
+
+    def get_algorithm(self):
+        return self.algorithm_dropdown.currentText()
+
+    def get_x_dimension(self):
+        return self.x_dimension_dropdown.currentText()
+
+    def get_x_parameter_range(self):
+        return self.x_parameter_range_selector.get_range()
+
+    def get_y_dimension(self):
+        return self.y_dimension_dropdown.currentText()
+
+    def get_y_parameter_range(self):
+        return self.y_parameter_range_selector.get_range()
