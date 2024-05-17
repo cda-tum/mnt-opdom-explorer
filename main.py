@@ -47,6 +47,7 @@ class MainWindow(QMainWindow):
         # Create the content display
         self.content_display = QTextEdit()
         self.content_display.setReadOnly(True)
+        self.content_display.setTextInteractionFlags(Qt.TextInteractionFlag.NoTextInteraction)
         splitter.addWidget(self.content_display)
 
         # Create a QFont object for monospace font
