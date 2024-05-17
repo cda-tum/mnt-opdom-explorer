@@ -5,7 +5,8 @@ from ansi2html import Ansi2HTMLConverter
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont
-from PyQt6.QtWidgets import QApplication, QMainWindow, QSplitter, QTextEdit, QStackedWidget
+from PyQt6.QtWidgets import (QApplication, QMainWindow, QSplitter, QTextEdit, QStackedWidget, QSlider, QWidget,
+                             QVBoxLayout, QLabel)
 
 from mnt import pyfiction
 
@@ -41,36 +42,58 @@ class MainWindow(QMainWindow):
             super().keyPressEvent(event)  # Call the parent class method to ensure default behavior
 
     def file_parsed(self, file_path):
-        # Create a QSplitter
-        splitter = QSplitter(Qt.Orientation.Horizontal)
+        # Create a QVBoxLayout
+        layout = QVBoxLayout()
 
         # Create the content display
-        self.content_display = QTextEdit()
-        self.content_display.setReadOnly(True)
-        self.content_display.setTextInteractionFlags(Qt.TextInteractionFlag.NoTextInteraction)
-        splitter.addWidget(self.content_display)
+        self.sidb_layout_display = QTextEdit()
+        self.sidb_layout_display.setReadOnly(True)
+        self.sidb_layout_display.setTextInteractionFlags(Qt.TextInteractionFlag.NoTextInteraction)
+        layout.addWidget(self.sidb_layout_display)
 
         # Create a QFont object for monospace font
-        monospace_font = QFont("Monospace")
+        monospace_font = QFont('Monospace')
         monospace_font.setStyleHint(QFont.StyleHint.TypeWriter)
 
         # Set the font of the content_display to the monospace font
-        self.content_display.setFont(monospace_font)
+        self.sidb_layout_display.setFont(monospace_font)
 
         # Load the file content into the QTextEdit
         conv = Ansi2HTMLConverter()
         self.lyt = pyfiction.read_sqd_layout(file_path, Path(file_path).stem)
         html = conv.convert(self.lyt.__repr__().strip())
-        self.content_display.setHtml(html)
+        self.sidb_layout_display.setHtml(html)
+
+        self.lyt_input_pairs = pyfiction.detect_bdl_pairs(pyfiction.charge_distribution_surface(self.lyt),
+                                                          pyfiction.sidb_technology.cell_type.INPUT)
+
+        self.slider = QSlider(Qt.Orientation.Horizontal, self)
+        self.slider.setMinimum(0)
+        self.slider.setMaximum(2 ** len(self.lyt_input_pairs) - 1)
+        layout.addWidget(self.slider)
+
+        self.slider_label = QLabel('Input Combination', self)
+        layout.addWidget(self.slider_label)
+
+        # Connect the valueChanged signal of the slider to the update_slider_label method
+        self.slider.valueChanged.connect(self.update_slider_label)
+
+        # Create a QWidget to hold the layout
+        widget = QWidget()
+        widget.setLayout(layout)
+
+        # Create a QSplitter
+        splitter = QSplitter(Qt.Orientation.Horizontal)
+        splitter.addWidget(widget)
 
         # Create the content and settings view
-        self.contentSettingsWidget = SettingsWidget()
+        self.settings = SettingsWidget()
 
         # Connect the RUN button's clicked signal to the show_plot method
-        self.contentSettingsWidget.run_button.clicked.connect(self.plot_operational_domain)
+        self.settings.run_button.clicked.connect(self.plot_operational_domain)
 
         # Add the content and settings view to the splitter
-        splitter.addWidget(self.contentSettingsWidget)
+        splitter.addWidget(self.settings)
 
         # Add the splitter to the stacked widget
         self.stacked_widget.addWidget(splitter)
@@ -78,33 +101,42 @@ class MainWindow(QMainWindow):
         # Switch to the splitter
         self.stacked_widget.setCurrentWidget(splitter)
 
+    def update_slider_label(self, value):
+        # TODO compute the input combination based on the value of the slider
+        # TODO update the QTextEdit with the respective layout based on the input combination
+
+        # convert value to a binary string
+        value = bin(value)[2:].zfill(len(self.lyt_input_pairs))
+
+        self.slider_label.setText(f'Input Combination: {value}')
+
     def plot_operational_domain(self):
         # Create the plot view
-        self.plotWidget = PlotWidget(self.contentSettingsWidget, self.lyt)
+        self.plot = PlotWidget(self.settings, self.lyt)
 
         # Store the QSplitter widget in a class variable
         self.splitter = self.stacked_widget.currentWidget()
 
         # Get the index of the ContentSettingsWidget in the QSplitter
-        index = self.splitter.indexOf(self.contentSettingsWidget)
+        index = self.splitter.indexOf(self.settings)
 
         # Replace the ContentSettingsWidget with the PlotWidget in the QSplitter
-        self.splitter.replaceWidget(index, self.plotWidget)
+        self.splitter.replaceWidget(index, self.plot)
 
-        # Connect the "Back" button's clicked signal to the go_back_to_settings method
-        self.plotWidget.back_button.clicked.connect(self.go_back_to_settings)
+        # Connect the 'Back' button's clicked signal to the go_back_to_settings method
+        self.plot.back_button.clicked.connect(self.go_back_to_settings)
 
     def go_back_to_settings(self):
         # Get the index of the PlotWidget in the QSplitter
-        index = self.splitter.indexOf(self.plotWidget)
+        index = self.splitter.indexOf(self.plot)
 
         # Replace the PlotWidget with the ContentSettingsWidget in the QSplitter
-        self.splitter.replaceWidget(index, self.contentSettingsWidget)
+        self.splitter.replaceWidget(index, self.settings)
 
 
 def main():
     app = QApplication(sys.argv)
-    ex = MainWindow()
+    MainWindow()
     sys.exit(app.exec())
 
 

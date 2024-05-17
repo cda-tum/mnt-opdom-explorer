@@ -42,15 +42,17 @@ class PlotWidget(QWidget):
 
         pyfiction.write_operational_domain(op_dom, 'op_dom.csv', write_op_dom_params)
 
+        # TODO the plot causes a crash when the window is resized
+
         # Generate the plot
         self.plt = create_plot()
-        canvas = FigureCanvas(self.plt.gcf())
-        layout.addWidget(canvas)
+        self.canvas = FigureCanvas(self.plt.gcf())
+        layout.addWidget(self.canvas)
 
         # Connect the 'button_press_event' to the 'on_click' function
         self.plt.gcf().canvas.mpl_connect('button_press_event', self.on_click)
 
-        layout.addWidget(canvas)
+        layout.addWidget(self.canvas)
 
         # Add a 'Back' button
         self.back_button = QPushButton('Run Another Simulation')
