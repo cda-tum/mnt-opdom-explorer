@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools", "wheel", "PyQt6", "matplotlib", "mnt.pyfiction", "ansi2html"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "opdom-explore"
+version = "0.1.0"
+description = "Explore Operational Domains of SiDB gates"
+long_description = "file: README.md"
+long_description_content_type = "text/markdown"
+authors = [
+    { name = "Marcel Walter", email = "marcel.walter@tum.de" },
+]
+license = "MIT"
+requires-python = ">=3.8"
+
+[project.urls]
+repository = "https://github.com/marcelwa/opdom-explore"
+
+[tool.setuptools.dependencies]
+install_requires = [
+    "PyQt6>=6.0",
+]
+
+# Entry points create executable commands to run specific functions
+[tool.setuptools.entry_points]
+console_scripts = [
+    "your-command = yourpackage.module:function"
+]
