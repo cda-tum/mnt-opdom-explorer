@@ -60,12 +60,11 @@ class MainWindow(QMainWindow):
 
         # Load the file content into the QTextEdit
         conv = Ansi2HTMLConverter()
-        self.lyt = pyfiction.read_sqd_layout(file_path, Path(file_path).stem)
+        self.lyt = pyfiction.read_sqd_layout_100(file_path, Path(file_path).stem)
         html = conv.convert(self.lyt.__repr__().strip())
         self.sidb_layout_display.setHtml(html)
 
-        self.lyt_input_pairs = pyfiction.detect_bdl_pairs(pyfiction.charge_distribution_surface(self.lyt),
-                                                          pyfiction.sidb_technology.cell_type.INPUT)
+        self.lyt_input_pairs = pyfiction.detect_bdl_pairs_100(self.lyt, pyfiction.sidb_technology.cell_type.INPUT)
 
         self.slider = QSlider(Qt.Orientation.Horizontal, self)
         self.slider.setMinimum(0)
