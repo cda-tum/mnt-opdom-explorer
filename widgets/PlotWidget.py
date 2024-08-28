@@ -1,16 +1,19 @@
 from mnt import pyfiction
 from plot import create_plot
 
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QMessageBox
 
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 
 
 class PlotWidget(QWidget):
-    def __init__(self, settings_widget, lyt):
+    def __init__(self, settings_widget, lyt, lyt_ansi_text_edit, input_iterator):
         super().__init__()
         self.settings_widget = settings_widget
+        self.lyt_ansi_text_edit = lyt_ansi_text_edit
         self.lyt = lyt
+        self.input_iterator = input_iterator
+        self.previous_dot = None
 
         # Map the Boolean function string to the corresponding pyfiction function
         self.boolean_function_map = {
@@ -61,13 +64,14 @@ class PlotWidget(QWidget):
         self.setLayout(layout)
 
     def operational_domain_computation(self):
-        sim_params = pyfiction.sidb_simulation_parameters()
-        sim_params.epsilon_r = self.settings_widget.get_epsilon_r()
-        sim_params.mu_minus = self.settings_widget.get_mu_minus()
-        sim_params.lambda_tf = self.settings_widget.get_lambda_tf()
+        self.sim_params = pyfiction.sidb_simulation_parameters()
+        self.sim_params.base = 2
+        self.sim_params.epsilon_r = self.settings_widget.get_epsilon_r()
+        self.sim_params.mu_minus = self.settings_widget.get_mu_minus()
+        self.sim_params.lambda_tf = self.settings_widget.get_lambda_tf()
 
         op_dom_params = pyfiction.operational_domain_params()
-        op_dom_params.simulation_parameters = sim_params
+        op_dom_params.simulation_parameters = self.sim_params
         op_dom_params.sweep_dimensions[0].dimension = self.sweep_dimension_map[self.settings_widget.get_x_dimension()]
         (op_dom_params.sweep_dimensions[0].min, op_dom_params.sweep_dimensions[0].max,
          op_dom_params.sweep_dimensions[0].step) = self.settings_widget.get_x_parameter_range()
@@ -113,13 +117,42 @@ class PlotWidget(QWidget):
             # Print the rounded coordinates
             print('x = {}, y = {}'.format(x, y))
 
+            # Remove the previous dot if it exists
+            if self.previous_dot is not None:
+                self.previous_dot.remove()
+                self.previous_dot = None
+
             # Highlight the clicked point
-            scatter = self.plt.scatter(x, y, s=4, color='yellow')
+            self.previous_dot = self.plt.scatter(x, y, s=4, color='yellow')
 
             # Update the axes limits to include the new scatter plot
-            scatter.axes.autoscale_view()
+            self.previous_dot.axes.autoscale_view()
 
             # Redraw the plot
             self.plt.gcf().canvas.draw()
+
+            # TODO replace simulation with cache access
+            # Perform simulation with the new coordinates
+            self.simulate(x, y)
         else:
             print('Clicked outside axes bounds but inside plot window')
+
+    def simulate(self, x, y):
+        qe_sim_params = self.sim_params
+        # TODO this currently only works for epsilon_r and lambda_tf as x and y
+        qe_sim_params.epsilon_r = x
+        qe_sim_params.lambda_tf = y
+
+        qe_params = pyfiction.quickexact_params()
+        qe_params.base_number_detection = pyfiction.automatic_base_number_detection.OFF
+        qe_params.simulation_parameters = qe_sim_params
+
+        sim_result = pyfiction.quickexact(self.input_iterator.get_layout(), qe_params)
+
+        if not sim_result.charge_distributions:
+            QMessageBox.warning(self, "No Ground State",
+                                f"The ground state could not be detected for ({x},{y}).")
+            return
+
+        # Update the layout representation
+        self.lyt_ansi_text_edit.setAnsiText(sim_result.charge_distributions[0].__repr__().strip())

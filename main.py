@@ -108,7 +108,7 @@ class MainWindow(QMainWindow):
 
     def plot_operational_domain(self):
         # Create the plot view
-        self.plot = PlotWidget(self.settings, self.lyt)
+        self.plot = PlotWidget(self.settings, self.lyt, self.sidb_layout_display, self.bdl_input_iterator)
 
         # Store the QSplitter widget in a class variable
         self.splitter = self.stacked_widget.currentWidget()
