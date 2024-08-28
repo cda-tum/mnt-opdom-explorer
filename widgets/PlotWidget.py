@@ -68,10 +68,12 @@ class PlotWidget(QWidget):
 
         op_dom_params = pyfiction.operational_domain_params()
         op_dom_params.simulation_parameters = sim_params
-        op_dom_params.x_dimension = self.sweep_dimension_map[self.settings_widget.get_x_dimension()]
-        op_dom_params.x_min, op_dom_params.x_max, op_dom_params.x_step = self.settings_widget.get_x_parameter_range()
-        op_dom_params.y_dimension = self.sweep_dimension_map[self.settings_widget.get_y_dimension()]
-        op_dom_params.y_min, op_dom_params.y_max, op_dom_params.y_step = self.settings_widget.get_y_parameter_range()
+        op_dom_params.sweep_dimensions[0].dimension = self.sweep_dimension_map[self.settings_widget.get_x_dimension()]
+        (op_dom_params.sweep_dimensions[0].min, op_dom_params.sweep_dimensions[0].max,
+         op_dom_params.sweep_dimensions[0].step) = self.settings_widget.get_x_parameter_range()
+        op_dom_params.sweep_dimensions[1].dimension = self.sweep_dimension_map[self.settings_widget.get_y_dimension()]
+        (op_dom_params.sweep_dimensions[1].min, op_dom_params.sweep_dimensions[1].max,
+         op_dom_params.sweep_dimensions[1].step) = self.settings_widget.get_y_parameter_range()
 
         gate_func = self.boolean_function_map[self.settings_widget.get_boolean_function()]
 
