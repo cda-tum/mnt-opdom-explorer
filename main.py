@@ -1,11 +1,8 @@
 import sys
 from pathlib import Path
 
-from ansi2html import Ansi2HTMLConverter
-
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QFont
-from PyQt6.QtWidgets import (QApplication, QMainWindow, QSplitter, QTextEdit, QStackedWidget, QSlider, QWidget,
+from PyQt6.QtWidgets import (QApplication, QMainWindow, QSplitter, QStackedWidget, QSlider, QWidget,
                              QVBoxLayout, QLabel)
 
 from mnt import pyfiction
@@ -13,6 +10,7 @@ from mnt import pyfiction
 from widgets.DragDropWidget import DragDropWidget
 from widgets.SettingsWidget import SettingsWidget
 from widgets.PlotWidget import PlotWidget
+from widgets.AnsiTextEdit import AnsiTextEdit
 
 
 class MainWindow(QMainWindow):
@@ -42,44 +40,37 @@ class MainWindow(QMainWindow):
             super().keyPressEvent(event)  # Call the parent class method to ensure default behavior
 
     def file_parsed(self, file_path):
+        # Parse the layout file
+        self.lyt = pyfiction.read_sqd_layout_100(file_path, Path(file_path).stem)
+        # Initialize a BDL input iterator
+        self.bdl_input_iterator = pyfiction.bdl_input_iterator_100(self.lyt)
+
         # Create a QVBoxLayout
-        layout = QVBoxLayout()
+        box_layout_view = QVBoxLayout()
 
         # Create the content display
-        self.sidb_layout_display = QTextEdit()
-        self.sidb_layout_display.setReadOnly(True)
-        self.sidb_layout_display.setTextInteractionFlags(Qt.TextInteractionFlag.NoTextInteraction)
-        layout.addWidget(self.sidb_layout_display)
-
-        # Create a QFont object for monospace font
-        monospace_font = QFont('Monospace')
-        monospace_font.setStyleHint(QFont.StyleHint.TypeWriter)
-
-        # Set the font of the content_display to the monospace font
-        self.sidb_layout_display.setFont(monospace_font)
+        self.sidb_layout_display = AnsiTextEdit()
+        box_layout_view.addWidget(self.sidb_layout_display)
 
         # Load the file content into the QTextEdit
-        conv = Ansi2HTMLConverter()
-        self.lyt = pyfiction.read_sqd_layout_100(file_path, Path(file_path).stem)
-        html = conv.convert(self.lyt.__repr__().strip())
-        self.sidb_layout_display.setHtml(html)
-
-        self.lyt_input_pairs = pyfiction.detect_bdl_pairs(self.lyt, pyfiction.sidb_technology.cell_type.INPUT)
+        self.sidb_layout_display.setAnsiText(self.lyt.__repr__().strip())
 
         self.slider = QSlider(Qt.Orientation.Horizontal, self)
         self.slider.setMinimum(0)
-        self.slider.setMaximum(2 ** len(self.lyt_input_pairs) - 1)
-        layout.addWidget(self.slider)
+        self.slider.setMaximum(2 ** self.bdl_input_iterator.num_input_pairs() - 1)
+        box_layout_view.addWidget(self.slider)
+
+        self.previous_slider_value = 0
 
         self.slider_label = QLabel('Input Combination', self)
-        layout.addWidget(self.slider_label)
+        box_layout_view.addWidget(self.slider_label)
 
         # Connect the valueChanged signal of the slider to the update_slider_label method
         self.slider.valueChanged.connect(self.update_slider_label)
 
         # Create a QWidget to hold the layout
         widget = QWidget()
-        widget.setLayout(layout)
+        widget.setLayout(box_layout_view)
 
         # Create a QSplitter
         splitter = QSplitter(Qt.Orientation.Horizontal)
@@ -101,13 +92,19 @@ class MainWindow(QMainWindow):
         self.stacked_widget.setCurrentWidget(splitter)
 
     def update_slider_label(self, value):
-        # TODO compute the input combination based on the value of the slider
-        # TODO update the QTextEdit with the respective layout based on the input combination
+        value_diff = value - self.previous_slider_value
+        if value_diff != 0:
+            self.bdl_input_iterator += value_diff
 
-        # convert value to a binary string
-        value = bin(value)[2:].zfill(len(self.lyt_input_pairs))
+            # convert value to a binary string
+            bin_value = bin(value)[2:].zfill(self.bdl_input_iterator.num_input_pairs())
 
-        self.slider_label.setText(f'Input Combination: {value}')
+            self.previous_slider_value = value
+
+            # update text layout representation
+            self.sidb_layout_display.setAnsiText(self.bdl_input_iterator.get_layout().__repr__().strip())
+
+            self.slider_label.setText(f'Input Combination: {bin_value}')
 
     def plot_operational_domain(self):
         # Create the plot view
