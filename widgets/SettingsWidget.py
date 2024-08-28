@@ -55,6 +55,7 @@ class SettingsWidget(QWidget):
         engine_label = QLabel('Engine')
         self.engine_dropdown = QComboBox()
         self.engine_dropdown.addItems(['ExGS', 'QuickExact', 'QuickSim'])
+        self.engine_dropdown.setCurrentIndex(1)  # Set QuickExact as default
         engine_layout.addWidget(engine_label, 30)  # 30% of the space goes to the label
         engine_layout.addWidget(self.engine_dropdown, 70)  # 70% of the space goes to the dropdown
         physical_simulation_layout.addLayout(engine_layout)  # Add to the group's QVBoxLayout
