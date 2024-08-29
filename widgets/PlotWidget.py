@@ -139,9 +139,25 @@ class PlotWidget(QWidget):
 
     def simulate(self, x, y):
         qe_sim_params = self.sim_params
-        # TODO this currently only works for epsilon_r and lambda_tf as x and y
-        qe_sim_params.epsilon_r = x
-        qe_sim_params.lambda_tf = y
+
+        # Get the selected x and y dimensions
+        x_dimension = self.settings_widget.get_x_dimension()
+        y_dimension = self.settings_widget.get_y_dimension()
+
+        # Set the parameters based on the selected dimensions
+        if x_dimension == 'epsilon_r':
+            qe_sim_params.epsilon_r = x
+        elif x_dimension == 'lambda_TF':
+            qe_sim_params.lambda_tf = x
+        elif x_dimension == 'µ_':
+            qe_sim_params.mu_minus = x
+
+        if y_dimension == 'epsilon_r':
+            qe_sim_params.epsilon_r = y
+        elif y_dimension == 'lambda_TF':
+            qe_sim_params.lambda_tf = y
+        elif y_dimension == 'µ_':
+            qe_sim_params.mu_minus = y
 
         qe_params = pyfiction.quickexact_params()
         qe_params.base_number_detection = pyfiction.automatic_base_number_detection.OFF
