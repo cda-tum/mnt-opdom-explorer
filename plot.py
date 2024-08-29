@@ -23,7 +23,7 @@ def create_plot():
     lambda_tf_non_operational = non_operational_data['lambda_tf']
 
     # Plot the data with different colors for each group
-    plt.figure(dpi=300)
+    plt.figure(dpi=300, layout='tight')
     # plt.plot(mu_minus_non_operational, epsilon_r_non_operational, 's', markersize=2, color='lightgray', label='non-operational')
     # plt.plot(mu_minus_non_operational, lambda_tf_non_operational, 's', markersize=2, color='lightgray', label='non-operational')
     # plt.plot(epsilon_r_non_operational, lambda_tf_non_operational, 's', markersize=2, color='lightgray',
