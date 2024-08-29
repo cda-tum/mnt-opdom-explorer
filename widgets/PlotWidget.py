@@ -29,7 +29,7 @@ class PlotWidget(QWidget):
         self.sweep_dimension_map = {
             'epsilon_r': pyfiction.sweep_parameter.EPSILON_R,
             'lambda_TF': pyfiction.sweep_parameter.LAMBDA_TF,
-            'mu_': pyfiction.sweep_parameter.MU_MINUS
+            'µ_': pyfiction.sweep_parameter.MU_MINUS
         }
 
         self.initUI()
