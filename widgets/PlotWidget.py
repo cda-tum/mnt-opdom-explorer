@@ -1,3 +1,4 @@
+from PyQt6 import sip
 from mnt import pyfiction
 from plot import create_plot
 
@@ -14,6 +15,11 @@ class PlotWidget(QWidget):
         self.lyt = lyt
         self.input_iterator = input_iterator
         self.previous_dot = None
+
+        self.layout = QVBoxLayout(self)
+        self.plt = None
+        self.fig = None
+        self.canvas = None
 
         # Map the Boolean function string to the corresponding pyfiction function
         self.boolean_function_map = {
@@ -35,8 +41,6 @@ class PlotWidget(QWidget):
         self.initUI()
 
     def initUI(self):
-        layout = QVBoxLayout(self)
-
         op_dom = self.operational_domain_computation()
 
         write_op_dom_params = pyfiction.write_operational_domain_params()
@@ -49,19 +53,18 @@ class PlotWidget(QWidget):
 
         # Generate the plot
         self.plt = create_plot()
-        self.canvas = FigureCanvas(self.plt.gcf())
-        layout.addWidget(self.canvas)
+        self.fig = self.plt.gcf()
+        self.canvas = FigureCanvas(self.fig)
+        self.layout.addWidget(self.canvas)
 
         # Connect the 'button_press_event' to the 'on_click' function
-        self.plt.gcf().canvas.mpl_connect('button_press_event', self.on_click)
-
-        layout.addWidget(self.canvas)
+        self.fig.canvas.mpl_connect('button_press_event', self.on_click)
 
         # Add a 'Back' button
         self.back_button = QPushButton('Run Another Simulation')
-        self.layout().addWidget(self.back_button)
+        self.layout.addWidget(self.back_button)
 
-        self.setLayout(layout)
+        self.setLayout(self.layout)
 
     def operational_domain_computation(self):
         self.sim_params = pyfiction.sidb_simulation_parameters()
@@ -146,7 +149,7 @@ class PlotWidget(QWidget):
             self.previous_dot.axes.autoscale_view()
 
             # Redraw the plot
-            self.plt.gcf().canvas.draw()
+            self.fig.canvas.draw()
 
             # TODO replace simulation with cache access
             # Perform simulation with the new coordinates
