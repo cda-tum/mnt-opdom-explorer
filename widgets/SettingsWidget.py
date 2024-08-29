@@ -196,6 +196,23 @@ class SettingsWidget(QWidget):
         self.y_parameter_range_selector = RangeSelector('Y-Parameter Range', 0.0, 10.0, 0.1)
         operational_domain_sweep_layout.addWidget(self.y_parameter_range_selector)
 
+        # Z-Dimension sweep parameter drop-down (Initially set to NONE)
+        z_dimension_layout = QHBoxLayout()
+        z_dimension_label = QLabel('Z-Dimension')
+        self.z_dimension_dropdown = QComboBox()
+        self.z_dimension_dropdown.addItems(['NONE', 'epsilon_r', 'lambda_TF', 'µ_'])  # Added NONE as default option
+        z_dimension_layout.addWidget(z_dimension_label, 30)
+        z_dimension_layout.addWidget(self.z_dimension_dropdown, 70)
+        self.z_dimension_dropdown.currentIndexChanged.connect(
+            lambda: self.update_range_selector(self.z_dimension_dropdown.currentText(),
+                                               self.z_parameter_range_selector)
+        )
+        operational_domain_sweep_layout.addLayout(z_dimension_layout)  # Add to the sub-group's QVBoxLayout
+
+        self.z_parameter_range_selector = RangeSelector('Z-Parameter Range', 0.0, 10.0, 0.1)
+        self.z_parameter_range_selector.setDisabled(True)  # Initially disabled
+        operational_domain_sweep_layout.addWidget(self.z_parameter_range_selector)
+
         # Set the layout for the 'Sweep Settings' sub-group
         self.operational_domain_sweep_group.setLayout(operational_domain_sweep_layout)
         # Add the sweep group to the main operational domain layout
@@ -244,6 +261,11 @@ class SettingsWidget(QWidget):
             range_selector.set_single_steps(0.5, 0.5, 0.01)
             range_selector.set_decimal_precision(2, 2, 2)
 
+        if selected_sweep_parameter == 'NONE':
+            range_selector.setDisabled(True)
+        else:
+            range_selector.setEnabled(True)
+
     # Getter methods to retrieve the settings
     def get_engine(self):
         return self.engine_dropdown.currentText()
@@ -277,3 +299,9 @@ class SettingsWidget(QWidget):
 
     def get_y_parameter_range(self):
         return self.y_parameter_range_selector.get_range()
+
+    def get_z_dimension(self):
+        return self.z_dimension_dropdown.currentText()
+
+    def get_z_parameter_range(self):
+        return self.z_parameter_range_selector.get_range()
