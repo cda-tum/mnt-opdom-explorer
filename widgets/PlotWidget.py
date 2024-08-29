@@ -72,12 +72,29 @@ class PlotWidget(QWidget):
 
         op_dom_params = pyfiction.operational_domain_params()
         op_dom_params.simulation_parameters = self.sim_params
-        op_dom_params.sweep_dimensions[0].dimension = self.sweep_dimension_map[self.settings_widget.get_x_dimension()]
-        (op_dom_params.sweep_dimensions[0].min, op_dom_params.sweep_dimensions[0].max,
-         op_dom_params.sweep_dimensions[0].step) = self.settings_widget.get_x_parameter_range()
-        op_dom_params.sweep_dimensions[1].dimension = self.sweep_dimension_map[self.settings_widget.get_y_dimension()]
-        (op_dom_params.sweep_dimensions[1].min, op_dom_params.sweep_dimensions[1].max,
-         op_dom_params.sweep_dimensions[1].step) = self.settings_widget.get_y_parameter_range()
+
+        sweep_dimensions = []
+
+        x_dimension = pyfiction.operational_domain_value_range(
+            self.sweep_dimension_map[self.settings_widget.get_x_dimension()])
+        x_dimension.min, x_dimension.max, x_dimension.step = self.settings_widget.get_x_parameter_range()
+
+        sweep_dimensions.append(x_dimension)
+
+        y_dimension = pyfiction.operational_domain_value_range(
+            self.sweep_dimension_map[self.settings_widget.get_y_dimension()])
+        y_dimension.min, y_dimension.max, y_dimension.step = self.settings_widget.get_y_parameter_range()
+
+        sweep_dimensions.append(y_dimension)
+
+        if self.settings_widget.get_z_dimension() != 'NONE':
+            z_dimension = pyfiction.operational_domain_value_range(
+                self.sweep_dimension_map[self.settings_widget.get_z_dimension()])
+            z_dimension.min, z_dimension.max, z_dimension.step = self.settings_widget.get_z_parameter_range()
+
+            sweep_dimensions.append(z_dimension)
+
+        op_dom_params.sweep_dimensions = sweep_dimensions
 
         gate_func = self.boolean_function_map[self.settings_widget.get_boolean_function()]
 
