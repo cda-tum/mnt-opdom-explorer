@@ -49,5 +49,25 @@ class RangeSelector(QWidget):
 
         self.setLayout(layout)
 
+    def set_range(self, min_value, max_value, min_step_value, max_step_value, step_value):
+        self.min_spinbox.setRange(min_value, max_value)
+        self.min_spinbox.setValue(min_value)
+
+        self.max_spinbox.setRange(min_value, max_value)
+        self.max_spinbox.setValue(max_value)
+
+        self.step_spinbox.setRange(min_step_value, max_step_value)
+        self.step_spinbox.setValue(step_value)
+
     def get_range(self):
         return self.min_spinbox.value(), self.max_spinbox.value(), self.step_spinbox.value()
+
+    def set_single_steps(self, min_step, max_step, step_step):
+        self.min_spinbox.setSingleStep(min_step)
+        self.max_spinbox.setSingleStep(max_step)
+        self.step_spinbox.setSingleStep(step_step)
+
+    def set_decimal_precision(self, min_decimals, max_decimals, step_decimals):
+        self.min_spinbox.setDecimals(min_decimals)
+        self.max_spinbox.setDecimals(max_decimals)
+        self.step_spinbox.setDecimals(step_decimals)

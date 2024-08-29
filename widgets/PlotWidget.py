@@ -167,7 +167,7 @@ class PlotWidget(QWidget):
 
         if not sim_result.charge_distributions:
             QMessageBox.warning(self, "No Ground State",
-                                f"The ground state could not be detected for ({x},{y}).")
+                                f"The ground state could not be detected for ({round(x, 3)},{round(y, 3)}).")
             return
 
         # Update the layout representation

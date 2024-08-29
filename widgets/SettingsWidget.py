@@ -129,6 +129,7 @@ class SettingsWidget(QWidget):
 
         # Operational Domain settings
         self.operational_domain_group = QGroupBox('Operational Domain')
+
         # Get the current font of the group box title
         operational_domain_font = self.operational_domain_group.font()
         # Increase the font size by an amount of your choice
@@ -160,30 +161,45 @@ class SettingsWidget(QWidget):
         # Connect the currentTextChanged signal of the algorithm_dropdown to the new slot method
         self.algorithm_dropdown.currentTextChanged.connect(self.update_random_samples_spinbox)
 
+        # Operational Domain Sweep Sub-group
+        self.operational_domain_sweep_group = QGroupBox('Sweep Settings')
+        operational_domain_sweep_layout = QVBoxLayout()  # Layout for sweep settings
+
         # X-Dimension sweep parameter drop-down
         x_dimension_layout = QHBoxLayout()
-        x_dimension_label = QLabel('X-Dimension Sweep')
+        x_dimension_label = QLabel('X-Dimension')
         self.x_dimension_dropdown = QComboBox()
         self.x_dimension_dropdown.addItems(['epsilon_r', 'lambda_TF', 'µ_'])
         x_dimension_layout.addWidget(x_dimension_label, 30)
         x_dimension_layout.addWidget(self.x_dimension_dropdown, 70)
-        operational_domain_layout.addLayout(x_dimension_layout)  # Add to the group's QVBoxLayout
+        self.x_dimension_dropdown.currentIndexChanged.connect(
+            lambda: self.update_range_selector(self.x_dimension_dropdown.currentText(), self.x_parameter_range_selector)
+        )
+        operational_domain_sweep_layout.addLayout(x_dimension_layout)  # Add to the sub-group's QVBoxLayout
 
         self.x_parameter_range_selector = RangeSelector('X-Parameter Range', 0.0, 10.0, 0.1)
-        operational_domain_layout.addWidget(self.x_parameter_range_selector)
+        operational_domain_sweep_layout.addWidget(self.x_parameter_range_selector)
 
         # Y-Dimension sweep parameter drop-down
         y_dimension_layout = QHBoxLayout()
-        y_dimension_label = QLabel('Y-Dimension Sweep')
+        y_dimension_label = QLabel('Y-Dimension')
         self.y_dimension_dropdown = QComboBox()
         self.y_dimension_dropdown.addItems(['epsilon_r', 'lambda_TF', 'µ_'])
         self.y_dimension_dropdown.setCurrentIndex(1)  # set lambda_TF as default
         y_dimension_layout.addWidget(y_dimension_label, 30)
         y_dimension_layout.addWidget(self.y_dimension_dropdown, 70)
-        operational_domain_layout.addLayout(y_dimension_layout)  # Add to the group's QVBoxLayout
+        self.y_dimension_dropdown.currentIndexChanged.connect(
+            lambda: self.update_range_selector(self.y_dimension_dropdown.currentText(), self.y_parameter_range_selector)
+        )
+        operational_domain_sweep_layout.addLayout(y_dimension_layout)  # Add to the sub-group's QVBoxLayout
 
         self.y_parameter_range_selector = RangeSelector('Y-Parameter Range', 0.0, 10.0, 0.1)
-        operational_domain_layout.addWidget(self.y_parameter_range_selector)
+        operational_domain_sweep_layout.addWidget(self.y_parameter_range_selector)
+
+        # Set the layout for the 'Sweep Settings' sub-group
+        self.operational_domain_sweep_group.setLayout(operational_domain_sweep_layout)
+        # Add the sweep group to the main operational domain layout
+        operational_domain_layout.addWidget(self.operational_domain_sweep_group)
 
         # Set the layout for the 'Operational Domain' group
         self.operational_domain_group.setLayout(operational_domain_layout)
@@ -217,6 +233,16 @@ class SettingsWidget(QWidget):
         else:
             self.random_samples_spinbox.setValue(100)
             self.random_samples_spinbox.setSingleStep(10)
+
+    def update_range_selector(self, selected_sweep_parameter, range_selector):
+        if selected_sweep_parameter == 'µ_':
+            range_selector.set_range(-0.5, -0.1, 0.0001, 0.1, 0.005)
+            range_selector.set_single_steps(0.01, 0.01, 0.001)
+            range_selector.set_decimal_precision(2, 2, 3)
+        else:
+            range_selector.set_range(0.0, 10.0, 0.01, 5.0, 0.1)
+            range_selector.set_single_steps(0.5, 0.5, 0.01)
+            range_selector.set_decimal_precision(2, 2, 2)
 
     # Getter methods to retrieve the settings
     def get_engine(self):
