@@ -73,6 +73,7 @@ class PlotWidget(QWidget):
         self.sim_params.mu_minus = self.settings_widget.get_mu_minus()
         self.sim_params.lambda_tf = self.settings_widget.get_lambda_tf()
 
+        # TODO set simulation engine
         op_dom_params = pyfiction.operational_domain_params()
         op_dom_params.simulation_parameters = self.sim_params
 
@@ -180,7 +181,7 @@ class PlotWidget(QWidget):
             qe_sim_params.mu_minus = y
 
         qe_params = pyfiction.quickexact_params()
-        qe_params.base_number_detection = pyfiction.automatic_base_number_detection.OFF
+        qe_params.base_number_detection = pyfiction.automatic_base_number_detection.ON
         qe_params.simulation_parameters = qe_sim_params
 
         sim_result = pyfiction.quickexact(self.input_iterator.get_layout(), qe_params)
