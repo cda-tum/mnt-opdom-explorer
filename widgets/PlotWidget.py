@@ -1,6 +1,6 @@
 from PyQt6 import sip
 from mnt import pyfiction
-from plot import create_plot
+from plot import generate_2d_plot
 
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QMessageBox
 
@@ -17,8 +17,8 @@ class PlotWidget(QWidget):
         self.previous_dot = None
 
         self.layout = QVBoxLayout(self)
-        self.plt = None
         self.fig = None
+        self.ax = None
         self.canvas = None
 
         # Map the Boolean function string to the corresponding pyfiction function
@@ -38,6 +38,13 @@ class PlotWidget(QWidget):
             'µ_': pyfiction.sweep_parameter.MU_MINUS
         }
 
+        # Map the sweep dimension string to the corresponding operational domain file column identifier
+        self.column_map = {
+            'epsilon_r': 'epsilon_r',
+            'lambda_TF': 'lambda_tf',
+            'µ_': 'mu_minus'
+        }
+
         self.initUI()
 
     def initUI(self):
@@ -52,8 +59,16 @@ class PlotWidget(QWidget):
         # TODO the plot causes a crash when the window is resized
 
         # Generate the plot
-        self.plt = create_plot()
-        self.fig = self.plt.gcf()
+        self.fig, self.ax = generate_2d_plot(['op_dom.csv'],
+                                             x_param=self.column_map[self.settings_widget.get_x_dimension()],
+                                             y_param=self.column_map[self.settings_widget.get_y_dimension()],
+                                             xlog=False,
+                                             ylog=False,
+                                             x_range=tuple(self.settings_widget.get_x_parameter_range()[:2]),
+                                             y_range=tuple(self.settings_widget.get_y_parameter_range()[:2]),
+                                             include_non_operational=True,
+                                             show_legend=False)
+
         self.canvas = FigureCanvas(self.fig)
         self.layout.addWidget(self.canvas)
 
@@ -144,15 +159,12 @@ class PlotWidget(QWidget):
                 self.previous_dot = None
 
             # Highlight the clicked point
-            self.previous_dot = self.plt.scatter(x, y, s=4, color='yellow')
-
-            # Update the axes limits to include the new scatter plot
-            self.previous_dot.axes.autoscale_view()
+            self.previous_dot = event.inaxes.scatter(x, y, s=50, color='yellow', zorder=5)
 
             # Redraw the plot
             self.fig.canvas.draw()
 
-            # TODO replace simulation with cache access
+            # TODO replace simulation with cache access?
             # Perform simulation with the new coordinates
             self.simulate(x, y)
         else:
