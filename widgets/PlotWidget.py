@@ -1,4 +1,3 @@
-from PyQt6 import sip
 from mnt import pyfiction
 from plot import generate_2d_plot
 
