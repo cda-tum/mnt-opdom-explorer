@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QLabel, QFrame, QGroupBox, QHBoxLayout, QComboBox, QDoubleSpinBox,
-                             QPushButton, QSpinBox)
+                             QPushButton, QSpinBox, QApplication)
 from PyQt6.QtCore import Qt
 
 from widgets.RangeSelector import RangeSelector
@@ -265,6 +265,14 @@ class SettingsWidget(QWidget):
             range_selector.setDisabled(True)
         else:
             range_selector.setEnabled(True)
+
+    def disable_run_button(self):
+        self.run_button.setDisabled(True)
+        QApplication.processEvents()  # Force GUI update
+
+    def enable_run_button(self):
+        self.run_button.setEnabled(True)
+        QApplication.processEvents()  # Force GUI update
 
     # Getter methods to retrieve the settings
     def get_engine(self):

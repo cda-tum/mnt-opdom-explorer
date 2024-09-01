@@ -85,6 +85,8 @@ class PlotWidget(QWidget):
         self.back_button = QPushButton('Run Another Simulation')
         self.layout.addWidget(self.back_button)
 
+        self.back_button.clicked.connect(self.settings_widget.enable_run_button)
+
         self.setLayout(self.layout)
 
     def operational_domain_computation(self):

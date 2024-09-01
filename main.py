@@ -79,6 +79,8 @@ class MainWindow(QMainWindow):
         # Create the content and settings view
         self.settings = SettingsWidget()
 
+        # Connect the RUN button's clicked signal to the disable_run_button method to prevent multiple clicks
+        self.settings.run_button.clicked.connect(self.settings.disable_run_button)
         # Connect the RUN button's clicked signal to the show_plot method
         self.settings.run_button.clicked.connect(self.plot_operational_domain)
 
