@@ -275,7 +275,7 @@ class SettingsWidget(QWidget):
         QApplication.processEvents()  # Force GUI update
 
     # Getter methods to retrieve the settings
-    def get_engine(self):
+    def get_simulation_engine(self):
         return self.engine_dropdown.currentText()
 
     def get_mu_minus(self):

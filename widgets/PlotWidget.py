@@ -30,6 +30,12 @@ class PlotWidget(QWidget):
             'XNOR': [pyfiction.create_xnor_tt()]
         }
 
+        self.engine_map = {
+            'ExGS': pyfiction.sidb_simulation_engine.EXGS,
+            'QuickExact': pyfiction.sidb_simulation_engine.QUICKEXACT,
+            'QuickSim': pyfiction.sidb_simulation_engine.QUICKSIM
+        }
+
         # Map the sweep dimension string to the corresponding pyfiction sweep dimension
         self.sweep_dimension_map = {
             'epsilon_r': pyfiction.sweep_parameter.EPSILON_R,
@@ -96,9 +102,9 @@ class PlotWidget(QWidget):
         self.sim_params.mu_minus = self.settings_widget.get_mu_minus()
         self.sim_params.lambda_tf = self.settings_widget.get_lambda_tf()
 
-        # TODO set simulation engine
         op_dom_params = pyfiction.operational_domain_params()
         op_dom_params.simulation_parameters = self.sim_params
+        op_dom_params.sim_engine = self.engine_map[self.settings_widget.get_simulation_engine()]
 
         sweep_dimensions = []
 
