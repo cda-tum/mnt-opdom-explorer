@@ -1,5 +1,5 @@
 from mnt import pyfiction
-from plot import generate_2d_plot
+from plot import generate_plot
 
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QMessageBox
 
@@ -57,22 +57,29 @@ class PlotWidget(QWidget):
 
         # TODO the plot causes a crash when the window is resized
 
+        self.three_dimensional_plot = self.settings_widget.get_z_dimension() != 'NONE'
+
         # Generate the plot
-        self.fig, self.ax = generate_2d_plot(['op_dom.csv'],
-                                             x_param=self.column_map[self.settings_widget.get_x_dimension()],
-                                             y_param=self.column_map[self.settings_widget.get_y_dimension()],
-                                             xlog=False,
-                                             ylog=False,
-                                             x_range=tuple(self.settings_widget.get_x_parameter_range()[:2]),
-                                             y_range=tuple(self.settings_widget.get_y_parameter_range()[:2]),
-                                             include_non_operational=True,
-                                             show_legend=False)
+        self.fig, self.ax = generate_plot(['op_dom.csv'],
+                                          x_param=self.column_map[self.settings_widget.get_x_dimension()],
+                                          y_param=self.column_map[self.settings_widget.get_y_dimension()],
+                                          z_param=self.column_map[
+                                              self.settings_widget.get_z_dimension()] if self.three_dimensional_plot else None,
+                                          xlog=False,
+                                          ylog=False,
+                                          x_range=tuple(self.settings_widget.get_x_parameter_range()[:2]),
+                                          y_range=tuple(self.settings_widget.get_y_parameter_range()[:2]),
+                                          z_range=tuple(self.settings_widget.get_z_parameter_range()[
+                                                        :2]) if self.three_dimensional_plot else None,
+                                          include_non_operational=not self.three_dimensional_plot,
+                                          show_legend=False)
 
         self.canvas = FigureCanvas(self.fig)
         self.layout.addWidget(self.canvas)
 
-        # Connect the 'button_press_event' to the 'on_click' function
-        self.fig.canvas.mpl_connect('button_press_event', self.on_click)
+        if not self.three_dimensional_plot:
+            # Connect the 'button_press_event' to the 'on_click' function
+            self.fig.canvas.mpl_connect('button_press_event', self.on_click)
 
         # Add a 'Back' button
         self.back_button = QPushButton('Run Another Simulation')
