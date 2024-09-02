@@ -2,7 +2,7 @@ from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QLabel, QFrame, QGroupBox, QH
                              QPushButton, QSpinBox, QApplication)
 from PyQt6.QtCore import Qt
 
-from widgets.RangeSelector import RangeSelector
+from gui.widgets import RangeSelector
 
 
 class SettingsWidget(QWidget):

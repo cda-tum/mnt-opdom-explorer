@@ -1,5 +1,5 @@
 from mnt import pyfiction
-from plot import generate_plot
+from core import generate_plot
 
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QMessageBox
 
