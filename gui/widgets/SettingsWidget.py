@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QLabel, QFrame, QGroupBox, QHBoxLayout, QComboBox, QDoubleSpinBox,
-                             QPushButton, QSpinBox, QApplication)
+                             QPushButton, QSpinBox, QApplication, QScrollArea, QSizePolicy)
 from PyQt6.QtCore import Qt
 
 from gui.widgets import RangeSelector
@@ -14,6 +14,9 @@ class SettingsWidget(QWidget):
     def initUI(self):
         # Assuming IconLoader is already defined as shown previously
         icon_loader = IconLoader()
+
+        self.scroll_widget = QWidget()
+        self.scroll_container_layout = QVBoxLayout(self.scroll_widget)
 
         # Right panel for settings wrapped in a widget for the splitter
         settings_widget = QWidget()
@@ -118,7 +121,8 @@ class SettingsWidget(QWidget):
         self.physical_simulation_group.setLayout(physical_simulation_layout)
 
         # Add the group box to the settings layout
-        self.settings_layout.addWidget(self.physical_simulation_group)
+        # self.settings_layout.addWidget(self.physical_simulation_group)
+        self.scroll_container_layout.addWidget(self.physical_simulation_group)
 
         # Gate Function settings
         self.gate_function_group = QGroupBox('Gate Function')
@@ -143,7 +147,8 @@ class SettingsWidget(QWidget):
         self.gate_function_group.setLayout(gate_function_layout)
 
         # Add the group box to the settings layout
-        self.settings_layout.addWidget(self.gate_function_group)
+        # self.settings_layout.addWidget(self.gate_function_group)
+        self.scroll_container_layout.addWidget(self.gate_function_group)
 
         # Operational Domain settings
         self.operational_domain_group = QGroupBox('Operational Domain')
@@ -240,10 +245,23 @@ class SettingsWidget(QWidget):
         self.operational_domain_group.setLayout(operational_domain_layout)
 
         # Add the group box to the settings layout
-        self.settings_layout.addWidget(self.operational_domain_group)
+        # self.settings_layout.addWidget(self.operational_domain_group)
+        self.scroll_container_layout.addWidget(self.operational_domain_group)
+
+        # Set the container widget to expand horizontally but not vertically
+        self.scroll_widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Maximum)
+
+        self.scroll_area = QScrollArea()
+        self.scroll_area.setWidgetResizable(True)
+        # Ensure the scroll area expands horizontally but not vertically
+        self.scroll_area.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.MinimumExpanding)
+
+        self.scroll_area.setWidget(self.scroll_widget)
+
+        self.settings_layout.addWidget(self.scroll_area)
 
         # Add stretch to push the RUN button to the bottom
-        self.settings_layout.addStretch(1)
+        # self.settings_layout.addStretch(1)
 
         # Add 'Run' button
         self.run_button = QPushButton('Run Simulation')
