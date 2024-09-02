@@ -1,6 +1,5 @@
 import qtawesome as qta
 from PyQt6.QtGui import QColor, QIcon
-from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QApplication
 
 
@@ -48,3 +47,11 @@ class IconLoader:
     def load_refresh_icon(self, color: QColor = None) -> QIcon:
         """Loads the refresh icon."""
         return self.load_icon('fa5s.sync', color=color)
+
+    def load_file_upload_icon(self, color: QColor = None) -> QIcon:
+        """Loads the file upload icon."""
+        return self.load_icon('fa5s.file-upload', color=color)
+
+    def load_folder_open_icon(self, color: QColor = None) -> QIcon:
+        """Loads the folder open icon."""
+        return self.load_icon('fa5s.folder-open', color=color)

@@ -19,7 +19,7 @@ class MainWindow(QMainWindow):
 
     def initUI(self):
         self.setWindowTitle('Operational Domain Explorer')
-        self.setGeometry(100, 100, 1200, 800)
+        self.setGeometry(100, 100, 600, 400)
 
         # Initialize the QStackedWidget
         self.stacked_widget = QStackedWidget()
@@ -90,6 +90,8 @@ class MainWindow(QMainWindow):
 
         # Switch to the splitter
         self.stacked_widget.setCurrentWidget(splitter)
+
+        self.resize(1800, 800)
 
     def update_slider_label(self, value):
         value_diff = value - self.previous_slider_value

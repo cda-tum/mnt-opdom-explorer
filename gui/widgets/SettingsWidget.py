@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QLabel, QFrame, QGroupBox, QHBoxLayout, QComboBox, QDoubleSpinBox,
-                             QPushButton, QSpinBox, QApplication, QStyle)
+                             QPushButton, QSpinBox, QApplication)
 from PyQt6.QtCore import Qt
 
 from gui.widgets import RangeSelector
