@@ -2,7 +2,7 @@ from pathlib import Path
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (QMainWindow, QSplitter, QStackedWidget, QSlider, QWidget,
-                             QVBoxLayout, QLabel, QScrollArea)
+                             QVBoxLayout, QLabel)
 
 from mnt import pyfiction
 
@@ -82,12 +82,6 @@ class MainWindow(QMainWindow):
         # Connect the RUN button's clicked signal to the show_plot method
         self.settings.run_button.clicked.connect(self.plot_operational_domain)
 
-        # self.settings_scroll_area = QScrollArea()
-        # self.settings_scroll_area.setWidgetResizable(True)
-        # self.settings_scroll_area.setWidget(self.settings)
-
-        # Add the content and settings view to the splitter
-        # splitter.addWidget(self.settings_scroll_area)
         splitter.addWidget(self.settings)
 
         # Add the splitter to the stacked widget
