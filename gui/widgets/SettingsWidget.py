@@ -4,6 +4,7 @@ from PyQt6.QtCore import Qt
 
 from gui.widgets import RangeSelector
 from gui.widgets import IconLoader
+from gui.widgets.IconGroupBox import IconGroupBox
 
 
 class SettingsWidget(QWidget):
@@ -61,15 +62,7 @@ class SettingsWidget(QWidget):
 
         self.settings_layout.addSpacing(15)
 
-        # Physical Simulation settings
-        self.physical_simulation_group = QGroupBox('Physical Simulation')
-        # Get the current font of the group box title
-        simulation_font = self.physical_simulation_group.font()
-        # Increase the font size by an amount of your choice
-        simulation_font.setPointSize(simulation_font.pointSize() + 2)
-        # Apply the new font to the group box title
-        self.physical_simulation_group.setFont(simulation_font)
-        physical_simulation_layout = QVBoxLayout()  # Create a QVBoxLayout for this group
+        self.physical_simulation_group = IconGroupBox('Physical Simulation', icon_loader.load_atom_icon())
 
         # engine drop-down
         engine_layout = QHBoxLayout()
@@ -79,7 +72,7 @@ class SettingsWidget(QWidget):
         self.engine_dropdown.setCurrentIndex(1)  # Set QuickExact as default
         engine_layout.addWidget(engine_label, 30)  # 30% of the space goes to the label
         engine_layout.addWidget(self.engine_dropdown, 70)  # 70% of the space goes to the dropdown
-        physical_simulation_layout.addLayout(engine_layout)  # Add to the group's QVBoxLayout
+        self.physical_simulation_group.addLayout(engine_layout)  # Add to the group's QVBoxLayout
 
         # µ_ number selector
         mu_layout = QHBoxLayout()
@@ -91,7 +84,7 @@ class SettingsWidget(QWidget):
         self.mu_minus_selector.setValue(-0.28)
         mu_layout.addWidget(mu_label, 30)  # 30% of the space goes to the label
         mu_layout.addWidget(self.mu_minus_selector, 70)  # 70% of the space goes to the selector
-        physical_simulation_layout.addLayout(mu_layout)  # Add to the group's QVBoxLayout
+        self.physical_simulation_group.addLayout(mu_layout)  # Add to the group's QVBoxLayout
 
         # epsilon_r number selector
         epsilon_r_layout = QHBoxLayout()
@@ -103,7 +96,7 @@ class SettingsWidget(QWidget):
         self.epsilon_r_selector.setValue(5.6)
         epsilon_r_layout.addWidget(epsilon_r_label, 30)  # 30% of the space goes to the label
         epsilon_r_layout.addWidget(self.epsilon_r_selector, 70)  # 70% of the space goes to the selector
-        physical_simulation_layout.addLayout(epsilon_r_layout)  # Add to the group's QVBoxLayout
+        self.physical_simulation_group.addLayout(epsilon_r_layout)  # Add to the group's QVBoxLayout
 
         # lambda_TF number selector
         lambda_tf_layout = QHBoxLayout()
@@ -115,24 +108,13 @@ class SettingsWidget(QWidget):
         self.lambda_tf_selector.setValue(5.0)
         lambda_tf_layout.addWidget(lambda_tf_label, 30)  # 30% of the space goes to the label
         lambda_tf_layout.addWidget(self.lambda_tf_selector, 70)  # 70% of the space goes to the selector
-        physical_simulation_layout.addLayout(lambda_tf_layout)  # Add to the group's QVBoxLayout
-
-        # After setting up the group, set its layout
-        self.physical_simulation_group.setLayout(physical_simulation_layout)
+        self.physical_simulation_group.addLayout(lambda_tf_layout)  # Add to the group's QVBoxLayout
 
         # Add the group box to the settings layout
-        # self.settings_layout.addWidget(self.physical_simulation_group)
         self.scroll_container_layout.addWidget(self.physical_simulation_group)
 
         # Gate Function settings
-        self.gate_function_group = QGroupBox('Gate Function')
-        # Get the current font of the group box title
-        gate_function_font = self.gate_function_group.font()
-        # Increase the font size by an amount of your choice
-        gate_function_font.setPointSize(gate_function_font.pointSize() + 2)
-        # Apply the new font to the group box title
-        self.gate_function_group.setFont(gate_function_font)
-        gate_function_layout = QVBoxLayout()  # Create a QVBoxLayout for this group
+        self.gate_function_group = IconGroupBox('Gate Function', icon_loader.load_function_icon())
 
         # Boolean Function drop-down
         boolean_function_layout = QHBoxLayout()
@@ -141,25 +123,13 @@ class SettingsWidget(QWidget):
         self.boolean_function_dropdown.addItems(['AND', 'OR', 'NAND', 'NOR', 'XOR', 'XNOR'])
         boolean_function_layout.addWidget(boolean_function_label, 30)
         boolean_function_layout.addWidget(self.boolean_function_dropdown, 70)
-        gate_function_layout.addLayout(boolean_function_layout)  # Add to the group's QVBoxLayout
-
-        # Set the layout for the 'Gate Function' group
-        self.gate_function_group.setLayout(gate_function_layout)
+        self.gate_function_group.addLayout(boolean_function_layout)  # Add to the group's QVBoxLayout
 
         # Add the group box to the settings layout
-        # self.settings_layout.addWidget(self.gate_function_group)
         self.scroll_container_layout.addWidget(self.gate_function_group)
 
         # Operational Domain settings
-        self.operational_domain_group = QGroupBox('Operational Domain')
-
-        # Get the current font of the group box title
-        operational_domain_font = self.operational_domain_group.font()
-        # Increase the font size by an amount of your choice
-        operational_domain_font.setPointSize(operational_domain_font.pointSize() + 2)
-        # Apply the new font to the group box title
-        self.operational_domain_group.setFont(operational_domain_font)
-        operational_domain_layout = QVBoxLayout()  # Create a QVBoxLayout for this group
+        self.operational_domain_group = IconGroupBox('Operational Domain', icon_loader.load_chart_icon())
 
         # Algorithm drop-down
         algorithm_layout = QHBoxLayout()
@@ -168,7 +138,7 @@ class SettingsWidget(QWidget):
         self.algorithm_dropdown.addItems(['Grid Search', 'Random Sampling', 'Flood Fill', 'Contour Tracing'])
         algorithm_layout.addWidget(algorithm_label, 30)
         algorithm_layout.addWidget(self.algorithm_dropdown, 70)
-        operational_domain_layout.addLayout(algorithm_layout)  # Add to the group's QVBoxLayout
+        self.operational_domain_group.addLayout(algorithm_layout)  # Add to the group's QVBoxLayout
 
         # Random Samples spinbox
         random_samples_layout = QHBoxLayout()
@@ -179,7 +149,7 @@ class SettingsWidget(QWidget):
         self.random_samples_spinbox.setDisabled(True)  # Disable by default
         random_samples_layout.addWidget(random_samples_label, 30)
         random_samples_layout.addWidget(self.random_samples_spinbox, 70)
-        operational_domain_layout.addLayout(random_samples_layout)  # Add to the group's QVBoxLayout
+        self.operational_domain_group.addLayout(random_samples_layout)  # Add to the group's QVBoxLayout
 
         # Connect the currentTextChanged signal of the algorithm_dropdown to the new slot method
         self.algorithm_dropdown.currentTextChanged.connect(self.update_random_samples_spinbox)
@@ -239,13 +209,12 @@ class SettingsWidget(QWidget):
         # Set the layout for the 'Sweep Settings' sub-group
         self.operational_domain_sweep_group.setLayout(operational_domain_sweep_layout)
         # Add the sweep group to the main operational domain layout
-        operational_domain_layout.addWidget(self.operational_domain_sweep_group)
+        self.operational_domain_group.addWidget(self.operational_domain_sweep_group)
 
-        # Set the layout for the 'Operational Domain' group
-        self.operational_domain_group.setLayout(operational_domain_layout)
+        # # Set the layout for the 'Operational Domain' group
+        # self.operational_domain_group.setLayout(operational_domain_layout)
 
         # Add the group box to the settings layout
-        # self.settings_layout.addWidget(self.operational_domain_group)
         self.scroll_container_layout.addWidget(self.operational_domain_group)
 
         # Set the container widget to expand horizontally but not vertically
@@ -259,9 +228,6 @@ class SettingsWidget(QWidget):
         self.scroll_area.setWidget(self.scroll_widget)
 
         self.settings_layout.addWidget(self.scroll_area)
-
-        # Add stretch to push the RUN button to the bottom
-        # self.settings_layout.addStretch(1)
 
         # Add 'Run' button
         self.run_button = QPushButton('Run Simulation')

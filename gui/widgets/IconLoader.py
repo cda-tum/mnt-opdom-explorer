@@ -38,20 +38,32 @@ class IconLoader:
 
     def load_settings_icon(self, color: QColor = None) -> QIcon:
         """Loads the settings icon."""
-        return self.load_icon('fa5s.cog', color=color)
+        return self.load_icon('mdi6.cog', color=color)
 
     def load_play_icon(self, color: QColor = None) -> QIcon:
         """Loads the play icon."""
-        return self.load_icon('fa5s.play', color=color)
+        return self.load_icon('mdi6.play', color=color)
 
     def load_refresh_icon(self, color: QColor = None) -> QIcon:
         """Loads the refresh icon."""
-        return self.load_icon('fa5s.sync', color=color)
+        return self.load_icon('mdi6.refresh', color=color)
 
     def load_file_upload_icon(self, color: QColor = None) -> QIcon:
         """Loads the file upload icon."""
-        return self.load_icon('fa5s.file-upload', color=color)
+        return self.load_icon('mdi6.file-upload', color=color)
 
     def load_folder_open_icon(self, color: QColor = None) -> QIcon:
         """Loads the folder open icon."""
-        return self.load_icon('fa5s.folder-open', color=color)
+        return self.load_icon('mdi6.folder-open', color=color)
+
+    def load_atom_icon(self, color: QColor = None) -> QIcon:
+        """Loads the atom icon."""
+        return self.load_icon('mdi6.atom', color=color)
+
+    def load_function_icon(self, color: QColor = None) -> QIcon:
+        """Loads the function icon."""
+        return self.load_icon('mdi6.function', color=color)
+
+    def load_chart_icon(self, color: QColor = None) -> QIcon:
+        """Loads the chart icon."""
+        return self.load_icon('mdi6.chart-scatter-plot', color=color)

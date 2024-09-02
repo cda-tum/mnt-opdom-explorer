@@ -173,7 +173,7 @@ class PlotWidget(QWidget):
             y = round(event.ydata / y_step) * y_step
 
             # Print the rounded coordinates
-            print('x = {}, y = {}'.format(x, y))
+            print('x = {}, y = {}'.format(round(x, 3), round(y, 3)))
 
             # Remove the previous dot if it exists
             if self.previous_dot is not None:
