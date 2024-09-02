@@ -120,7 +120,7 @@ class MainWindow(QMainWindow):
         self.splitter.replaceWidget(index, self.plot)
 
         # Connect the 'Back' button's clicked signal to the go_back_to_settings method
-        self.plot.back_button.clicked.connect(self.go_back_to_settings)
+        self.plot.rerun_button.clicked.connect(self.go_back_to_settings)
 
     def go_back_to_settings(self):
         # Get the index of the PlotWidget in the QSplitter

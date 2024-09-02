@@ -1,8 +1,9 @@
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QLabel, QFrame, QGroupBox, QHBoxLayout, QComboBox, QDoubleSpinBox,
-                             QPushButton, QSpinBox, QApplication)
+                             QPushButton, QSpinBox, QApplication, QStyle)
 from PyQt6.QtCore import Qt
 
 from gui.widgets import RangeSelector
+from gui.widgets import IconLoader
 
 
 class SettingsWidget(QWidget):
@@ -11,13 +12,20 @@ class SettingsWidget(QWidget):
         self.initUI()
 
     def initUI(self):
-        # Right panel for settings wrapped in a widget for the splitter
-        settings_widget = QWidget()
-        self.settings_layout = QVBoxLayout(settings_widget)
+        # Assuming IconLoader is already defined as shown previously
+        icon_loader = IconLoader()
 
         # Right panel for settings wrapped in a widget for the splitter
         settings_widget = QWidget()
         self.settings_layout = QVBoxLayout(settings_widget)
+
+        # Create a horizontal layout to hold the icon and the text
+        title_layout = QHBoxLayout()
+
+        # Add gear icon using the IconLoader
+        icon_label = QLabel()
+        cog_icon = icon_loader.load_settings_icon()
+        icon_label.setPixmap(cog_icon.pixmap(24, 24))  # Set the icon size
 
         # Add title 'Settings'
         self.title_label = QLabel('Settings')
@@ -27,10 +35,20 @@ class SettingsWidget(QWidget):
         simulation_font.setPointSize(simulation_font.pointSize() + 2)  # Increase font size by 2 points
         self.title_label.setFont(simulation_font)  # Apply the new font
 
-        # Center the label
-        self.title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        # Add icon and text to the horizontal layout
+        title_layout.addWidget(icon_label)
+        title_layout.addWidget(self.title_label)
 
-        self.settings_layout.addWidget(self.title_label)
+        # Center the layout horizontally
+        title_layout.addStretch()
+        title_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        # Create a container widget to ensure the layout is centered
+        container = QWidget()
+        container.setLayout(title_layout)
+
+        # Add the container to the settings layout and center it
+        self.settings_layout.addWidget(container, alignment=Qt.AlignmentFlag.AlignCenter)
 
         # Add a horizontal line as a visual separator
         hline = QFrame()
@@ -227,9 +245,13 @@ class SettingsWidget(QWidget):
         # Add stretch to push the RUN button to the bottom
         self.settings_layout.addStretch(1)
 
-        # Add RUN button
-        self.run_button = QPushButton('RUN')
+        # Add 'Run' button
+        self.run_button = QPushButton('Run Simulation')
         self.settings_layout.addWidget(self.run_button)
+        # Get the play icon
+        play_icon = icon_loader.load_play_icon()
+        # Set the icon on the 'Run' button
+        self.run_button.setIcon(play_icon)
 
         # Layout for the whole widget
         layout = QVBoxLayout(self)

@@ -1,9 +1,11 @@
 from mnt import pyfiction
 from core import generate_plot
 
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QMessageBox
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QMessageBox, QStyle
 
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
+
+from gui.widgets import IconLoader
 
 
 class PlotWidget(QWidget):
@@ -87,11 +89,17 @@ class PlotWidget(QWidget):
             # Connect the 'button_press_event' to the 'on_click' function
             self.fig.canvas.mpl_connect('button_press_event', self.on_click)
 
-        # Add a 'Back' button
-        self.back_button = QPushButton('Run Another Simulation')
-        self.layout.addWidget(self.back_button)
+        icon_loader = IconLoader()
 
-        self.back_button.clicked.connect(self.settings_widget.enable_run_button)
+        # Add a 'Rerun' button
+        self.rerun_button = QPushButton('Run Another Simulation')
+        self.layout.addWidget(self.rerun_button)
+        # Get the refresh/reload icon
+        refresh_icon = icon_loader.load_refresh_icon()
+        # Set the icon on the 'Rerun' button
+        self.rerun_button.setIcon(refresh_icon)
+
+        self.rerun_button.clicked.connect(self.settings_widget.enable_run_button)
 
         self.setLayout(self.layout)
 
