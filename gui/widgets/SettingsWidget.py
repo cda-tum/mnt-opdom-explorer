@@ -211,9 +211,6 @@ class SettingsWidget(QWidget):
         # Add the sweep group to the main operational domain layout
         self.operational_domain_group.addWidget(self.operational_domain_sweep_group)
 
-        # # Set the layout for the 'Operational Domain' group
-        # self.operational_domain_group.setLayout(operational_domain_layout)
-
         # Add the group box to the settings layout
         self.scroll_container_layout.addWidget(self.operational_domain_group)
 
