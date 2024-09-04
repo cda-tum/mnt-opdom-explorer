@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QLabel, QFrame, QGroupBox, QHBoxLayout, QComboBox, QDoubleSpinBox,
-                             QPushButton, QSpinBox, QApplication, QScrollArea, QSizePolicy, QStackedLayout)
+                             QPushButton, QSpinBox, QApplication, QScrollArea, QSizePolicy)
 from PyQt6.QtCore import Qt
 
 from gui.widgets import RangeSelector
@@ -147,6 +147,7 @@ class SettingsWidget(QWidget):
         algorithm_label = QLabel('Algorithm')
         self.algorithm_dropdown = QComboBox()
         self.algorithm_dropdown.addItems(['Grid Search', 'Random Sampling', 'Flood Fill', 'Contour Tracing'])
+
         algorithm_layout.addWidget(algorithm_label, 30)
         algorithm_layout.addWidget(self.algorithm_dropdown, 70)
         self.operational_domain_group.addLayout(algorithm_layout)  # Add to the group's QVBoxLayout
@@ -211,6 +212,10 @@ class SettingsWidget(QWidget):
             lambda: self.update_range_selector(self.z_dimension_dropdown.currentText(),
                                                self.z_parameter_range_selector)
         )
+        # disable contour tracing if 3D sweeps are selected
+        self.z_dimension_dropdown.currentIndexChanged.connect(
+            lambda: self.update_algorithm_selector(self.z_dimension_dropdown.currentText())
+        )
         operational_domain_sweep_layout.addLayout(z_dimension_layout)  # Add to the sub-group's QVBoxLayout
 
         self.z_parameter_range_selector = RangeSelector('Z-Parameter Range', 0.0, 10.0, 0.1)
@@ -264,6 +269,25 @@ class SettingsWidget(QWidget):
         else:
             self.random_samples_spinbox.setValue(100)
             self.random_samples_spinbox.setSingleStep(10)
+
+    def update_algorithm_selector(self, selected_sweep_parameter):
+        # disable contour tracing if 3D sweeps are selected
+
+        # Access the internal model of the QComboBox
+        model = self.algorithm_dropdown.model()
+        # Retrieve 'Contour Tracing' from the model
+        contour_tracing = model.item(3)
+
+        if selected_sweep_parameter == 'NONE':
+            # Enable the 'Contour Tracing' option
+            contour_tracing.setFlags(contour_tracing.flags() | Qt.ItemFlag.ItemIsEnabled)
+        else:
+            # Disable the 'Contour Tracing' option
+            contour_tracing.setFlags(contour_tracing.flags() & ~Qt.ItemFlag.ItemIsEnabled)
+
+            # If 'Contour Tracing' is selected, switch to 'Grid Search'
+            if self.algorithm_dropdown.currentText() == 'Contour Tracing':
+                self.algorithm_dropdown.setCurrentIndex(0)
 
     def update_range_selector(self, selected_sweep_parameter, range_selector):
         if selected_sweep_parameter == 'µ_':
