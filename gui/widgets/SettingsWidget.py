@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QLabel, QFrame, QGroupBox, QHBoxLayout, QComboBox, QDoubleSpinBox,
-                             QPushButton, QSpinBox, QApplication, QScrollArea, QSizePolicy)
+                             QPushButton, QSpinBox, QApplication, QScrollArea, QSizePolicy, QStackedLayout)
 from PyQt6.QtCore import Qt
 
 from gui.widgets import RangeSelector
@@ -23,36 +23,46 @@ class SettingsWidget(QWidget):
         settings_widget = QWidget()
         self.settings_layout = QVBoxLayout(settings_widget)
 
-        # Create a horizontal layout to hold the icon and the text
-        title_layout = QHBoxLayout()
+        # Create the main horizontal layout that holds both the centered settings and the right-aligned logo
+        title_bar_layout = QHBoxLayout()
 
-        # Add gear icon using the IconLoader
-        icon_label = QLabel()
+        # Add the settings gear icon and the 'Settings' text in a separate layout, centered
+        centered_layout = QHBoxLayout()
+
+        # Add the settings gear icon
+        settings_icon_label = QLabel()
         cog_icon = icon_loader.load_settings_icon()
-        icon_label.setPixmap(cog_icon.pixmap(24, 24))  # Set the icon size
+        settings_icon_label.setPixmap(cog_icon.pixmap(24, 24))  # Set the icon size
 
-        # Add title 'Settings'
+        # Add the title 'Settings'
         self.title_label = QLabel('Settings')
 
         # Set font size to be slightly bigger
-        simulation_font = self.title_label.font()  # Get the current font
-        simulation_font.setPointSize(simulation_font.pointSize() + 2)  # Increase font size by 2 points
-        self.title_label.setFont(simulation_font)  # Apply the new font
+        settings_font = self.title_label.font()
+        settings_font.setPointSize(settings_font.pointSize() + 2)  # Increase font size by 2 points
+        settings_font.setBold(True)  # Make the font bold
+        self.title_label.setFont(settings_font)
 
-        # Add icon and text to the horizontal layout
-        title_layout.addWidget(icon_label)
-        title_layout.addWidget(self.title_label)
+        # Add the icon and text to the centered layout
+        centered_layout.addWidget(settings_icon_label)
+        centered_layout.addWidget(self.title_label)
 
-        # Center the layout horizontally
-        title_layout.addStretch()
-        title_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        # Add stretch to the title_bar_layout to center the text horizontally
+        title_bar_layout.addStretch()  # Push the content to the center
+        title_bar_layout.addLayout(centered_layout)
+        title_bar_layout.addStretch()  # Push the content to the center
 
-        # Create a container widget to ensure the layout is centered
+        # Load the MNT logo and position it at the far right
+        mnt_logo = icon_loader.load_mnt_logo()
+        mnt_logo.setFixedSize(120, 55)  # Set a fixed size for the logo
+
+        # Add the MNT logo to the same row, aligned to the right
+        title_bar_layout.addWidget(mnt_logo, alignment=Qt.AlignmentFlag.AlignRight)
+
+        # Create a container widget for the title bar and add it to the settings layout
         container = QWidget()
-        container.setLayout(title_layout)
-
-        # Add the container to the settings layout and center it
-        self.settings_layout.addWidget(container, alignment=Qt.AlignmentFlag.AlignCenter)
+        container.setLayout(title_bar_layout)
+        self.settings_layout.addWidget(container)
 
         # Add a horizontal line as a visual separator
         hline = QFrame()
@@ -60,6 +70,7 @@ class SettingsWidget(QWidget):
         hline.setFrameShadow(QFrame.Shadow.Sunken)
         self.settings_layout.addWidget(hline)
 
+        # Add some spacing below the line
         self.settings_layout.addSpacing(15)
 
         self.physical_simulation_group = IconGroupBox('Physical Simulation', icon_loader.load_atom_icon())

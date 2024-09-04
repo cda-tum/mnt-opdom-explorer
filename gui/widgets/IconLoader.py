@@ -1,5 +1,6 @@
 import qtawesome as qta
 from PyQt6.QtGui import QColor, QIcon
+from PyQt6.QtSvgWidgets import QSvgWidget
 from PyQt6.QtWidgets import QApplication
 
 
@@ -35,6 +36,22 @@ class IconLoader:
         """
         color = color if color else self.get_icon_color()
         return qta.icon(icon_name, color=color, **kwargs)
+
+    def load_mnt_logo(self) -> QSvgWidget:
+        """Loads the MNT logo from the resources folder."""
+        logo_path = f"resources/logos/mnt/nanotech-toolkit-{'dark' if self.is_dark_mode else 'light'}-mode.svg"
+
+        svg_widget = QSvgWidget(logo_path)
+
+        return svg_widget
+
+    def load_tum_logo(self) -> QSvgWidget:
+        """Loads the TUM logo from the resources folder."""
+        logo_path = f"resources/logos/tum/tum.svg"
+
+        svg_widget = QSvgWidget(logo_path)
+
+        return svg_widget
 
     def load_settings_icon(self, color: QColor = None) -> QIcon:
         """Loads the settings icon."""
