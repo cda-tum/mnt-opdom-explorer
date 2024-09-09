@@ -1,3 +1,5 @@
+import re
+
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QLabel, QFrame, QGroupBox, QHBoxLayout, QComboBox, QDoubleSpinBox,
                              QPushButton, QSpinBox, QApplication, QScrollArea, QSizePolicy)
 from PyQt6.QtCore import Qt
@@ -8,6 +10,14 @@ from gui.widgets.IconGroupBox import IconGroupBox
 
 
 class SettingsWidget(QWidget):
+
+    DISPLAY_TO_INTERNAL = {
+        'epsilon_r': 'epsilon_r',
+        'lambda_TF (nm)': 'lambda_TF',
+        'µ_ (eV)': 'µ_',
+        'NONE': 'NONE'
+    }
+
     def __init__(self):
         super().__init__()
         self.initUI()
@@ -335,19 +345,19 @@ class SettingsWidget(QWidget):
         return self.random_samples_spinbox.value()
 
     def get_x_dimension(self):
-        return self.x_dimension_dropdown.currentText()
+        return self.DISPLAY_TO_INTERNAL.get(self.x_dimension_dropdown.currentText())
 
     def get_x_parameter_range(self):
         return self.x_parameter_range_selector.get_range()
 
     def get_y_dimension(self):
-        return self.y_dimension_dropdown.currentText()
+        return self.DISPLAY_TO_INTERNAL.get(self.y_dimension_dropdown.currentText())
 
     def get_y_parameter_range(self):
         return self.y_parameter_range_selector.get_range()
 
     def get_z_dimension(self):
-        return self.z_dimension_dropdown.currentText()
+        return self.DISPLAY_TO_INTERNAL.get(self.z_dimension_dropdown.currentText())
 
     def get_z_parameter_range(self):
         return self.z_parameter_range_selector.get_range()

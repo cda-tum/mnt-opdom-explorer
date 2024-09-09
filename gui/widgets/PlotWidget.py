@@ -41,8 +41,8 @@ class PlotWidget(QWidget):
         # Map the sweep dimension string to the corresponding pyfiction sweep dimension
         self.sweep_dimension_map = {
             'epsilon_r': pyfiction.sweep_parameter.EPSILON_R,
-            'lambda_TF (nm)': pyfiction.sweep_parameter.LAMBDA_TF,
-            'µ_ (eV)': pyfiction.sweep_parameter.MU_MINUS
+            'lambda_TF': pyfiction.sweep_parameter.LAMBDA_TF,
+            'µ_': pyfiction.sweep_parameter.MU_MINUS
         }
 
         # Map the sweep dimension string to the corresponding operational domain file column identifier
