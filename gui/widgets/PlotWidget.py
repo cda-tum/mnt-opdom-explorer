@@ -1,10 +1,11 @@
-from PyQt6 import sip
 from mnt import pyfiction
-from plot import create_plot
+from core import generate_plot
 
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QMessageBox
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QMessageBox, QStyle
 
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
+
+from gui.widgets import IconLoader
 
 
 class PlotWidget(QWidget):
@@ -17,8 +18,8 @@ class PlotWidget(QWidget):
         self.previous_dot = None
 
         self.layout = QVBoxLayout(self)
-        self.plt = None
         self.fig = None
+        self.ax = None
         self.canvas = None
 
         # Map the Boolean function string to the corresponding pyfiction function
@@ -31,11 +32,24 @@ class PlotWidget(QWidget):
             'XNOR': [pyfiction.create_xnor_tt()]
         }
 
+        self.engine_map = {
+            'ExGS': pyfiction.sidb_simulation_engine.EXGS,
+            'QuickExact': pyfiction.sidb_simulation_engine.QUICKEXACT,
+            'QuickSim': pyfiction.sidb_simulation_engine.QUICKSIM
+        }
+
         # Map the sweep dimension string to the corresponding pyfiction sweep dimension
         self.sweep_dimension_map = {
             'epsilon_r': pyfiction.sweep_parameter.EPSILON_R,
             'lambda_TF': pyfiction.sweep_parameter.LAMBDA_TF,
             'µ_': pyfiction.sweep_parameter.MU_MINUS
+        }
+
+        # Map the sweep dimension string to the corresponding operational domain file column identifier
+        self.column_map = {
+            'epsilon_r': 'epsilon_r',
+            'lambda_TF': 'lambda_tf',
+            'µ_': 'mu_minus'
         }
 
         self.initUI()
@@ -51,18 +65,41 @@ class PlotWidget(QWidget):
 
         # TODO the plot causes a crash when the window is resized
 
+        self.three_dimensional_plot = self.settings_widget.get_z_dimension() != 'NONE'
+
         # Generate the plot
-        self.plt = create_plot()
-        self.fig = self.plt.gcf()
+        self.fig, self.ax = generate_plot(['op_dom.csv'],
+                                          x_param=self.column_map[self.settings_widget.get_x_dimension()],
+                                          y_param=self.column_map[self.settings_widget.get_y_dimension()],
+                                          z_param=self.column_map[
+                                              self.settings_widget.get_z_dimension()] if self.three_dimensional_plot else None,
+                                          xlog=False,
+                                          ylog=False,
+                                          x_range=tuple(self.settings_widget.get_x_parameter_range()[:2]),
+                                          y_range=tuple(self.settings_widget.get_y_parameter_range()[:2]),
+                                          z_range=tuple(self.settings_widget.get_z_parameter_range()[
+                                                        :2]) if self.three_dimensional_plot else None,
+                                          include_non_operational=not self.three_dimensional_plot,
+                                          show_legend=False)
+
         self.canvas = FigureCanvas(self.fig)
         self.layout.addWidget(self.canvas)
 
-        # Connect the 'button_press_event' to the 'on_click' function
-        self.fig.canvas.mpl_connect('button_press_event', self.on_click)
+        if not self.three_dimensional_plot:
+            # Connect the 'button_press_event' to the 'on_click' function
+            self.fig.canvas.mpl_connect('button_press_event', self.on_click)
 
-        # Add a 'Back' button
-        self.back_button = QPushButton('Run Another Simulation')
-        self.layout.addWidget(self.back_button)
+        icon_loader = IconLoader()
+
+        # Add a 'Rerun' button
+        self.rerun_button = QPushButton('Run Another Simulation')
+        self.layout.addWidget(self.rerun_button)
+        # Get the refresh/reload icon
+        refresh_icon = icon_loader.load_refresh_icon()
+        # Set the icon on the 'Rerun' button
+        self.rerun_button.setIcon(refresh_icon)
+
+        self.rerun_button.clicked.connect(self.settings_widget.enable_run_button)
 
         self.setLayout(self.layout)
 
@@ -73,9 +110,9 @@ class PlotWidget(QWidget):
         self.sim_params.mu_minus = self.settings_widget.get_mu_minus()
         self.sim_params.lambda_tf = self.settings_widget.get_lambda_tf()
 
-        # TODO set simulation engine
         op_dom_params = pyfiction.operational_domain_params()
         op_dom_params.simulation_parameters = self.sim_params
+        op_dom_params.sim_engine = self.engine_map[self.settings_widget.get_simulation_engine()]
 
         sweep_dimensions = []
 
@@ -136,7 +173,7 @@ class PlotWidget(QWidget):
             y = round(event.ydata / y_step) * y_step
 
             # Print the rounded coordinates
-            print('x = {}, y = {}'.format(x, y))
+            print('x = {}, y = {}'.format(round(x, 3), round(y, 3)))
 
             # Remove the previous dot if it exists
             if self.previous_dot is not None:
@@ -144,15 +181,12 @@ class PlotWidget(QWidget):
                 self.previous_dot = None
 
             # Highlight the clicked point
-            self.previous_dot = self.plt.scatter(x, y, s=4, color='yellow')
-
-            # Update the axes limits to include the new scatter plot
-            self.previous_dot.axes.autoscale_view()
+            self.previous_dot = event.inaxes.scatter(x, y, s=50, color='yellow', zorder=5)
 
             # Redraw the plot
             self.fig.canvas.draw()
 
-            # TODO replace simulation with cache access
+            # TODO replace simulation with cache access?
             # Perform simulation with the new coordinates
             self.simulate(x, y)
         else:
