@@ -1,7 +1,7 @@
 name: CI
 on:
   push:
-    branches:
+    # branches:
        # - main (just for the moment)
   pull_request:
   merge_group:
