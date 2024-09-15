@@ -1,3 +1,10 @@
+![OS](https://img.shields.io/badge/os-linux%20%7C%20macos%20%7C%20windows-blue?style=flat-square)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](https://opensource.org/licenses/MIT)
+[![CI](https://img.shields.io/github/actions/workflow/status/marcelwa/opdomain-explore/ci.yml?branch=main&style=flat-square&logo=github&label=ci)](https://github.com/marcelwa/opdomain-explore/actions/workflows/ci.yml)
+[![codecov](https://img.shields.io/codecov/c/github/marcelwa/opdomain-explore?style=flat-square&logo=codecov)](https://codecov.io/gh/marcelwa/opdomain-explore)
+[![Release](https://img.shields.io/github/v/release/marcelwa/opdomain-explore?label=opdomain-explore&style=flat-square)](https://github.com/marcelwa/aigverse/releases)
+[![IEEEXplore](https://img.shields.io/static/v1?label=ACM&message=OpDomain&color=informational&style=flat-square)](https://dl.acm.org/doi/10.1145/3611315.3633246)
+
 # Operational Domain Explorer
 
 <p align="center">
@@ -22,6 +29,19 @@ physical parameters. Given an SiDB layout *L* and a Boolean function *f : 𝔹�
 *f* is defined in the parameter space as the set of coordinate points for which *L* implements *f*. To determine whether
 *L* implements *f* at any given coordinate point *(x, y, z)*, this point can be sampled, i.e., by conducting *2ⁿ*
 physical simulations—one for each possible input pattern of *L*.
+
+## Reference
+
+Since the *Operational Domain Explorer* is an academic software, we would be thankful if you referred to it by citing the following publications:
+
+```bibtex
+@inproceedings{walter2023opdom,
+    title={{Reducing the Complexity of Operational Domain Computation in Silicon Dangling Bond Logic}},
+    author={Walter, Marcel and Drewniok, Jan and Ng, Samuel Sze Hang and Walus, Konrad and Wille, Robert},
+    booktitle={International Symposium on Nanoscale Architectures (NANOARCH)},
+}
+```
+
 
 ## Acknowledgements
 
