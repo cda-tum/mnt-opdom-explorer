@@ -1,5 +1,5 @@
 ![OS](https://img.shields.io/badge/os-linux%20%7C%20macos%20%7C%20windows-blue?style=flat-square)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](https://opensource.org/licenses/MIT)
+[![License](https://img.shields.io/github/license/marcelwa/aigverse?label=License&style=flat-square)](https://github.com/marcelwa/aigverse/blob/main/LICENSE)
 [![CI](https://img.shields.io/github/actions/workflow/status/marcelwa/opdomain-explore/ci.yml?branch=main&style=flat-square&logo=github&label=ci)](https://github.com/marcelwa/opdomain-explore/actions/workflows/ci.yml)
 [![codecov](https://img.shields.io/codecov/c/github/marcelwa/opdomain-explore?style=flat-square&logo=codecov)](https://codecov.io/gh/marcelwa/opdomain-explore)
 [![Release](https://img.shields.io/github/v/release/marcelwa/opdomain-explore?label=opdomain-explore&style=flat-square)](https://github.com/marcelwa/aigverse/releases)
