@@ -2,7 +2,7 @@ name: CI
 on:
   push:
     branches:
-      - main
+       # - main (just for the moment)
   pull_request:
   merge_group:
   workflow_dispatch:
