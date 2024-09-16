@@ -16,13 +16,17 @@ concurrency:
 jobs:
   change-detection:
     name: 🔍 Change
-    uses: cda-tum/mqt-workflows/.github/workflows/reusable-change-detection.yml@v1.3.2
+    call-workflow-in-another-repo:
+      repo: cda-tum/mqt-workflows
+      workflow: .github/workflows/reusable-change-detection.yml
 
   python-tests:
     name: 🐍 Test
     needs: change-detection
     if: fromJSON(needs.change-detection.outputs.run-python-tests)
-    uses: cda-tum/mqt-workflows/.github/workflows/reusable-python-ci.yml@1.3.2
+    call-workflow-in-another-repo:
+      repo: cda-tum/mqt-workflows
+      workflow: .github/workflows/reusable-python-ci.yml
 
   code-ql:
     name: 📝 CodeQL
