@@ -16,11 +16,11 @@ concurrency:
 jobs:
   change-detection:
   call-workflow-using-release:
+    uses: cda-tum/mqt-workflows/.github/workflows/call-workflow-using-release.yml@1.3
     name: Call workflow using release
     runs-on: ubuntu-latest
     steps:
       - name: 🔍 Change
-        uses: cda-tum/mqt-workflows/.github/workflows/call-workflow-using-release.yml@1.3
 
   python-tests:
     name: 🐍 Test
