@@ -33,6 +33,8 @@ jobs:
     needs: change-detection
     if: fromJSON(needs.change-detection.outputs.run-code-ql)
     uses: cda-tum/mqt-workflows/.github/workflows/reusable-code-ql-python.yml@v1.3
+    with:
+      security_events: none
 
   required-checks-pass: # This job does nothing and is only used for branch protection
     name: 🚦 Check
