@@ -20,7 +20,7 @@ concurrency:
 jobs:
   change-detection:
     name: 🔍 Change
-    uses: .github/workflows/reusable-change-detection.yml
+    uses: ./.github/workflows/reusable-change-detection.yml
 
   python-tests:
     name: 🐍 Test
