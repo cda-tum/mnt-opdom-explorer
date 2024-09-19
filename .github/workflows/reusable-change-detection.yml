@@ -1,13 +1,6 @@
-# The `change-detection` job determines which CI workflows to run based on the changes in a pull request or push.
-# The outputs of the `change-detection` job can then be used to conditionally run other jobs in the workflow.
-
 name: ❓ • Change Detection
 on:
   workflow_call:
-    permissions:
-      contents: read  # Allows access to repository contents for the change detection
-      pull-requests: write  # Grants write permissions to update pull requests if needed
-      actions: write  # Allows running GitHub Actions workflows
     outputs:
       run-cpp-tests:
         description: Whether to run the C++ tests
@@ -22,6 +15,9 @@ on:
         description: Whether to run CodeQL
         value: ${{ jobs.change-detection.outputs.run-code-ql || false }}
 
+permissions:
+  contents: read  # Explicitly setting read permissions for the repository
+
 jobs:
   change-detection:
     name: 🕵️ Check
@@ -34,11 +30,15 @@ jobs:
       run-code-ql: ${{ steps.code-ql-changes.outputs.run-code-ql || false }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}  # Ensure token is provided
+
       - name: Get a list of the changed files relevant for the C++ tests
         if: github.event_name == 'pull_request'
         id: changed-cpp-testable-files
         uses: Ana06/get-changed-files@v2.3.0
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}  # Pass the token to the action
           filter: |
             include/**
             !include/python/**
