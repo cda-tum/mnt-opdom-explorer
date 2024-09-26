@@ -41,10 +41,10 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python_version }}
-          cache: 'pip'  # Caches the pip dependencies for faster rebuilds
+          cache: 'pip'
 
       - if: runner.os == 'Linux'
-        name: Setup mold (Linux Only)
+        name: Setup mold
         uses: rui314/setup-mold@v1
 
       - name: Install Dependencies
