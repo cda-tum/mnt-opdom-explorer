@@ -14,39 +14,30 @@ jobs:
   build_and_test:
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        python-version: [3.8, 3.9, 3.10, 3.11]  # Test across multiple Python versions
-
-    name: Coverage on Python ${{ matrix.python-version }}
+    name: Coverage on Python 3.10
 
     steps:
-      # Checkout the code
-      - name: Clone Repository
+      - name: Checkout Code
         uses: actions/checkout@v4
 
-      # Set up Python environment
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python-version }}
-          cache: 'pip'  # Cache pip packages to speed up builds
+          python-version: '3.10.x'
+          cache: 'pip'
 
-      # Install dependencies (from pyproject.toml using PEP 517)
       - name: Install Dependencies
         run: |
           pip install --upgrade pip
           pip install .[test]  
 
-      # Run tests with coverage
       - name: Run Tests with Coverage
         run: |
-          coverage run -m unittest discover -s tests  # Adjust 'tests' folder if your tests are elsewhere
-          coverage report  # Show coverage report in the console
-          coverage xml -o coverage.xml  # Generate XML report for Codecov
+          coverage run -m unittest discover -s tests  
+          coverage report  
+          coverage xml -o coverage.xml  
 
-      # Upload coverage report to Codecov
-      - name: Upload to Codecov
+      - name: Upload Coverage Report
         uses: codecov/codecov-action@v4
         with:
           files: coverage.xml
