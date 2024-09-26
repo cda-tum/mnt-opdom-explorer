@@ -5,6 +5,7 @@
 [![codecov](https://img.shields.io/codecov/c/github/cda-tum/mnt-opdom-explorer?style=flat-square&logo=codecov)](https://codecov.io/gh/cda-tum/mnt-opdom-explorer)
 [![Release](https://img.shields.io/github/v/release/cda-tum/mnt-opdom-explorer?label=opdomain-explore&style=flat-square)](https://github.com/cda-tum/mnt-opdom-explorer/releases)
 [![IEEEXplore](https://img.shields.io/static/v1?label=ACM&message=OpDomain&color=informational&style=flat-square)](https://dl.acm.org/doi/10.1145/3611315.3633246)
+[![Python](https://img.shields.io/badge/Python-%20%203.8%20|%203.9%20|%203.10%20|%203.11-blue?logo=python&style=flat-square)](https://github.com/cda-tum/mnt-opdom-explorer/actions)
 
 # Operational Domain Explorer
 
