@@ -71,6 +71,13 @@ jobs:
           upload: false
           output: sarif-results
 
+      - name: Filter SARIF file to exclude library warnings
+        uses: advanced-security/filter-sarif@main
+        with:
+          patterns: |
+          input: sarif-results/${{ matrix.language }}.sarif
+          output: sarif-results/${{ matrix.language }}.sarif
+
       - name: Upload SARIF to GitHub
         uses: github/codeql-action/upload-sarif@v3
         with:
