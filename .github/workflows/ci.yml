@@ -1,4 +1,5 @@
 name: CI
+
 on:
   push:
     branches:
@@ -9,54 +10,49 @@ on:
   merge_group:
   workflow_dispatch:
 
-permissions:
-  id-token: write # important for test
-  security-events: write  # important for CodeQL
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
-  cancel-in-progress: true
-
 jobs:
-  change-detection:
-    name: 🔍 Change
-    uses: ./.github/workflows/reusable-change-detection.yml
+  test:
+    name: 🐍 Python CI on ${{ matrix.os }} with Python ${{ matrix.python_version }}
+    runs-on: ${{ matrix.os }}
 
-  python-tests:
-    name: 🐍 Test
-    needs: change-detection
-    permissions:
-      id-token: write # Explicitly allows the `id-token: write` permission for this job
-    if: fromJSON(needs.change-detection.outputs.run-python-tests)
-    uses: cda-tum/mqt-workflows/.github/workflows/reusable-python-ci.yml@v1.3
-    with:
-      skip-testing-latest-python: true
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python_version: [3.8, 3.9, 3.10, 3.11]
+        include:
+          - os: ubuntu-latest
+            python_version: 3.12
 
-  code-ql:
-    name: 📝 CodeQL
-    needs: change-detection
-    if: fromJSON(needs.change-detection.outputs.run-code-ql)
-    uses: cda-tum/mqt-workflows/.github/workflows/reusable-code-ql-python.yml@v1.3
-
-  required-checks-pass: # This job does nothing and is only used for branch protection
-    name: 🚦 Check
-    if: always()
-    needs:
-      - change-detection
-      - python-tests
-      - code-ql
-    runs-on: ubuntu-latest
     steps:
-      - name: Decide whether the needed jobs succeeded or failed
-        uses: re-actors/alls-green@release/v1
+      - name: Checkout Repository
+        uses: actions/checkout@v4
         with:
-          allowed-skips: >-
-            ${{
-              fromJSON(needs.change-detection.outputs.run-python-tests)
-              && '' || 'python-tests,'
-            }}
-            ${{
-              fromJSON(needs.change-detection.outputs.run-code-ql)
-              && '' || 'code-ql,'
-            }}
-          jobs: ${{ toJSON(needs) }}
+          submodules: recursive  # Clone with submodules
+
+      - name: Setup ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: '${{matrix.os}}-pyfiction'
+          variant: ccache
+          save: true
+          max-size: 10G
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python_version }}
+          cache: 'pip'  # Caches the pip dependencies for faster rebuilds
+
+      - if: runner.os == 'Linux'
+        name: Setup mold (Linux Only)
+        uses: rui314/setup-mold@v1
+
+      - name: Install Dependencies
+        working-directory: ${{ github.workspace }}
+        run: |
+          pip install --upgrade pip
+          pip install '.[test]'
+
+      - name: Run Unit Tests
+        working-directory: ${{ github.workspace }}
+        run: python -m unittest discover --verbose
