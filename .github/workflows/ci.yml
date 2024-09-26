@@ -33,11 +33,10 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libegl1 libxcb1 libx11-xcb1 libxrender1 libxext6 libxi6 libxcb-cursor0 libxcb-keysyms1
-
-      - name: Install Xvfb (Linux only)
-        if: runner.os == 'Linux'
-        run: sudo apt-get install -y xvfb
+          sudo apt-get install -y libegl1 libxcb1 libx11-xcb1 libxrender1 \
+          libxext6 libxi6 libxcb-cursor0 libxcb-keysyms1 libxcb-randr0 \
+          libxcb-xinerama0 libxcb-xfixes0 libxcb-shape0 libxcb-shm0 \
+          libgl1-mesa-glx libgl1-mesa-dri xvfb
 
       - name: Start Xvfb (Linux only)
         if: runner.os == 'Linux'
@@ -70,5 +69,6 @@ jobs:
 
       - name: Run Unit Tests
         env:
-          QT_QPA_PLATFORM: ${{ runner.os == 'Linux' && 'xcb' || '' }}  # Set only for Linux
+          DISPLAY: ":99"
+          QT_QPA_PLATFORM: offscreen
         run: python -m unittest discover --verbose
