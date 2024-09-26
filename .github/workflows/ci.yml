@@ -29,11 +29,18 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Install System Dependencies (Linux only)
-        if: runner.os == 'Linux'
+      - name: Install Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libegl1 libxcb-keysyms1 libx11-xcb1 libxcb-cursor0
+          sudo apt-get install -y libegl1 libxcb1 libx11-xcb1 libxrender1 libxext6 libxi6 libxcb-cursor0 libxcb-keysyms1
+
+      - name: Install Xvfb
+        run: sudo apt-get install -y xvfb
+
+      - name: Start Xvfb
+        run: |
+          Xvfb :99 -screen 0 1920x1080x24 &
+          export DISPLAY=:99
 
       - name: Setup ccache
         uses: hendrikmuhs/ccache-action@v1.2
@@ -53,10 +60,12 @@ jobs:
         if: runner.os == 'Linux'
         uses: rui314/setup-mold@v1
 
-      - name: Install Dependencies
+      - name: Install Python Dependencies
         run: |
           pip install --upgrade pip
           pip install '.[test]'
 
       - name: Run Unit Tests
+        env:
+          QT_QPA_PLATFORM: xcb
         run: python -m unittest discover --verbose
