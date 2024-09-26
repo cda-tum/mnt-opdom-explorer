@@ -14,7 +14,7 @@ authors = [
 ]
 keywords = ["MNT", "field-coupled nanocomputing", "GUI"]
 license = { file = "LICENSE" }
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 version = "0.1.0"
 
 dependencies = [
