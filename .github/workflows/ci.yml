@@ -29,6 +29,11 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libegl1
+
       - name: Setup ccache
         uses: hendrikmuhs/ccache-action@v1.2
         with:
