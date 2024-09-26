@@ -12,7 +12,7 @@ on:
 
 jobs:
   build_and_test:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
 
     name: Coverage on Python 3.10
 
