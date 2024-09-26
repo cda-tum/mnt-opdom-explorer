@@ -27,7 +27,7 @@ dependencies = [
 ]
 
 [project.urls]
-repository = "https://github.com/marcelwa/opdom-explore"
+repository = "https://github.com/cda-tum/opdom-explore"
 
 [tool.setuptools.packages.find]
 include = ["core", "gui", "widgets"]
