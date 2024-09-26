@@ -29,15 +29,18 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Install Dependencies
+      - name: Install Dependencies (Linux only)
+        if: runner.os == 'Linux'
         run: |
           sudo apt-get update
           sudo apt-get install -y libegl1 libxcb1 libx11-xcb1 libxrender1 libxext6 libxi6 libxcb-cursor0 libxcb-keysyms1
 
-      - name: Install Xvfb
+      - name: Install Xvfb (Linux only)
+        if: runner.os == 'Linux'
         run: sudo apt-get install -y xvfb
 
-      - name: Start Xvfb
+      - name: Start Xvfb (Linux only)
+        if: runner.os == 'Linux'
         run: |
           Xvfb :99 -screen 0 1920x1080x24 &
           export DISPLAY=:99
@@ -56,7 +59,7 @@ jobs:
           python-version: ${{ matrix.python_version }}
           cache: 'pip'
 
-      - name: Setup mold
+      - name: Setup mold (Linux only)
         if: runner.os == 'Linux'
         uses: rui314/setup-mold@v1
 
@@ -67,5 +70,5 @@ jobs:
 
       - name: Run Unit Tests
         env:
-          QT_QPA_PLATFORM: xcb
+          QT_QPA_PLATFORM: ${{ runner.os == 'Linux' && 'xcb' || '' }}  # Set only for Linux
         run: python -m unittest discover --verbose
