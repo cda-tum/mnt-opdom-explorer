@@ -19,7 +19,7 @@ version = "0.1.0"
 
 dependencies = [
     "PyQt6>=6.0",
-    "matplotlib==3.9.2",
+    "matplotlib==3.7.5",
     "mnt.pyfiction==0.6.3",
     "pandas==2.2.2",
     "PyQt6==6.7.1",
