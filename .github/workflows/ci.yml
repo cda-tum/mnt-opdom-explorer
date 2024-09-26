@@ -33,7 +33,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libegl1
+          sudo apt-get install -y libegl1 libxcb-keysyms1 libx11-xcb1 libxcb-cursor0
 
       - name: Setup ccache
         uses: hendrikmuhs/ccache-action@v1.2
