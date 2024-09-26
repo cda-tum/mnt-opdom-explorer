@@ -12,9 +12,6 @@ on:
 
 jobs:
   test:
-    name: 🐍 Python CI on ${{ matrix.os }} with Python ${{ matrix.python_version }}
-    runs-on: ${{ matrix.os }}
-
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
@@ -23,16 +20,19 @@ jobs:
           - os: ubuntu-latest
             python_version: 3.12
 
+    name: 🐍 Python CI on ${{ matrix.os }} with Python ${{ matrix.python_version }}
+    runs-on: ${{ matrix.os }}
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
-          submodules: recursive  # Clone with submodules
+          submodules: recursive
 
       - name: Setup ccache
         uses: hendrikmuhs/ccache-action@v1.2
         with:
-          key: '${{matrix.os}}-pyfiction'
+          key: '${{ matrix.os }}-pyfiction'
           variant: ccache
           save: true
           max-size: 10G
@@ -43,16 +43,14 @@ jobs:
           python-version: ${{ matrix.python_version }}
           cache: 'pip'
 
-      - if: runner.os == 'Linux'
-        name: Setup mold
+      - name: Setup mold
+        if: runner.os == 'Linux'
         uses: rui314/setup-mold@v1
 
       - name: Install Dependencies
-        working-directory: ${{ github.workspace }}
         run: |
           pip install --upgrade pip
           pip install '.[test]'
 
       - name: Run Unit Tests
-        working-directory: ${{ github.workspace }}
         run: python -m unittest discover --verbose
