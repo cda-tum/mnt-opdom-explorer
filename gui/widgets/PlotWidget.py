@@ -1,27 +1,32 @@
-from mnt import pyfiction
-from core import generate_plot
 import os
-
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QMessageBox, QStyle
-
+from core import generate_plot
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.patches import Rectangle
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QMessageBox
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
+from PyQt6.QtGui import QPixmap
 
 from gui.widgets import IconLoader
+from mnt import pyfiction
 
 
 class PlotWidget(QWidget):
-    def __init__(self, settings_widget, lyt, lyt_ansi_text_edit, input_iterator):
+    def __init__(self, settings_widget, lyt, input_iterator, max_pos_initial, min_pos_initial, qlabel, slider_value = None):
         super().__init__()
         self.settings_widget = settings_widget
-        self.lyt_ansi_text_edit = lyt_ansi_text_edit
         self.lyt = lyt
         self.input_iterator = input_iterator
         self.previous_dot = None
+        self.slider_value = slider_value
 
         self.layout = QVBoxLayout(self)
         self.fig = None
         self.ax = None
         self.canvas = None
+        self.max_pos = max_pos_initial
+        self.min_pos = min_pos_initial
+        self.plot_label = qlabel
 
         # Map the Boolean function string to the corresponding pyfiction function
         self.boolean_function_map = {
@@ -55,6 +60,9 @@ class PlotWidget(QWidget):
 
         self.initUI()
 
+    def update_slider_value(self, value):
+         self.slider_value = value
+
     def initUI(self):
         op_dom = self.operational_domain_computation()
 
@@ -81,7 +89,7 @@ class PlotWidget(QWidget):
                                           z_range=tuple(self.settings_widget.get_z_parameter_range()[
                                                         :2]) if self.three_dimensional_plot else None,
                                           include_non_operational=not self.three_dimensional_plot,
-                                          show_legend=False)
+                                          show_legend=True)
 
         # Delete the CSV file after it's used
         csv_file_path = 'op_dom.csv'
@@ -108,6 +116,117 @@ class PlotWidget(QWidget):
         self.rerun_button.clicked.connect(self.settings_widget.enable_run_button)
 
         self.setLayout(self.layout)
+
+    def set_pixmap(self, pixmap):
+        self.pixmap = pixmap
+
+    def plot_layout(self, lyt, charge_lyt=None, operation_status=None):
+        # Get all cells from the layout
+        all_cells = lyt.cells()
+
+        markersize = 10
+        markersize_grid = 2
+        edge_width = 1.5
+        # Custom color for NEGATIVE charge
+
+        # Define colors based on the style you want
+        neutral_dot_color = '#6e7175'  # Gray for grid dots
+        highlight_border_color = '#e6e6e6'  # Light border for the circles
+        highlight_fill_color = '#d0d0d0'  # Light gray fill color for the SiDB circles
+
+        negative_color = '#00ADAE'  # Teal for negative charge
+        positive_color = '#E34857'  # Red for positive charge
+
+        # Define step size for grid and transparency for grid points
+        step_size = 1
+        alpha = 0.5  # Transparency for the grid points
+
+        # Create figure with a gray background and increase size and dpi
+        fig, ax = plt.subplots(figsize=(12, 12), dpi=500)  # Increased figure size
+
+        # Set the face color for both the figure and the axis
+        fig.patch.set_facecolor('#2d333b')  # Dark gray background for the figure
+        ax.set_facecolor('#2d333b')  # Dark gray background for the axis
+
+        # Turn off the axis
+        ax.axis('off')  # Remove the axis
+
+        # Iterate through the grid defined by min_pos and max_pos
+        for x in np.arange(self.min_pos.x, self.max_pos.x + 5, step_size):  # Loop through x coordinates
+            for y in np.arange(self.min_pos.y, self.max_pos.y + 6, step_size):  # Loop through y coordinates
+                # Get the SiDB position at the current grid point (x, y)
+                nm_pos = pyfiction.sidb_nm_position(self.lyt, pyfiction.offset_coordinate(x, y))
+                # Plot the position as a neutral gray dot
+                ax.plot(nm_pos[0], -nm_pos[1], 'o', color=neutral_dot_color, markersize=markersize_grid, markeredgewidth=0,
+                        alpha=alpha)
+
+        # Plot SiDB cells based on their charge state or default style
+        for cell in all_cells:
+            cell_original = pyfiction.offset_coordinate(cell)
+            cell.x += 2
+            cell.y += 2
+            nm_pos = pyfiction.sidb_nm_position(self.lyt, cell)
+
+            if charge_lyt is not None:
+                # Color SiDBs based on their charge state
+                charge_state = charge_lyt.get_charge_state(cell_original)
+                if charge_state == pyfiction.sidb_charge_state.NEGATIVE:
+                    ax.plot(nm_pos[0], -nm_pos[1], marker='o', color=negative_color, markersize=markersize,
+                            markeredgewidth=edge_width)
+                elif charge_state == pyfiction.sidb_charge_state.POSITIVE:
+                    ax.plot(nm_pos[0], -nm_pos[1], marker='o', color=positive_color, markersize=markersize,
+                            markeredgewidth=edge_width)
+                elif charge_state == pyfiction.sidb_charge_state.NEUTRAL:
+                    ax.plot(nm_pos[0], -nm_pos[1], marker='o', color=highlight_border_color, markerfacecolor="None",
+                            markersize=markersize, markeredgewidth=edge_width)
+            else:
+                # If charge layout is None, use default style
+                ax.plot(nm_pos[0], -nm_pos[1], marker='o', markerfacecolor=highlight_fill_color,
+                        markeredgecolor=highlight_border_color, markersize=markersize, markeredgewidth=edge_width)
+
+        if operation_status is not None:
+            output_cells = pyfiction.detect_bdl_pairs(lyt, pyfiction.sidb_technology.cell_type.OUTPUT)
+
+            for cell in output_cells:
+                cell.lower.x += 2
+                cell.lower.y += 2
+                cell.upper.x += 2
+                cell.upper.y += 2
+
+                # Get the bounding box for the output cell
+                nm_pos_upper = pyfiction.sidb_nm_position(lyt, cell.upper)
+                nm_pos_lower = pyfiction.sidb_nm_position(lyt, cell.lower)
+                box_x = nm_pos_upper[0]  # Adjust as needed for your cell's properties
+                box_y = nm_pos_upper[1]  # Adjust as needed for your cell's properties
+                width = abs(nm_pos_upper[0] - nm_pos_lower[0]) + 1  # Width of the cell
+                height = abs(nm_pos_lower[1] - nm_pos_upper[1]) + 1  # Height of the cell
+
+                box_x = box_x - 0.5
+                box_y = box_y - 0.5
+
+                # Set the color of the box based on operational status
+                box_color = 'green' if operation_status == pyfiction.operational_status.OPERATIONAL else 'red'
+
+                # Create and add a rectangle around the output cell
+                rect = Rectangle((box_x, -box_y), width, -height, linewidth=1.5, edgecolor=box_color, facecolor='none')
+                ax.add_patch(rect)
+
+                # Add a green check mark or red "X" above the rectangle
+                if operation_status == pyfiction.operational_status.OPERATIONAL:
+                    # Green check mark
+                    ax.text(box_x + 1.5*width, -box_y - height/2, u'\u2713', color='green', fontsize=45, fontweight='bold',
+                            horizontalalignment='center', verticalalignment='center')
+                else:
+                    # Red "X"
+                    ax.text(box_x + 1.5*width,  -box_y - height/2, 'X', color='red', fontsize=30, fontweight='bold',
+                            horizontalalignment='center', verticalalignment='center')
+
+        # Save the plot to a temporary file
+        plot_image_path = 'temp_plot.svg'  # Path where the plot will be saved
+        plt.savefig(plot_image_path, bbox_inches='tight', dpi=500)  # Higher dpi for resolution
+        plt.close()  # Close the plot to free memory
+
+        return plot_image_path
 
     def operational_domain_computation(self):
         self.sim_params = pyfiction.sidb_simulation_parameters()
@@ -153,7 +272,7 @@ class PlotWidget(QWidget):
                                                             op_dom_params)
         elif algo == 'Random Sampling':
             return pyfiction.operational_domain_random_sampling(self.lyt,
-                                                                gate_func,
+                                                               gate_func,
                                                                 self.settings_widget.get_random_samples(),
                                                                 op_dom_params)
         elif algo == 'Flood Fill':
@@ -181,13 +300,22 @@ class PlotWidget(QWidget):
             # Print the rounded coordinates
             print('x = {}, y = {}'.format(round(x, 3), round(y, 3)))
 
-            # Remove the previous dot if it exists
+            # Remove the previous dot and text if they exist
             if self.previous_dot is not None:
                 self.previous_dot.remove()
+                self.previous_text.remove()  # Remove previous text
                 self.previous_dot = None
+                self.previous_text = None
 
             # Highlight the clicked point
             self.previous_dot = event.inaxes.scatter(x, y, s=50, color='yellow', zorder=5)
+
+            # Add the coordinates as text next to the yellow dot with a white box
+            self.previous_text = event.inaxes.text(
+                x + 0.1, y + 0.1, f'({x:.2f}, {y:.2f})',
+                fontsize=10, color='black',
+                bbox=dict(facecolor='white', alpha=0.8, edgecolor='none', boxstyle='round,pad=0.3')
+            )
 
             # Redraw the plot
             self.fig.canvas.draw()
@@ -198,7 +326,12 @@ class PlotWidget(QWidget):
         else:
             print('Clicked outside axes bounds but inside plot window')
 
+    def get_slider_value(self):
+        return self.slider_value
+
     def simulate(self, x, y):
+        gate_func = self.boolean_function_map[self.settings_widget.get_boolean_function()]
+
         qe_sim_params = self.sim_params
 
         # Get the selected x and y dimensions
@@ -226,10 +359,25 @@ class PlotWidget(QWidget):
 
         sim_result = pyfiction.quickexact(self.input_iterator.get_layout(), qe_params)
 
+        gs = pyfiction.determine_groundstate_from_simulation_results(sim_result)[0]
+
         if not sim_result.charge_distributions:
             QMessageBox.warning(self, "No Ground State",
                                 f"The ground state could not be detected for ({round(x, 3)},{round(y, 3)}).")
             return
 
-        # Update the layout representation
-        self.lyt_ansi_text_edit.setAnsiText(sim_result.charge_distributions[0].__repr__().strip())
+        is_op_params = pyfiction.is_operational_params()
+        is_op_params.simulation_parameters = qe_sim_params
+        operational_patterns = pyfiction.operational_input_patterns(self.lyt, gate_func, is_op_params)
+
+        pattern = self.get_slider_value()
+
+        status = pyfiction.operational_status.NON_OPERATIONAL
+        if pattern in operational_patterns:
+            if pattern == self.input_iterator:
+                status = pyfiction.operational_status.OPERATIONAL
+
+        # Plot the new layout and charge distribution, then update the QLabel
+        plot_image_path = self.plot_layout(self.input_iterator.get_layout(), gs, status)
+        self.pixmap = QPixmap(plot_image_path)
+        self.plot_label.setPixmap(self.pixmap)
