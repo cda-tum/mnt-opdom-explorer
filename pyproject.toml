@@ -23,7 +23,8 @@ dependencies = [
     "mnt.pyfiction==0.6.3",
     "pandas==2.2.2",
     "PyQt6==6.7.1",
-    "qtawesome==1.3.1"
+    "qtawesome==1.3.1",
+    "scikit-learn==1.5.2",
 ]
 
 [project.optional-dependencies]
