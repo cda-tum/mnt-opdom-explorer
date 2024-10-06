@@ -1,15 +1,12 @@
 from pathlib import Path
-
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (QMainWindow, QSplitter, QStackedWidget, QSlider, QWidget,
-                             QVBoxLayout, QLabel)
+                             QVBoxLayout, QLabel, QSizePolicy, QFrame)
 
-from mnt import pyfiction
+from PyQt6.QtGui import QPixmap  # Importing QPixmap for displaying images
 
-from gui.widgets import DragDropWidget
-from gui.widgets import SettingsWidget
-from gui.widgets import PlotWidget
-from gui.widgets import AnsiTextEdit
+from gui.widgets import DragDropWidget, SettingsWidget, PlotWidget
+from mnt.pyfiction import *
 
 
 class MainWindow(QMainWindow):
@@ -38,24 +35,26 @@ class MainWindow(QMainWindow):
             super().keyPressEvent(event)  # Call the parent class method to ensure default behavior
 
     def file_parsed(self, file_path):
-        # Parse the layout file
-        self.lyt = pyfiction.read_sqd_layout_100(file_path, Path(file_path).stem)
-        # Initialize a BDL input iterator
-        self.bdl_input_iterator = pyfiction.bdl_input_iterator_100(self.lyt)
+        # Parse the layout file and initialize the BDL input iterator
+        self.lyt = read_sqd_layout_100(file_path, Path(file_path).stem)
+        self.min_pos, self.max_pos = self.lyt.bounding_box_2d()
+        self.bdl_input_iterator = bdl_input_iterator_100(self.lyt)
 
-        # Create a QVBoxLayout
+        # Create layout for display
         box_layout_view = QVBoxLayout()
 
-        # Create the content display
-        self.sidb_layout_display = AnsiTextEdit()
-        box_layout_view.addWidget(self.sidb_layout_display)
+        # Add QLabel for the plot
+        self.plot_label = QLabel(self)
+        self.plot_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.plot_label.setScaledContents(True)
+        box_layout_view.addWidget(self.plot_label)
 
-        # Load the file content into the QTextEdit
-        self.sidb_layout_display.setAnsiText(self.lyt.__repr__().strip())
-
-        self.slider = QSlider(Qt.Orientation.Horizontal, self)
-        self.slider.setMinimum(0)
-        self.slider.setMaximum(2 ** self.bdl_input_iterator.num_input_pairs() - 1)
+        # Create and configure QSlider
+        self.slider = QSlider(Qt.Horizontal, self)
+        self.slider.setRange(0, 2 ** self.bdl_input_iterator.num_input_pairs() - 1)
+        self.slider.setTickInterval(1)
+        self.slider.setTickPosition(QSlider.TicksBelow)
+        self.slider.setValue(0)  # Set the initial slider value to 0
         box_layout_view.addWidget(self.slider)
 
         self.previous_slider_value = 0
@@ -63,53 +62,94 @@ class MainWindow(QMainWindow):
         self.slider_label = QLabel('Input Combination', self)
         box_layout_view.addWidget(self.slider_label)
 
-        # Connect the valueChanged signal of the slider to the update_slider_label method
+        # Connect the slider value change signal to the label update method
         self.slider.valueChanged.connect(self.update_slider_label)
 
-        # Create a QWidget to hold the layout
+        # Add a horizontal line as a visual separator
+        hline = QFrame()
+        hline.setFrameShape(QFrame.HLine)
+        hline.setFrameShadow(QFrame.Sunken)
+        box_layout_view.addWidget(hline)
+
+        # Create QLabel for links with icons
+        email_icon_path = "resources/logos/icons/email.png"
+        issue_icon_path = "resources/logos/icons/issue.png"
+        self.link_label = QLabel(self)
+        self.link_label.setText(f'''
+            <style>
+                a {{ text-decoration: none; color: #616161; font-weight: bold; padding: 5px; }}
+                a:hover {{ text-decoration: underline; color: #616161; }}
+            </style>
+            <a href="mailto:marcel.walter@tum.de?cc=jan.drewniok@tum.de">
+                <img src="{email_icon_path}" width="20" height="20" style="vertical-align: middle;" /> Email Support
+            </a> |
+            <a href="https://github.com/cda-tum/mnt-opdom-explorer/issues">
+                <img src="{issue_icon_path}" width="20" height="20" style="vertical-align: middle;" /> Report an Issue
+            </a>
+        ''')
+        self.link_label.setOpenExternalLinks(True)
+        box_layout_view.addWidget(self.link_label)
+
+        # Create a QWidget and QSplitter
         widget = QWidget()
         widget.setLayout(box_layout_view)
-
-        # Create a QSplitter
-        splitter = QSplitter(Qt.Orientation.Horizontal)
+        splitter = QSplitter(Qt.Horizontal)
         splitter.addWidget(widget)
 
-        # Create the content and settings view
+        # Create the settings view and connect signals
         self.settings = SettingsWidget()
-
-        # Connect the RUN button's clicked signal to the disable_run_button method to prevent multiple clicks
         self.settings.run_button.clicked.connect(self.settings.disable_run_button)
-        # Connect the RUN button's clicked signal to the show_plot method
         self.settings.run_button.clicked.connect(self.plot_operational_domain)
-
         splitter.addWidget(self.settings)
 
-        # Add the splitter to the stacked widget
+        # Add the splitter to the stacked widget and switch view
         self.stacked_widget.addWidget(splitter)
-
-        # Switch to the splitter
         self.stacked_widget.setCurrentWidget(splitter)
 
-        self.resize(1800, 800)
+        # Set up the plot and load the image into the QLabel
+        self.plot = PlotWidget(self.settings, self.lyt, self.bdl_input_iterator, self.max_pos, self.min_pos,
+                               self.plot_label, self.slider.value())
+        plot_image_path = self.plot.plot_layout(self.lyt)
+        pixmap = QPixmap(plot_image_path)
+
+        self.plot_label.setPixmap(pixmap)
+        self.plot.set_pixmap(pixmap)
+        self.plot_label.setFixedSize(pixmap.size())  # Set fixed size based on original pixmap size
+        # Manually trigger the update to ensure the initial value is set correctly
+        self.update_slider_label(self.slider.value())
 
     def update_slider_label(self, value):
+        self.plot.update_slider_value(value)
+        # Assume self.bdl_input_iterator is already defined in your class
         value_diff = value - self.previous_slider_value
-        if value_diff != 0:
+        if value_diff != 0 or ((value & self.previous_slider_value) == 0):
             self.bdl_input_iterator += value_diff
 
-            # convert value to a binary string
+            # Convert value to a binary string
             bin_value = bin(value)[2:].zfill(self.bdl_input_iterator.num_input_pairs())
 
             self.previous_slider_value = value
 
-            # update text layout representation
-            self.sidb_layout_display.setAnsiText(self.bdl_input_iterator.get_layout().__repr__().strip())
+            # Get the layout from the new input
+            new_layout = self.bdl_input_iterator.get_layout()  # Assuming this method exists
 
+            # Plot the new layout and update the QLabel
+            plot_image_path = self.plot.plot_layout(new_layout)  # Use your plotting function here
+            self.pixmap = QPixmap(plot_image_path)
+            desired_width = 800  # Example width in pixels
+            desired_height = 800  # Example height in pixels
+            self.pixmap = self.pixmap.scaled(desired_width, desired_height, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            self.plot_label.setPixmap(self.pixmap)
+
+            # Update the QLabel with the new pixmap
+            self.plot_label.setPixmap(self.pixmap)
+
+            # Update the slider label text
             self.slider_label.setText(f'Input Combination: {bin_value}')
 
     def plot_operational_domain(self):
         # Create the plot view
-        self.plot = PlotWidget(self.settings, self.lyt, self.sidb_layout_display, self.bdl_input_iterator)
+        self.plot = PlotWidget(self.settings, self.lyt, self.bdl_input_iterator, self.max_pos, self.min_pos, self.plot_label, self.slider.value())
 
         # Store the QSplitter widget in a class variable
         self.splitter = self.stacked_widget.currentWidget()

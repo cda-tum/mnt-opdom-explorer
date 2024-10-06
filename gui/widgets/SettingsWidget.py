@@ -21,10 +21,12 @@ class SettingsWidget(QWidget):
 
         # Right panel for settings wrapped in a widget for the splitter
         settings_widget = QWidget()
-        self.settings_layout = QVBoxLayout(settings_widget)
+        self.settings_layout = QVBoxLayout()  # Create a new QVBoxLayout
 
-        # Create the main horizontal layout that holds both the centered settings and the right-aligned logo
-        title_bar_layout = QHBoxLayout()
+
+        # Create a dedicated widget for the title bar layout
+        title_bar_widget = QWidget()
+        title_bar_layout = QHBoxLayout(title_bar_widget)  # Set layout directly on the widget
 
         # Add the settings gear icon and the 'Settings' text in a separate layout, centered
         centered_layout = QHBoxLayout()
@@ -49,15 +51,37 @@ class SettingsWidget(QWidget):
 
         # Add stretch to the title_bar_layout to center the text horizontally
         title_bar_layout.addStretch()  # Push the content to the center
-        title_bar_layout.addLayout(centered_layout)
-        title_bar_layout.addStretch()  # Push the content to the center
+        title_bar_layout.addLayout(centered_layout)  # Add centered settings
+        title_bar_layout.addStretch()  # This stretches to fill space on the left
 
         # Load the MNT logo and position it at the far right
         mnt_logo = icon_loader.load_mnt_logo()
         mnt_logo.setFixedSize(120, 55)  # Set a fixed size for the logo
 
-        # Add the MNT logo to the same row, aligned to the right
-        title_bar_layout.addWidget(mnt_logo, alignment=Qt.AlignmentFlag.AlignRight)
+        # Load the TUM logo and set a fixed size for it
+        tum_logo = icon_loader.load_tum_logo()
+        tum_logo.setFixedSize(160, 55)  # Set fixed size for TUM logo
+
+        # Create a layout for the logos
+        logo_layout = QHBoxLayout()
+        logo_layout.addWidget(tum_logo)  # Add the TUM logo
+        logo_layout.addWidget(mnt_logo)  # Add the MNT logo
+
+        # Optionally add spacing between the logos
+        logo_layout.addSpacing(10)  # Add some space between the two logos
+
+        # Align the logo layout to the right
+        title_bar_layout.addLayout(logo_layout)  # Add the logo layout to the right
+        # No need to add another stretch here
+
+        # Set the layout on the title bar widget
+        title_bar_widget.setLayout(title_bar_layout)
+
+        # Add the title bar widget to the settings layout
+        self.settings_layout.addWidget(title_bar_widget)
+
+        # Set the main layout for settings_widget only once
+        settings_widget.setLayout(self.settings_layout)
 
         # Create a container widget for the title bar and add it to the settings layout
         container = QWidget()

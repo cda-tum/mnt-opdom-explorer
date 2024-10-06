@@ -181,11 +181,6 @@ def generate_plot(csv_files, x_param, y_param, z_param=None, title="Operational 
                       log_scale=(xlog, ylog))
 
     if show_legend:
-        ax.legend()
-
-    # Display the plot
-    # plt.show()
-    # Save the figure
-    # fig.savefig(f"{title.replace(' ', '_')}.png", dpi=300)
+        ax.legend(loc='upper left')  # Moves legend to the upper-left, outside of the plot
 
     return fig, ax
