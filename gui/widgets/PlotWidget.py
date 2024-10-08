@@ -59,7 +59,6 @@ class PlotWidget(QWidget):
             'µ_': 'mu_minus'
         }
 
-        self.initUI()
 
     def update_slider_value(self, value):
          self.slider_value = value
@@ -90,7 +89,7 @@ class PlotWidget(QWidget):
                                           z_range=tuple(self.settings_widget.get_z_parameter_range()[
                                                         :2]) if self.three_dimensional_plot else None,
                                           include_non_operational=not self.three_dimensional_plot,
-                                          show_legend=True)
+                                          show_legend=True, layout = self.lyt)
 
         # Delete the CSV file after it's used
         csv_file_path = 'op_dom.csv'

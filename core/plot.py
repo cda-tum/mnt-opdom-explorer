@@ -1,6 +1,8 @@
 import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
+from mnt import pyfiction
+import numpy as np
+
 
 # Define colors
 GRAY = (0.75, 0.75, 0.75)
@@ -103,7 +105,7 @@ def plot_data(ax, x_data, y_data, z_data=None, log_scale=(False, False), label=N
 
 def generate_plot(csv_files, x_param, y_param, z_param=None, title="Operational Domain", xlog=False, ylog=False,
                   include_non_operational=True, show_legend=True, x_range=(0.5, 10.5), y_range=(0.5, 10.5),
-                  z_range=(-0.55, -0.05)):
+                  z_range=(-0.55, -0.05), layout = None):
     """
     Generate a 2D or 3D scatter plot from operational domain data.
 

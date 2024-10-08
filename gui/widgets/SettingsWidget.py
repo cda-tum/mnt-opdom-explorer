@@ -5,11 +5,13 @@ from PyQt6.QtCore import Qt
 from gui.widgets import RangeSelector
 from gui.widgets import IconLoader
 from gui.widgets.IconGroupBox import IconGroupBox
+import os
 
 
 class SettingsWidget(QWidget):
-    def __init__(self):
+    def __init__(self, file_path):  # Add file_path as a parameter
         super().__init__()
+        self.file_path = file_path  # Store the file_path as an instance variable
         self.initUI()
 
     def initUI(self):
@@ -22,7 +24,6 @@ class SettingsWidget(QWidget):
         # Right panel for settings wrapped in a widget for the splitter
         settings_widget = QWidget()
         self.settings_layout = QVBoxLayout()  # Create a new QVBoxLayout
-
 
         # Create a dedicated widget for the title bar layout
         title_bar_widget = QWidget()
@@ -50,9 +51,9 @@ class SettingsWidget(QWidget):
         centered_layout.addWidget(self.title_label)
 
         # Add stretch to the title_bar_layout to center the text horizontally
-        title_bar_layout.addStretch()  # Push the content to the center
+        title_bar_layout.addStretch(8)  # Push the content to the center
         title_bar_layout.addLayout(centered_layout)  # Add centered settings
-        title_bar_layout.addStretch()  # This stretches to fill space on the left
+        title_bar_layout.addStretch(2)  # This stretches to fill space on the left
 
         # Load the MNT logo and position it at the far right
         mnt_logo = icon_loader.load_mnt_logo()
@@ -151,14 +152,26 @@ class SettingsWidget(QWidget):
         # Gate Function settings
         self.gate_function_group = IconGroupBox('Gate Function', icon_loader.load_function_icon())
 
+        # Get the extracted Boolean function name
+        extracted_function_name = self.extract_boolean_function_from_file_name()
+
         # Boolean Function drop-down
         boolean_function_layout = QHBoxLayout()
         boolean_function_label = QLabel('Boolean Function')
         self.boolean_function_dropdown = QComboBox()
         self.boolean_function_dropdown.addItems(['AND', 'OR', 'NAND', 'NOR', 'XOR', 'XNOR'])
+
+        # Set the default value based on the extracted name
+        if extracted_function_name:
+            index = self.boolean_function_dropdown.findText(
+                extracted_function_name)  # Get the index of the extracted function
+            self.boolean_function_dropdown.setCurrentIndex(index)  # Set the extracted function as default
+        else:
+            self.boolean_function_dropdown.setCurrentIndex(0)  # Set 'AND' as default if extraction fails
+
         boolean_function_layout.addWidget(boolean_function_label, 30)
         boolean_function_layout.addWidget(self.boolean_function_dropdown, 70)
-        self.gate_function_group.addLayout(boolean_function_layout)  # Add to the group's QVBoxLayout
+        self.gate_function_group.addLayout(boolean_function_layout)
 
         # Add the group box to the settings layout
         self.scroll_container_layout.addWidget(self.gate_function_group)
@@ -278,6 +291,26 @@ class SettingsWidget(QWidget):
         layout = QVBoxLayout(self)
         layout.addWidget(settings_widget)
         self.setLayout(layout)
+
+    def extract_boolean_function_from_file_name(self):
+        """Extracts the Boolean function name from the file name."""
+        # Get the file name without the extension
+        base_name = os.path.basename(self.file_path).split('.')[0]
+        # Define recognized gate names
+        recognized_gates = ['AND', 'OR', 'NAND', 'NOR', 'XOR', 'XNOR']
+
+        # Split the base name by '_'
+        parts = base_name.split('_')
+
+        # Check each part for a recognized gate name
+        for part in parts:
+            # Convert to uppercase and check if it's a recognized gate
+            gate_name = part.upper()
+            if gate_name in recognized_gates:
+                #print(f"Extracted function: {gate_name}")  # For debugging
+                return gate_name  # Return the first recognized gate name
+
+        return None  # Return None if no recognized gate is found
 
     # New slot method to enable or disable the random_samples_spinbox based on the selected algorithm
     def update_random_samples_spinbox(self, selected_algorithm):

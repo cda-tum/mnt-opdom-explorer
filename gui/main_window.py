@@ -5,7 +5,7 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPixmap  # Importing QPixmap for displaying images
 from PyQt6.QtWidgets import (QFileDialog, QFrame, QMainWindow, QSlider,
                              QSplitter, QStackedWidget, QPushButton,
-                             QVBoxLayout, QLabel, QSizePolicy, QWidget)
+                             QVBoxLayout, QLabel, QSizePolicy, QWidget, QSpacerItem)
 
 from gui.widgets import DragDropWidget, PlotWidget, SettingsWidget
 from mnt.pyfiction import *  # Consider explicitly importing required names
@@ -16,6 +16,10 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.initUI()
         self.is_plot_view_active = True  # Start with the settings view
+        self.current_file_name_label = QLabel(self)  # Label for displaying the file name
+
+        self.desired_width = 600  # Example width in pixels
+        self.desired_height = 600  # Example height in pixels
 
     def initUI(self):
         self.is_plot_view_active = True
@@ -39,6 +43,10 @@ class MainWindow(QMainWindow):
             super().keyPressEvent(event)  # Call the parent class method to ensure default behavior
 
     def file_parsed(self, file_path):
+        # Display the selected file name in the QLabel
+        file_name = Path(file_path).name  # Extract the file name from the full path
+        self.current_file_name_label.setText(f"Selected File: {file_name}")
+
         # Get the current script directory
         script_dir = Path(__file__).resolve().parent
         caching_dir = script_dir / 'widgets' / 'caching'
@@ -55,11 +63,19 @@ class MainWindow(QMainWindow):
         # Create layout for display
         box_layout_view = QVBoxLayout()
 
+        # Add the file name label at the top
+        self.current_file_name_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        box_layout_view.addWidget(self.current_file_name_label)
+
+        # Create a vertical layout for the picture, slider, input combination, and load button
+        grouped_layout = QVBoxLayout()
+        grouped_layout.setContentsMargins(0, 0, 0, 0)  # Set margins to 0 for tighter spacing
+
         # Add QLabel for the plot
         self.plot_label = QLabel(self)
         self.plot_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.plot_label.setScaledContents(True)
-        box_layout_view.addWidget(self.plot_label)
+        grouped_layout.addWidget(self.plot_label)
 
         # Create and configure QSlider
         self.slider = QSlider(Qt.Horizontal, self)
@@ -67,26 +83,31 @@ class MainWindow(QMainWindow):
         self.slider.setTickInterval(1)
         self.slider.setTickPosition(QSlider.TicksBelow)
         self.slider.setValue(0)  # Set the initial slider value to 0
-        box_layout_view.addWidget(self.slider)
+        grouped_layout.addWidget(self.slider)
 
         self.previous_slider_value = 0
 
-        self.slider_label = QLabel('Input Combination', self)
-        box_layout_view.addWidget(self.slider_label)
-
+        # Add the input combination label below the slider
+        self.slider_label = QLabel('Input Combination: 0', self)
+        self.slider_label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)  # Fixed size policy for better control
+        grouped_layout.addWidget(self.slider_label)
         # Connect the slider value change signal to the label update method
         self.slider.valueChanged.connect(self.update_slider_label)
+
 
         # Add button to load new file
         self.load_file_button = QPushButton('Load New File', self)
         self.load_file_button.clicked.connect(self.load_new_file)
-        box_layout_view.addWidget(self.load_file_button)
+        grouped_layout.addWidget(self.load_file_button)
 
-        # Add a horizontal line as a visual separator
-        hline = QFrame()
-        hline.setFrameShape(QFrame.HLine)
-        hline.setFrameShadow(QFrame.Sunken)
-        box_layout_view.addWidget(hline)
+        # Set stretch factors to position elements better
+        grouped_layout.setStretch(0, 1)  # Stretch for plot_label
+        grouped_layout.setStretch(1, 0)  # No stretch for slider
+        grouped_layout.setStretch(2, 0)  # No stretch for slider_label
+        grouped_layout.setStretch(3, 0)  # No stretch for load_file_button
+
+        # Add the grouped layout to the main layout
+        box_layout_view.addLayout(grouped_layout)
 
         # Create QLabel for links with icons
         email_icon_path = "resources/logos/icons/email.png"
@@ -105,6 +126,12 @@ class MainWindow(QMainWindow):
             </a>
         ''')
         self.link_label.setOpenExternalLinks(True)
+        # Create a spacer to push the links to the bottom
+        spacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+
+        # Add the spacer and the link label to the main layout
+        box_layout_view.addItem(spacer)
+
         box_layout_view.addWidget(self.link_label)
 
         # Create a QWidget and QSplitter
@@ -114,7 +141,7 @@ class MainWindow(QMainWindow):
         splitter.addWidget(widget)
 
         # Create the settings view and connect signals
-        self.settings = SettingsWidget()
+        self.settings = SettingsWidget(file_name)
         self.settings.run_button.clicked.connect(self.settings.disable_run_button)
         self.settings.run_button.clicked.connect(self.plot_operational_domain)
         splitter.addWidget(self.settings)
@@ -140,7 +167,14 @@ class MainWindow(QMainWindow):
         # Construct the full path to the file
         plot_image_path = script_dir / 'widgets' / 'caching' / f'lyt_plot_{self.slider.value()}.svg'
         # Load the image using QPixmap
+        print(plot_image_path)
         pixmap = QPixmap(str(plot_image_path))  # Convert Path object to string
+        # Check if the pixmap was successfully loaded
+        if not pixmap.isNull():
+            # Resize and set the pixmap to the QLabel
+            pixmap = pixmap.scaled(self.desired_width, self.desired_height, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            self.plot_label.setPixmap(pixmap)
+
         # Set the pixmap to your label or widget
         self.plot_label.setPixmap(pixmap)
         self.plot.set_pixmap(pixmap)
@@ -181,9 +215,7 @@ class MainWindow(QMainWindow):
                 # Load the image using QPixmap
                 self.pixmap = QPixmap(str(plot_image_path))
 
-            desired_width = 800  # Example width in pixels
-            desired_height = 800  # Example height in pixels
-            self.pixmap = self.pixmap.scaled(desired_width, desired_height, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            self.pixmap = self.pixmap.scaled(self.desired_width, self.desired_height, Qt.KeepAspectRatio, Qt.SmoothTransformation)
             self.plot_label.setPixmap(self.pixmap)
 
             # Update the slider label text
@@ -194,6 +226,7 @@ class MainWindow(QMainWindow):
         self.is_plot_view_active = False
         # Create the plot view
         self.plot = PlotWidget(self.settings, self.lyt, self.bdl_input_iterator, self.max_pos, self.min_pos, self.plot_label, self.slider.value())
+        self.plot.initUI()
 
         # Store the QSplitter widget in a class variable
         self.splitter = self.stacked_widget.currentWidget()
@@ -214,3 +247,21 @@ class MainWindow(QMainWindow):
 
         # Replace the PlotWidget with the ContentSettingsWidget in the QSplitter
         self.splitter.replaceWidget(index, self.settings)
+
+        # Get the current script directory
+        script_dir = Path(__file__).resolve().parent
+
+        # Construct the full path to the plot image file based on the slider value
+        plot_image_path = script_dir / 'widgets' / 'caching' / f'lyt_plot_{self.slider.value()}.svg'
+
+        # Load the image using QPixmap
+        self.pixmap = QPixmap(str(plot_image_path))
+
+        self.pixmap = self.pixmap.scaled(self.desired_width, self.desired_height, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        self.plot_label.setPixmap(self.pixmap)
+
+
+        # Update the slider label
+        bin_value = bin(self.slider.value())[2:].zfill(self.bdl_input_iterator.num_input_pairs())
+        self.slider_label.setText(f'Input Combination: {bin_value}')
+
