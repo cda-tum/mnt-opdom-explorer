@@ -1,5 +1,6 @@
 from mnt import pyfiction
 from core import generate_plot
+import os
 
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QMessageBox, QStyle
 
@@ -81,6 +82,11 @@ class PlotWidget(QWidget):
                                                         :2]) if self.three_dimensional_plot else None,
                                           include_non_operational=not self.three_dimensional_plot,
                                           show_legend=False)
+
+        # Delete the CSV file after it's used
+        csv_file_path = 'op_dom.csv'
+        if os.path.exists(csv_file_path):
+            os.remove(csv_file_path)
 
         self.canvas = FigureCanvas(self.fig)
         self.layout.addWidget(self.canvas)

@@ -58,8 +58,9 @@ def calculate_colors(y_values, z_values):
     Returns:
         array: Colors for each data point.
     """
-    y_normalized = (y_values - y_values.min()) / (y_values.max() - y_values.min())
-    z_normalized = (z_values - z_values.min()) / (z_values.max() - z_values.min())
+    print(np.abs(y_values).max() - np.abs(y_values).min())
+    y_normalized = (np.abs(y_values) - np.abs(y_values).min()) / (np.abs(y_values).max() - np.abs(y_values).min())
+    z_normalized = (np.abs(z_values) - np.abs(z_values).min()) / (np.abs(z_values).max() - np.abs(z_values).min())
     colors = BASE_PURPLE * (1 - z_normalized[:, np.newaxis]) + RED * y_normalized[:, np.newaxis]
     return np.clip(colors, 0, 1)
 
@@ -185,6 +186,6 @@ def generate_plot(csv_files, x_param, y_param, z_param=None, title="Operational 
     # Display the plot
     # plt.show()
     # Save the figure
-    fig.savefig(f"{title.replace(' ', '_')}.png", dpi=300)
+    # fig.savefig(f"{title.replace(' ', '_')}.png", dpi=300)
 
     return fig, ax
