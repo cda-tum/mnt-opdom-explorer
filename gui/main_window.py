@@ -1,20 +1,24 @@
 from pathlib import Path
+import shutil
+
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import (QMainWindow, QSplitter, QStackedWidget, QSlider, QWidget,
-                             QVBoxLayout, QLabel, QSizePolicy, QFrame)
-
 from PyQt6.QtGui import QPixmap  # Importing QPixmap for displaying images
+from PyQt6.QtWidgets import (QFileDialog, QFrame, QMainWindow, QSlider,
+                             QSplitter, QStackedWidget, QPushButton,
+                             QVBoxLayout, QLabel, QSizePolicy, QWidget)
 
-from gui.widgets import DragDropWidget, SettingsWidget, PlotWidget
-from mnt.pyfiction import *
+from gui.widgets import DragDropWidget, PlotWidget, SettingsWidget
+from mnt.pyfiction import *  # Consider explicitly importing required names
 
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.initUI()
+        self.is_plot_view_active = True  # Start with the settings view
 
     def initUI(self):
+        self.is_plot_view_active = True
         self.setWindowTitle('Operational Domain Explorer')
         self.setGeometry(100, 100, 600, 400)
 
@@ -35,8 +39,16 @@ class MainWindow(QMainWindow):
             super().keyPressEvent(event)  # Call the parent class method to ensure default behavior
 
     def file_parsed(self, file_path):
+        # Get the current script directory
+        script_dir = Path(__file__).resolve().parent
+        caching_dir = script_dir / 'widgets' / 'caching'
+
+        # Remove the caching directory if it exists
+        if caching_dir.exists() and caching_dir.is_dir():
+            shutil.rmtree(caching_dir)  # This will delete the entire caching directory and its contents
+
         # Parse the layout file and initialize the BDL input iterator
-        self.lyt = read_sqd_layout_100(file_path, Path(file_path).stem)
+        self.lyt = read_sqd_layout_100(file_path)
         self.min_pos, self.max_pos = self.lyt.bounding_box_2d()
         self.bdl_input_iterator = bdl_input_iterator_100(self.lyt)
 
@@ -64,6 +76,11 @@ class MainWindow(QMainWindow):
 
         # Connect the slider value change signal to the label update method
         self.slider.valueChanged.connect(self.update_slider_label)
+
+        # Add button to load new file
+        self.load_file_button = QPushButton('Load New File', self)
+        self.load_file_button.clicked.connect(self.load_new_file)
+        box_layout_view.addWidget(self.load_file_button)
 
         # Add a horizontal line as a visual separator
         hline = QFrame()
@@ -109,14 +126,32 @@ class MainWindow(QMainWindow):
         # Set up the plot and load the image into the QLabel
         self.plot = PlotWidget(self.settings, self.lyt, self.bdl_input_iterator, self.max_pos, self.min_pos,
                                self.plot_label, self.slider.value())
-        plot_image_path = self.plot.plot_layout(self.lyt)
-        pixmap = QPixmap(plot_image_path)
 
+        # Store the QSplitter widget in a class variable
+        for i in range(2 ** self.bdl_input_iterator.num_input_pairs()):  # Increment the iterator manually
+            _ = self.plot.plot_layout(self.bdl_input_iterator.get_layout(), slider_value=i)
+            self.bdl_input_iterator += 1
+
+        self.bdl_input_iterator = bdl_input_iterator_100(self.lyt)  # Reset the iterator
+
+        # Get the current script directory
+        script_dir = Path(__file__).resolve().parent
+        print(script_dir)
+        # Construct the full path to the file
+        plot_image_path = script_dir / 'widgets' / 'caching' / f'lyt_plot_{self.slider.value()}.svg'
+        # Load the image using QPixmap
+        pixmap = QPixmap(str(plot_image_path))  # Convert Path object to string
+        # Set the pixmap to your label or widget
         self.plot_label.setPixmap(pixmap)
         self.plot.set_pixmap(pixmap)
         self.plot_label.setFixedSize(pixmap.size())  # Set fixed size based on original pixmap size
-        # Manually trigger the update to ensure the initial value is set correctly
         self.update_slider_label(self.slider.value())
+
+    def load_new_file(self):
+        # Open file dialog to select a new file
+        file_path, _ = QFileDialog.getOpenFileName(self, 'Open Layout File', '', 'Layout Files (*.sqd *.json)')
+        if file_path:
+            self.file_parsed(file_path)
 
     def update_slider_label(self, value):
         self.plot.update_slider_value(value)
@@ -130,24 +165,33 @@ class MainWindow(QMainWindow):
 
             self.previous_slider_value = value
 
-            # Get the layout from the new input
-            new_layout = self.bdl_input_iterator.get_layout()  # Assuming this method exists
+            script_dir = Path(__file__).resolve().parent
 
-            # Plot the new layout and update the QLabel
-            plot_image_path = self.plot.plot_layout(new_layout)  # Use your plotting function here
-            self.pixmap = QPixmap(plot_image_path)
+            if self.is_plot_view_active:
+                print(script_dir)
+                # Construct the full path to the file
+                plot_image_path = script_dir / 'widgets' / 'caching' / f'lyt_plot_{self.slider.value()}.svg'
+
+                self.pixmap = QPixmap(str(plot_image_path))
+            else:
+                [x,y] = self.plot.picked_x_y()
+                # Construct the full path to the file
+                plot_image_path =  script_dir / 'widgets' / 'caching' / f'lyt_plot_{self.slider.value()}_x_{x}_y_{y}.svg'
+
+                # Load the image using QPixmap
+                self.pixmap = QPixmap(str(plot_image_path))
+
             desired_width = 800  # Example width in pixels
             desired_height = 800  # Example height in pixels
             self.pixmap = self.pixmap.scaled(desired_width, desired_height, Qt.KeepAspectRatio, Qt.SmoothTransformation)
             self.plot_label.setPixmap(self.pixmap)
 
-            # Update the QLabel with the new pixmap
-            self.plot_label.setPixmap(self.pixmap)
-
             # Update the slider label text
             self.slider_label.setText(f'Input Combination: {bin_value}')
 
+
     def plot_operational_domain(self):
+        self.is_plot_view_active = False
         # Create the plot view
         self.plot = PlotWidget(self.settings, self.lyt, self.bdl_input_iterator, self.max_pos, self.min_pos, self.plot_label, self.slider.value())
 
@@ -164,6 +208,7 @@ class MainWindow(QMainWindow):
         self.plot.rerun_button.clicked.connect(self.go_back_to_settings)
 
     def go_back_to_settings(self):
+        self.is_plot_view_active = True
         # Get the index of the PlotWidget in the QSplitter
         index = self.splitter.indexOf(self.plot)
 
