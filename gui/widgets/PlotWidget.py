@@ -96,6 +96,11 @@ class PlotWidget(QWidget):
         if os.path.exists(csv_file_path):
             os.remove(csv_file_path)
 
+        # Delete the CSV file after it's used
+        csv_file_path = 'op_dom.csv'
+        if os.path.exists(csv_file_path):
+            os.remove(csv_file_path)
+
         self.canvas = FigureCanvas(self.fig)
         self.layout.addWidget(self.canvas)
 
