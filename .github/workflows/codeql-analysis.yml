@@ -1,3 +1,5 @@
+# This workflow is currently deactivated since CodeQL is not free for private repositories. This should be changed when the repository is made public.
+
 name: 📝 • CodeQL
 
 on:
