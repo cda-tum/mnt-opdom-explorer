@@ -8,6 +8,14 @@ from gui.widgets.IconGroupBox import IconGroupBox
 
 
 class SettingsWidget(QWidget):
+
+    DISPLAY_TO_INTERNAL = {
+        'epsilon_r': 'epsilon_r',
+        'lambda_TF [nm]': 'lambda_TF',
+        'µ_ [eV]': 'µ_',
+        'NONE': 'NONE'
+    }
+
     def __init__(self):
         super().__init__()
         self.initUI()
@@ -87,7 +95,7 @@ class SettingsWidget(QWidget):
 
         # µ_ number selector
         mu_layout = QHBoxLayout()
-        mu_label = QLabel('µ_')
+        mu_label = QLabel('µ_ [eV]')
         self.mu_minus_selector = QDoubleSpinBox()
         self.mu_minus_selector.setRange(-1.0, 1.0)
         self.mu_minus_selector.setDecimals(2)
@@ -111,7 +119,7 @@ class SettingsWidget(QWidget):
 
         # lambda_TF number selector
         lambda_tf_layout = QHBoxLayout()
-        lambda_tf_label = QLabel('lambda_TF')
+        lambda_tf_label = QLabel('lambda_TF [nm]')
         self.lambda_tf_selector = QDoubleSpinBox()
         self.lambda_tf_selector.setRange(1.0, 10.0)
         self.lambda_tf_selector.setDecimals(2)
@@ -174,7 +182,7 @@ class SettingsWidget(QWidget):
         x_dimension_layout = QHBoxLayout()
         x_dimension_label = QLabel('X-Dimension')
         self.x_dimension_dropdown = QComboBox()
-        self.x_dimension_dropdown.addItems(['epsilon_r', 'lambda_TF', 'µ_'])
+        self.x_dimension_dropdown.addItems(['epsilon_r', 'lambda_TF [nm]', 'µ_ [eV]'])
         x_dimension_layout.addWidget(x_dimension_label, 30)
         x_dimension_layout.addWidget(self.x_dimension_dropdown, 70)
         self.x_dimension_dropdown.currentIndexChanged.connect(
@@ -189,7 +197,7 @@ class SettingsWidget(QWidget):
         y_dimension_layout = QHBoxLayout()
         y_dimension_label = QLabel('Y-Dimension')
         self.y_dimension_dropdown = QComboBox()
-        self.y_dimension_dropdown.addItems(['epsilon_r', 'lambda_TF', 'µ_'])
+        self.y_dimension_dropdown.addItems(['epsilon_r', 'lambda_TF [nm]', 'µ_ [eV]'])
         self.y_dimension_dropdown.setCurrentIndex(1)  # set lambda_TF as default
         y_dimension_layout.addWidget(y_dimension_label, 30)
         y_dimension_layout.addWidget(self.y_dimension_dropdown, 70)
@@ -205,7 +213,7 @@ class SettingsWidget(QWidget):
         z_dimension_layout = QHBoxLayout()
         z_dimension_label = QLabel('Z-Dimension')
         self.z_dimension_dropdown = QComboBox()
-        self.z_dimension_dropdown.addItems(['NONE', 'epsilon_r', 'lambda_TF', 'µ_'])  # Added NONE as default option
+        self.z_dimension_dropdown.addItems(['NONE', 'epsilon_r', 'lambda_TF [nm]', 'µ_ [eV]'])  # Added NONE as default option
         z_dimension_layout.addWidget(z_dimension_label, 30)
         z_dimension_layout.addWidget(self.z_dimension_dropdown, 70)
         self.z_dimension_dropdown.currentIndexChanged.connect(
@@ -335,19 +343,19 @@ class SettingsWidget(QWidget):
         return self.random_samples_spinbox.value()
 
     def get_x_dimension(self):
-        return self.x_dimension_dropdown.currentText()
+        return self.DISPLAY_TO_INTERNAL.get(self.x_dimension_dropdown.currentText())
 
     def get_x_parameter_range(self):
         return self.x_parameter_range_selector.get_range()
 
     def get_y_dimension(self):
-        return self.y_dimension_dropdown.currentText()
+        return self.DISPLAY_TO_INTERNAL.get(self.y_dimension_dropdown.currentText())
 
     def get_y_parameter_range(self):
         return self.y_parameter_range_selector.get_range()
 
     def get_z_dimension(self):
-        return self.z_dimension_dropdown.currentText()
+        return self.DISPLAY_TO_INTERNAL.get(self.z_dimension_dropdown.currentText())
 
     def get_z_parameter_range(self):
         return self.z_parameter_range_selector.get_range()
