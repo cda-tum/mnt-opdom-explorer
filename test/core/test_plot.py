@@ -28,7 +28,7 @@ def compare_images(fig, img2_path):
     """
     # Convert the Matplotlib figure to a NumPy array
     buf = io.BytesIO()
-    fig.savefig(buf, format='png', dpi=300)  # Save the figure as a PNG in memory
+    fig.savefig(buf, format='png')  # Save the figure as a PNG in memory
     buf.seek(0)
     img1_np = np.array(Image.open(buf))  # Read the PNG image and convert to NumPy array
 
