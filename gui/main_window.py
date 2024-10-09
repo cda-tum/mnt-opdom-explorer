@@ -1,14 +1,27 @@
 from pathlib import Path
 import shutil
 
-from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QPixmap  # Importing QPixmap for displaying images
-from PyQt6.QtWidgets import (QFileDialog, QFrame, QMainWindow, QSlider,
-                             QSplitter, QStackedWidget, QPushButton,
-                             QVBoxLayout, QLabel, QSizePolicy, QWidget, QSpacerItem)
+from PyQt6.QtCore import Qt, QSize, QUrl
+from PyQt6.QtGui import QPixmap, QDesktopServices
+from PyQt6.QtWidgets import (
+    QFileDialog,
+    QFrame,
+    QMainWindow,
+    QSlider,
+    QSplitter,
+    QStackedWidget,
+    QPushButton,
+    QVBoxLayout,
+    QLabel,
+    QSizePolicy,
+    QWidget,
+    QSpacerItem,
+    QHBoxLayout,
+)
 
 from gui.widgets import DragDropWidget, PlotWidget, SettingsWidget
-from mnt.pyfiction import *  # Consider explicitly importing required names
+from mnt.pyfiction import *
+from gui.widgets.IconLoader import IconLoader
 
 
 class MainWindow(QMainWindow):
@@ -20,6 +33,8 @@ class MainWindow(QMainWindow):
 
         self.desired_width = 600  # Example width in pixels
         self.desired_height = 600  # Example height in pixels
+
+        self.icon_loader = IconLoader()
 
     def initUI(self):
         self.is_plot_view_active = True
@@ -45,7 +60,7 @@ class MainWindow(QMainWindow):
     def file_parsed(self, file_path):
         # Display the selected file name in the QLabel
         file_name = Path(file_path).name  # Extract the file name from the full path
-        self.current_file_name_label.setText(f"Selected File: {file_name}")
+        self.current_file_name_label.setText(f"{file_name}")
 
         # Get the current script directory
         script_dir = Path(__file__).resolve().parent
@@ -63,9 +78,19 @@ class MainWindow(QMainWindow):
         # Create layout for display
         box_layout_view = QVBoxLayout()
 
-        # Add the file name label at the top
+
+        button_file_layout = QHBoxLayout()
+        # Add button to go back to the drag & drop widget
+        self.back_button = QPushButton(self)
+        self.back_button.setFixedSize(40, 40)
+        self.back_button.clicked.connect(self.go_back_to_drag_and_drop)
+        button_file_layout.addWidget(self.back_button)
+        self.back_button.setIcon(self.icon_loader.load_back_arrow_icon())
+
         self.current_file_name_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        box_layout_view.addWidget(self.current_file_name_label)
+        button_file_layout.addWidget(self.current_file_name_label)
+
+        box_layout_view.addLayout(button_file_layout)
 
         # Create a vertical layout for the picture, slider, input combination, and load button
         grouped_layout = QVBoxLayout()
@@ -94,45 +119,52 @@ class MainWindow(QMainWindow):
         # Connect the slider value change signal to the label update method
         self.slider.valueChanged.connect(self.update_slider_label)
 
-
-        # Add button to load new file
-        self.load_file_button = QPushButton('Load New File', self)
-        self.load_file_button.clicked.connect(self.load_new_file)
-        grouped_layout.addWidget(self.load_file_button)
-
         # Set stretch factors to position elements better
         grouped_layout.setStretch(0, 1)  # Stretch for plot_label
         grouped_layout.setStretch(1, 0)  # No stretch for slider
         grouped_layout.setStretch(2, 0)  # No stretch for slider_label
-        grouped_layout.setStretch(3, 0)  # No stretch for load_file_button
 
         # Add the grouped layout to the main layout
         box_layout_view.addLayout(grouped_layout)
 
-        # Create QLabel for links with icons
-        email_icon_path = "resources/logos/icons/email.png"
-        issue_icon_path = "resources/logos/icons/issue.png"
-        self.link_label = QLabel(self)
-        self.link_label.setText(f'''
-            <style>
-                a {{ text-decoration: none; color: #616161; font-weight: bold; padding: 5px; }}
-                a:hover {{ text-decoration: underline; color: #616161; }}
-            </style>
-            <a href="mailto:marcel.walter@tum.de?cc=jan.drewniok@tum.de">
-                <img src="{email_icon_path}" width="20" height="20" style="vertical-align: middle;" /> Email Support
-            </a> |
-            <a href="https://github.com/cda-tum/mnt-opdom-explorer/issues">
-                <img src="{issue_icon_path}" width="20" height="20" style="vertical-align: middle;" /> Report an Issue
-            </a>
-        ''')
-        self.link_label.setOpenExternalLinks(True)
-        # Create a spacer to push the links to the bottom
+        # Create a spacer to push the buttons to the bottom
         spacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
 
-        # Add the spacer and the link label to the main layout
+        # Add the spacer to the main layout to occupy space above the buttons
         box_layout_view.addItem(spacer)
 
-        box_layout_view.addWidget(self.link_label)
+        # Create a horizontal layout for the buttons
+        button_layout = QHBoxLayout()
+
+        # Create buttons for links using IconLoader
+        email_icon = self.icon_loader.load_email_icon()  # Load the email icon
+        issue_icon = self.icon_loader.load_bug_icon()  # Load the issue report icon
+
+        # Create button for Email Support
+        email_button = QPushButton("Email Support", self)
+        email_button.setIcon(email_icon)
+        email_button.setIconSize(QSize(16, 16))  # Set smaller icon size
+        email_button.setFixedSize(120, 30)  # Set a fixed size for the button
+        email_button.clicked.connect(lambda: self.open_email())  # Connect to the open email function
+        button_layout.addWidget(email_button)  # Add to horizontal layout
+
+        # Create button for Reporting Issues
+        issue_button = QPushButton("Report an Issue", self)
+        issue_button.setIcon(issue_icon)
+        issue_button.setIconSize(QSize(16, 16))  # Set smaller icon size
+        issue_button.setFixedSize(120, 30)  # Set a fixed size for the button
+        issue_button.clicked.connect(lambda: self.open_issue_report())  # Connect to the open issue report function
+        # TODO: Activate when repo is set to private
+        #button_layout.addWidget(issue_button)  # Add to horizontal layout
+
+        # Align buttons to the left
+        button_layout.setAlignment(Qt.AlignmentFlag.AlignLeft)  # Align to the left
+
+        # Add the button layout to the main layout
+        box_layout_view.addLayout(button_layout)
+
+        # Optionally, add more spacing below the buttons
+        box_layout_view.addItem(QSpacerItem(20, 20, QSizePolicy.Minimum, QSizePolicy.Fixed))
 
         # Create a QWidget and QSplitter
         widget = QWidget()
@@ -181,6 +213,14 @@ class MainWindow(QMainWindow):
         self.plot_label.setFixedSize(pixmap.size())  # Set fixed size based on original pixmap size
         self.update_slider_label(self.slider.value())
 
+    def open_email(self):
+        """Open the default email client with pre-filled addresses."""
+        QDesktopServices.openUrl(QUrl("mailto:marcel.walter@tum.de?cc=jan.drewniok@tum.de"))
+
+    def open_issue_report(self):
+        """Open the issue report page in the default web browser."""
+        QDesktopServices.openUrl(QUrl("https://github.com/cda-tum/mnt-opdom-explorer/issues"))
+
     def load_new_file(self):
         # Open file dialog to select a new file
         file_path, _ = QFileDialog.getOpenFileName(self, 'Open Layout File', '', 'Layout Files (*.sqd *.json)')
@@ -222,6 +262,7 @@ class MainWindow(QMainWindow):
             self.slider_label.setText(f'Input Combination: {bin_value}')
 
 
+
     def plot_operational_domain(self):
         self.is_plot_view_active = False
         # Create the plot view
@@ -239,6 +280,9 @@ class MainWindow(QMainWindow):
 
         # Connect the 'Back' button's clicked signal to the go_back_to_settings method
         self.plot.rerun_button.clicked.connect(self.go_back_to_settings)
+
+    def go_back_to_drag_and_drop(self):
+        self.stacked_widget.setCurrentIndex(0)
 
     def go_back_to_settings(self):
         self.is_plot_view_active = True

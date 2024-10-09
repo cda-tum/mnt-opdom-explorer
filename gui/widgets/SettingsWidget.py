@@ -73,8 +73,8 @@ class SettingsWidget(QWidget):
 
         # Create a layout for the logos
         logo_layout = QHBoxLayout()
-        logo_layout.addWidget(tum_logo)  # Add the TUM logo
         logo_layout.addWidget(mnt_logo)  # Add the MNT logo
+        logo_layout.addWidget(tum_logo)  # Add the TUM logo
 
         # Optionally add spacing between the logos
         logo_layout.addSpacing(10)  # Add some space between the two logos
