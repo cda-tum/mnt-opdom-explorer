@@ -69,6 +69,18 @@ class IconLoader:
         """Loads the file upload icon."""
         return self.load_icon('mdi6.file-upload', color=color)
 
+    def load_back_arrow_icon(self, color: QColor = None) -> QIcon:
+        """Loads the back arrow icon."""
+        return self.load_icon('mdi6.arrow-left', color=color)
+
+    def load_email_icon(self, color: QColor = None) -> QIcon:
+        """Loads the email icon."""
+        return self.load_icon('mdi6.email', color=color)
+
+    def load_bug_icon(self, color: QColor = None) -> QIcon:
+        """Loads the bug icon."""
+        return self.load_icon('mdi6.bug', color=color)
+
     def load_folder_open_icon(self, color: QColor = None) -> QIcon:
         """Loads the folder open icon."""
         return self.load_icon('mdi6.folder-open', color=color)
