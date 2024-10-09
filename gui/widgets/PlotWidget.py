@@ -360,7 +360,7 @@ class PlotWidget(QWidget):
 
         is_op_params = pyfiction.is_operational_params()
         is_op_params.simulation_parameters = qe_sim_params
-        operational_patterns = pyfiction.operational_input_patterns(self.lyt, gate_func, is_op_params)
+        self.operational_patterns = pyfiction.operational_input_patterns(self.lyt, gate_func, is_op_params)
 
         for _ in range(2 ** input_iterator_copy.num_input_pairs()):
             print(slider_value)
@@ -377,10 +377,10 @@ class PlotWidget(QWidget):
             pattern = slider_value
 
             print(pattern)
-            print(operational_patterns)
+            print(self.operational_patterns)
 
             status = pyfiction.operational_status.NON_OPERATIONAL
-            if pattern in operational_patterns:
+            if pattern in self.operational_patterns:
                 if pattern == input_iterator_copy:
                     status = pyfiction.operational_status.OPERATIONAL
 

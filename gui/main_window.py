@@ -2,7 +2,7 @@ from pathlib import Path
 import shutil
 
 from PyQt6.QtCore import Qt, QSize, QUrl
-from PyQt6.QtGui import QPixmap, QDesktopServices
+from PyQt6.QtGui import QPixmap, QDesktopServices, QColor
 from PyQt6.QtWidgets import (
     QFileDialog,
     QFrame,
@@ -16,12 +16,104 @@ from PyQt6.QtWidgets import (
     QSizePolicy,
     QWidget,
     QSpacerItem,
-    QHBoxLayout,
+    QHBoxLayout
 )
 
 from gui.widgets import DragDropWidget, PlotWidget, SettingsWidget
 from mnt.pyfiction import *
 from gui.widgets.IconLoader import IconLoader
+
+from PyQt6.QtWidgets import QSlider
+from PyQt6.QtGui import QPainter, QPen
+from PyQt6.QtCore import Qt
+
+# TODO: This is WIP code and we should probably put it in a separate file.
+class customized_slider(QSlider):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.checkmark_positions = []  # List to hold positions for checkmarks
+        self.crossmark_positions = []   # List to hold positions for crossmarks
+        self.checkmark_color = QColor("green")  # Default color for checkmarks
+        self.crossmark_color = QColor("red")    # Default color for crossmarks
+
+    def set_checkmark_color(self, color):
+        """Set the color for checkmarks."""
+        self.checkmark_color = QColor(color)
+        self.update()  # Request a repaint to show the changes
+
+    def set_crossmark_color(self, color):
+        """Set the color for crossmarks."""
+        self.crossmark_color = QColor(color)
+        self.update()  # Request a repaint to show the changes
+
+    def add_checkmark(self, position):
+        """Add a checkmark at a specific position."""
+        if position not in self.checkmark_positions:
+            self.checkmark_positions.append(position)
+            self.update()  # Request a repaint to show the changes
+
+    def remove_checkmark(self, position):
+        """Remove a checkmark from a specific position."""
+        if position in self.checkmark_positions:
+            self.checkmark_positions.remove(position)
+            self.update()  # Request a repaint to show the changes
+
+    def add_crossmark(self, position):
+        """Add a crossmark at a specific position."""
+        if position not in self.crossmark_positions:
+            self.crossmark_positions.append(position)
+            self.update()  # Request a repaint to show the changes
+
+    def remove_crossmark(self, position):
+        """Remove a crossmark from a specific position."""
+        if position in self.crossmark_positions:
+            self.crossmark_positions.remove(position)
+            self.update()  # Request a repaint to show the changes
+
+    def remove_all_marks(self):
+        """Remove all checkmarks and crossmarks."""
+        self.checkmark_positions.clear()  # Clear all checkmark positions
+        self.crossmark_positions.clear()   # Clear all crossmark positions
+        self.update()  # Request a repaint to show the changes
+
+    def paintEvent(self, event):
+        """Override paint event to draw checkmarks and crossmarks."""
+        super().paintEvent(event)
+        painter = QPainter(self)
+
+        height = self.height()
+
+        # Draw checkmarks and crossmarks
+        for pos in self.checkmark_positions:
+            self.draw_mark(painter, pos, height, self.checkmark_color, is_checkmark=True)
+        for pos in self.crossmark_positions:
+            self.draw_mark(painter, pos, height, self.crossmark_color, is_checkmark=False)
+
+    def draw_mark(self, painter, position, height, color, is_checkmark=True):
+        """Draw a checkmark or crossmark at the given position."""
+        pen = QPen(color, 3)  # Thicker line for better visibility
+        painter.setPen(pen)
+
+        # Calculate x position of the mark
+        x = self.tick_position(position)
+
+        # Increase the y-offset for better separation from the slider
+        y_offset = 15  # Increased vertical offset
+
+        if is_checkmark:
+            # Draw checkmark (V shape)
+            painter.drawLine(x - 8, height - y_offset, x, height - y_offset + 5)
+            painter.drawLine(x, height - y_offset + 5, x + 8, height - y_offset)
+        else:
+            # Draw crossmark (X shape)
+            painter.drawLine(x - 8, height - y_offset, x + 8, height - y_offset + 8)
+            painter.drawLine(x - 8, height - y_offset + 8, x + 8, height - y_offset)
+
+    def tick_position(self, tick_value):
+        """Calculate the x position of the tick based on the slider's range."""
+        width = self.width()
+        return int((tick_value - self.minimum()) / (self.maximum() - self.minimum()) * (width - 20)) + 10
+
 
 
 class MainWindow(QMainWindow):
@@ -103,12 +195,15 @@ class MainWindow(QMainWindow):
         grouped_layout.addWidget(self.plot_label)
 
         # Create and configure QSlider
-        self.slider = QSlider(Qt.Horizontal, self)
+        self.slider = customized_slider(Qt.Horizontal, self)
         self.slider.setRange(0, 2 ** self.bdl_input_iterator.num_input_pairs() - 1)
-        self.slider.setTickInterval(1)
+        self.slider.setTickInterval(1)  # Ticks at each integer position
         self.slider.setTickPosition(QSlider.TicksBelow)
+        #self.slider.add_checkmark(0)  # Set tick 0 to red
+        #self.slider.add_crossmark(2)  # Set tick 2 to blue
         self.slider.setValue(0)  # Set the initial slider value to 0
-        grouped_layout.addWidget(self.slider)
+        grouped_layout.addWidget(self.slider)  # Add the slider to your layout
+
 
         self.previous_slider_value = 0
 
@@ -282,6 +377,7 @@ class MainWindow(QMainWindow):
         self.plot.rerun_button.clicked.connect(self.go_back_to_settings)
 
     def go_back_to_drag_and_drop(self):
+        self.is_plot_view_active = True
         self.stacked_widget.setCurrentIndex(0)
 
     def go_back_to_settings(self):
