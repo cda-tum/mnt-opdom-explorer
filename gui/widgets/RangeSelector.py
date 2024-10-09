@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QDoubleSpinBox, QFormLayout
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QDoubleSpinBox, QSizePolicy, QHBoxLayout
 
 
 class RangeSelector(QWidget):
@@ -14,35 +14,44 @@ class RangeSelector(QWidget):
         self.label = QLabel(label_text)
         layout.addWidget(self.label)
 
-        # Layout for the spinboxes
-        spinbox_layout = QFormLayout()
+        # Layout for the spinboxes and labels
+        spinbox_layout = QHBoxLayout()  # Use QHBoxLayout for horizontal alignment
 
-        # TODO use double-range slider from https://github.com/djeada/Qt-Widgets
-
-        # Spinbox for minimum value
+        # Min label and spinbox
+        self.min_label = QLabel('Min:')
         self.min_spinbox = QDoubleSpinBox()
         self.min_spinbox.setRange(0.0, 10.0)
         self.min_spinbox.setDecimals(2)
         self.min_spinbox.setSingleStep(0.5)
         self.min_spinbox.setValue(default_min)
+        self.min_spinbox.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
-        spinbox_layout.addRow('Min:', self.min_spinbox)
+        spinbox_layout.addWidget(self.min_label)  # Add label to the horizontal layout
+        spinbox_layout.addWidget(self.min_spinbox)  # Add spinbox to the horizontal layout
 
-        # Spinbox for maximum value
+        # Max label and spinbox
+        self.max_label = QLabel('Max:')
         self.max_spinbox = QDoubleSpinBox()
         self.max_spinbox.setRange(0.0, 10.0)
         self.max_spinbox.setDecimals(2)
         self.max_spinbox.setSingleStep(0.5)
         self.max_spinbox.setValue(default_max)
-        spinbox_layout.addRow('Max:', self.max_spinbox)
+        self.max_spinbox.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
-        # Spinbox for step value
+        spinbox_layout.addWidget(self.max_label)  # Add label to the horizontal layout
+        spinbox_layout.addWidget(self.max_spinbox)  # Add spinbox to the horizontal layout
+
+        # Step label and spinbox
+        self.step_label = QLabel('Step:')
         self.step_spinbox = QDoubleSpinBox()
         self.step_spinbox.setRange(0.01, 5.0)
         self.step_spinbox.setDecimals(2)
         self.step_spinbox.setSingleStep(0.01)
         self.step_spinbox.setValue(default_step)
-        spinbox_layout.addRow('Step:', self.step_spinbox)
+        self.step_spinbox.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+
+        spinbox_layout.addWidget(self.step_label)  # Add label to the horizontal layout
+        spinbox_layout.addWidget(self.step_spinbox)  # Add spinbox to the horizontal layout
 
         # Add the spinbox layout to the main layout
         layout.addLayout(spinbox_layout)
