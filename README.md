@@ -1,6 +1,4 @@
-[![Ubuntu CI](https://img.shields.io/github/actions/workflow/status/cda-tum/mnt-opdom-explorer/ci.yml?label=Ubuntu&logo=ubuntu&style=flat-square)](https://github.com/cda-tum/mnt-opdom-explorer/actions/workflows/ci.yml)
-[![macOS CI](https://img.shields.io/github/actions/workflow/status/cda-tum/mnt-opdom-explorer/ci.yml?label=macOS&logo=apple&style=flat-square)](https://github.com/cda-tum/mnt-opdom-explorer/actions/workflows/ci.yml)
-[![Windows CI](https://img.shields.io/github/actions/workflow/status/cda-tum/mnt-opdom-explorer/ci.yml?label=Windows&logo=windows&style=flat-square)](https://github.com/cda-tum/mnt-opdom-explorer/actions/workflows/ci.yml)
+[![CI](https://img.shields.io/github/actions/workflow/status/cda-tum/mnt-opdom-explorer/ci.yml?style=flat-square&logo=github&label=CI)](https://github.com/cda-tum/mnt-opdom-explorer/actions/workflows/ci.yml)
 [![License](https://img.shields.io/github/license/cda-tum/mnt-opdom-explorer?label=License&style=flat-square)](https://github.com/cda-tum/mnt-opdom-explorer/blob/main/LICENSE)
 [![codecov](https://img.shields.io/codecov/c/github/cda-tum/mnt-opdom-explorer?style=flat-square&logo=codecov)](https://codecov.io/gh/cda-tum/mnt-opdom-explorer)
 [![Release](https://img.shields.io/github/v/release/cda-tum/mnt-opdom-explorer?label=opdomain-explore&style=flat-square)](https://github.com/cda-tum/mnt-opdom-explorer/releases)
