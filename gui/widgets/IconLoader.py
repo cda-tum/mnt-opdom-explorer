@@ -96,3 +96,7 @@ class IconLoader:
     def load_chart_icon(self, color: QColor = None) -> QIcon:
         """Loads the chart icon."""
         return self.load_icon('mdi6.chart-scatter-plot', color=color)
+
+    def load_help_icon(self, color: QColor = None) -> QIcon:
+        """Loads the help icon."""
+        return self.load_icon('mdi6.help-circle-outline', color=color)
