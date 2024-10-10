@@ -1,13 +1,11 @@
 from pathlib import Path
 import shutil
 
-from PyQt6.QtCore import Qt, QSize, QUrl
+from PyQt6.QtCore import QSize, QUrl
 from PyQt6.QtGui import QPixmap, QDesktopServices, QColor
 from PyQt6.QtWidgets import (
     QFileDialog,
-    QFrame,
     QMainWindow,
-    QSlider,
     QSplitter,
     QStackedWidget,
     QPushButton,
@@ -174,7 +172,6 @@ class MainWindow(QMainWindow):
         button_file_layout = QHBoxLayout()
         # Add button to go back to the drag & drop widget
         self.back_button = QPushButton(self)
-        self.back_button.setFixedSize(40, 40)
         self.back_button.clicked.connect(self.go_back_to_drag_and_drop)
         button_file_layout.addWidget(self.back_button)
         self.back_button.setIcon(self.icon_loader.load_back_arrow_icon())
@@ -249,7 +246,7 @@ class MainWindow(QMainWindow):
         issue_button.setIconSize(QSize(16, 16))  # Set smaller icon size
         issue_button.setFixedSize(120, 30)  # Set a fixed size for the button
         issue_button.clicked.connect(lambda: self.open_issue_report())  # Connect to the open issue report function
-        # TODO: Activate when repo is set to private
+        # TODO: Activate when repo is set to public
         #button_layout.addWidget(issue_button)  # Add to horizontal layout
 
         # Align buttons to the left

@@ -13,7 +13,8 @@ from mnt import pyfiction
 
 
 class PlotWidget(QWidget):
-    def __init__(self, settings_widget, lyt, input_iterator, max_pos_initial, min_pos_initial, qlabel, slider_value = None):
+    def __init__(self, settings_widget, lyt, input_iterator, max_pos_initial, min_pos_initial, qlabel,
+                 slider_value=None):
         super().__init__()
         self.settings_widget = settings_widget
         self.lyt = lyt
@@ -59,9 +60,8 @@ class PlotWidget(QWidget):
             'µ_': 'mu_minus'
         }
 
-
     def update_slider_value(self, value):
-         self.slider_value = value
+        self.slider_value = value
 
     def initUI(self):
         op_dom = self.operational_domain_computation()
@@ -72,8 +72,6 @@ class PlotWidget(QWidget):
 
         pyfiction.write_operational_domain(op_dom, 'op_dom.csv', write_op_dom_params)
 
-        # TODO the plot causes a crash when the window is resized
-
         self.three_dimensional_plot = self.settings_widget.get_z_dimension() != 'NONE'
 
         # Generate the plot
@@ -82,14 +80,15 @@ class PlotWidget(QWidget):
                                           y_param=self.column_map[self.settings_widget.get_y_dimension()],
                                           z_param=self.column_map[
                                               self.settings_widget.get_z_dimension()] if self.three_dimensional_plot else None,
-                                          xlog=False,
-                                          ylog=False,
+                                          xlog=self.settings_widget.get_x_log_scale(),
+                                          ylog=self.settings_widget.get_y_log_scale(),
+                                          zlog=self.settings_widget.get_z_log_scale(),
                                           x_range=tuple(self.settings_widget.get_x_parameter_range()[:2]),
                                           y_range=tuple(self.settings_widget.get_y_parameter_range()[:2]),
                                           z_range=tuple(self.settings_widget.get_z_parameter_range()[
                                                         :2]) if self.three_dimensional_plot else None,
                                           include_non_operational=not self.three_dimensional_plot,
-                                          show_legend=True, layout = self.lyt)
+                                          show_legend=True)
 
         # Delete the CSV file after it's used
         csv_file_path = 'op_dom.csv'
@@ -270,7 +269,7 @@ class PlotWidget(QWidget):
                                                             op_dom_params)
         elif algo == 'Random Sampling':
             return pyfiction.operational_domain_random_sampling(self.lyt,
-                                                               gate_func,
+                                                                gate_func,
                                                                 self.settings_widget.get_random_samples(),
                                                                 op_dom_params)
         elif algo == 'Flood Fill':
@@ -385,17 +384,17 @@ class PlotWidget(QWidget):
                     status = pyfiction.operational_status.OPERATIONAL
 
             # Plot the new layout and charge distribution, then update the QLabel
-            _ = self.plot_layout(input_iterator_copy.get_layout(), slider_value, gs, status, parameter_point=(self.x, self.y))
+            _ = self.plot_layout(input_iterator_copy.get_layout(), slider_value, gs, status,
+                                 parameter_point=(self.x, self.y))
 
             input_iterator_copy += 1
             slider_value += 1
 
-        plot_image_path = self.plot_layout(self.input_iterator.get_layout(), self.get_slider_value(),"not-none",
+        plot_image_path = self.plot_layout(self.input_iterator.get_layout(), self.get_slider_value(), "not-none",
                                            parameter_point=(self.x, self.y))
 
         self.pixmap = QPixmap(str(plot_image_path))
         self.plot_label.setPixmap(self.pixmap)
-
 
     def picked_x_y(self):
         return [self.x, self.y]

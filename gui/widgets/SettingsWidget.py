@@ -9,7 +9,6 @@ import os
 
 
 class SettingsWidget(QWidget):
-
     DISPLAY_TO_INTERNAL = {
         'epsilon_r': 'epsilon_r',
         'lambda_TF [nm]': 'lambda_TF',
@@ -20,6 +19,7 @@ class SettingsWidget(QWidget):
     def __init__(self, file_path):  # Add file_path as a parameter
         super().__init__()
         self.file_path = file_path  # Store the file_path as an instance variable
+        self.three_dimensional_sweep = False  # flag for 3D sweeps
         self.initUI()
 
     def initUI(self):
@@ -209,7 +209,7 @@ class SettingsWidget(QWidget):
         self.operational_domain_group.addLayout(random_samples_layout)  # Add to the group's QVBoxLayout
 
         # Connect the currentTextChanged signal of the algorithm_dropdown to the new slot method
-        self.algorithm_dropdown.currentTextChanged.connect(self.update_random_samples_spinbox)
+        self.algorithm_dropdown.currentTextChanged.connect(self.set_algorithm_specific_random_sample_count)
 
         # Operational Domain Sweep Sub-group
         self.operational_domain_sweep_group = QGroupBox('Sweep Settings')
@@ -223,12 +223,18 @@ class SettingsWidget(QWidget):
         x_dimension_layout.addWidget(x_dimension_label, 30)
         x_dimension_layout.addWidget(self.x_dimension_dropdown, 70)
         self.x_dimension_dropdown.currentIndexChanged.connect(
-            lambda: self.update_parameter_range(self.x_dimension_dropdown.currentText(),
-                                                self.x_parameter_range_selector)
+            lambda: self.set_dimension_specific_parameter_range(self.x_dimension_dropdown.currentText(),
+                                                                self.x_parameter_range_selector)
         )
         operational_domain_sweep_layout.addLayout(x_dimension_layout)  # Add to the sub-group's QVBoxLayout
 
         self.x_parameter_range_selector = RangeSelector('X-Parameter Range', 0.0, 10.0, 0.1)
+        self.x_parameter_range_selector.min_spinbox.valueChanged.connect(
+            lambda: self.set_parameter_range_specific_log_scale_checkbox_status(self.x_parameter_range_selector)
+        )
+        self.x_parameter_range_selector.max_spinbox.valueChanged.connect(
+            lambda: self.set_parameter_range_specific_log_scale_checkbox_status(self.x_parameter_range_selector)
+        )
         operational_domain_sweep_layout.addWidget(self.x_parameter_range_selector)
 
         # Y-Dimension sweep parameter drop-down
@@ -240,32 +246,52 @@ class SettingsWidget(QWidget):
         y_dimension_layout.addWidget(y_dimension_label, 30)
         y_dimension_layout.addWidget(self.y_dimension_dropdown, 70)
         self.y_dimension_dropdown.currentIndexChanged.connect(
-            lambda: self.update_parameter_range(self.y_dimension_dropdown.currentText(),
-                                                self.y_parameter_range_selector)
+            lambda: self.set_dimension_specific_parameter_range(self.y_dimension_dropdown.currentText(),
+                                                                self.y_parameter_range_selector)
         )
         operational_domain_sweep_layout.addLayout(y_dimension_layout)  # Add to the sub-group's QVBoxLayout
 
         self.y_parameter_range_selector = RangeSelector('Y-Parameter Range', 0.0, 10.0, 0.1)
+        self.y_parameter_range_selector.min_spinbox.valueChanged.connect(
+            lambda: self.set_parameter_range_specific_log_scale_checkbox_status(self.y_parameter_range_selector)
+        )
+        self.y_parameter_range_selector.max_spinbox.valueChanged.connect(
+            lambda: self.set_parameter_range_specific_log_scale_checkbox_status(self.y_parameter_range_selector)
+        )
         operational_domain_sweep_layout.addWidget(self.y_parameter_range_selector)
 
         # Z-Dimension sweep parameter drop-down (Initially set to NONE)
         z_dimension_layout = QHBoxLayout()
         z_dimension_label = QLabel('Z-Dimension')
         self.z_dimension_dropdown = QComboBox()
-        self.z_dimension_dropdown.addItems(['NONE', 'epsilon_r', 'lambda_TF [nm]', 'µ_ [eV]'])  # Added NONE as default option
+        self.z_dimension_dropdown.addItems(['NONE', 'epsilon_r', 'lambda_TF [nm]', 'µ_ [eV]'])
         z_dimension_layout.addWidget(z_dimension_label, 30)
         z_dimension_layout.addWidget(self.z_dimension_dropdown, 70)
         self.z_dimension_dropdown.currentIndexChanged.connect(
-            lambda: self.update_parameter_range(self.z_dimension_dropdown.currentText(),
-                                                self.z_parameter_range_selector)
+            lambda: self.set_dimension_specific_parameter_range(self.z_dimension_dropdown.currentText(),
+                                                                self.z_parameter_range_selector)
         )
         # disable contour tracing if 3D sweeps are selected
         self.z_dimension_dropdown.currentIndexChanged.connect(
-            lambda: self.update_algorithm_selector(self.z_dimension_dropdown.currentText())
+            lambda: self.set_dimension_specific_algorithm_selector(self.z_dimension_dropdown.currentText())
+        )
+        # disable log scale if 3D sweeps are selected
+        self.z_dimension_dropdown.currentIndexChanged.connect(
+            lambda: self.set_algorithm_specific_log_scale_checkbox_status(self.z_dimension_dropdown.currentText(),
+                                                                          [self.x_parameter_range_selector,
+                                                                           self.y_parameter_range_selector,
+                                                                           # self.z_parameter_range_selector # TODO uncomment for 3D log scale
+                                                                           ])
         )
         operational_domain_sweep_layout.addLayout(z_dimension_layout)  # Add to the sub-group's QVBoxLayout
 
         self.z_parameter_range_selector = RangeSelector('Z-Parameter Range', 0.0, 10.0, 0.1)
+        self.z_parameter_range_selector.min_spinbox.valueChanged.connect(
+            lambda: self.set_parameter_range_specific_log_scale_checkbox_status(self.z_parameter_range_selector)
+        )
+        self.z_parameter_range_selector.max_spinbox.valueChanged.connect(
+            lambda: self.set_parameter_range_specific_log_scale_checkbox_status(self.z_parameter_range_selector)
+        )
         self.z_parameter_range_selector.setDisabled(True)  # Initially disabled
         operational_domain_sweep_layout.addWidget(self.z_parameter_range_selector)
 
@@ -317,13 +343,13 @@ class SettingsWidget(QWidget):
             # Convert to uppercase and check if it's a recognized gate
             gate_name = part.upper()
             if gate_name in recognized_gates:
-                #print(f"Extracted function: {gate_name}")  # For debugging
+                # print(f"Extracted function: {gate_name}")  # For debugging
                 return gate_name  # Return the first recognized gate name
 
         return None  # Return None if no recognized gate is found
 
     # New slot method to enable or disable the random_samples_spinbox based on the selected algorithm
-    def update_random_samples_spinbox(self, selected_algorithm):
+    def set_algorithm_specific_random_sample_count(self, selected_algorithm):
         if selected_algorithm == 'Grid Search':
             self.random_samples_spinbox.setDisabled(True)
         else:
@@ -337,7 +363,7 @@ class SettingsWidget(QWidget):
             self.random_samples_spinbox.setValue(100)
             self.random_samples_spinbox.setSingleStep(10)
 
-    def update_algorithm_selector(self, selected_sweep_parameter):
+    def set_dimension_specific_algorithm_selector(self, selected_sweep_parameter):
         # disable contour tracing if 3D sweeps are selected
 
         # Access the internal model of the QComboBox
@@ -348,15 +374,19 @@ class SettingsWidget(QWidget):
         if selected_sweep_parameter == 'NONE':
             # Enable the 'Contour Tracing' option
             contour_tracing.setFlags(contour_tracing.flags() | Qt.ItemFlag.ItemIsEnabled)
+            # set the 3D flag to False
+            self.three_dimensional_sweep = False
         else:
             # Disable the 'Contour Tracing' option
             contour_tracing.setFlags(contour_tracing.flags() & ~Qt.ItemFlag.ItemIsEnabled)
+            # set the 3D flag to True
+            self.three_dimensional_sweep = True
 
             # If 'Contour Tracing' is selected, switch to 'Grid Search'
             if self.algorithm_dropdown.currentText() == 'Contour Tracing':
                 self.algorithm_dropdown.setCurrentIndex(0)
 
-    def update_parameter_range(self, selected_sweep_parameter, range_selector):
+    def set_dimension_specific_parameter_range(self, selected_sweep_parameter, range_selector):
         if selected_sweep_parameter == 'µ_ [eV]':
             range_selector.set_range(-0.5, -0.1, 0.0001, 0.1, 0.005)
             range_selector.set_single_steps(0.01, 0.01, 0.001)
@@ -370,6 +400,25 @@ class SettingsWidget(QWidget):
             range_selector.setDisabled(True)
         else:
             range_selector.setEnabled(True)
+
+    def set_parameter_range_specific_log_scale_checkbox_status(self, range_selector):
+        """Disables the log scale checkbox of the given range_selector if the range min/max is not fully positive."""
+        if not self.three_dimensional_sweep:
+            min_value = range_selector.min_spinbox.value()
+            max_value = range_selector.max_spinbox.value()
+
+            if min_value <= 0 or max_value <= 0:
+                range_selector.disable_log_scale_checkbox()
+            else:
+                range_selector.enable_log_scale_checkbox()
+
+    def set_algorithm_specific_log_scale_checkbox_status(self, selected_sweep_parameter, range_selectors):
+        """Disables the log scale checkboxes of the given range_selectors if 3D sweeps are selected."""
+        for range_selector in range_selectors:
+            if selected_sweep_parameter != 'NONE':
+                range_selector.disable_log_scale_checkbox()
+            else:
+                self.set_parameter_range_specific_log_scale_checkbox_status(range_selector)
 
     def disable_run_button(self):
         self.run_button.setDisabled(True)
@@ -407,14 +456,23 @@ class SettingsWidget(QWidget):
     def get_x_parameter_range(self):
         return self.x_parameter_range_selector.get_range()
 
+    def get_x_log_scale(self):
+        return self.x_parameter_range_selector.get_log_scale()
+
     def get_y_dimension(self):
         return self.DISPLAY_TO_INTERNAL.get(self.y_dimension_dropdown.currentText())
 
     def get_y_parameter_range(self):
         return self.y_parameter_range_selector.get_range()
 
+    def get_y_log_scale(self):
+        return self.y_parameter_range_selector.get_log_scale()
+
     def get_z_dimension(self):
         return self.DISPLAY_TO_INTERNAL.get(self.z_dimension_dropdown.currentText())
 
     def get_z_parameter_range(self):
         return self.z_parameter_range_selector.get_range()
+
+    def get_z_log_scale(self):
+        return self.z_parameter_range_selector.get_log_scale()

@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QDoubleSpinBox, QSizePolicy, QHBoxLayout
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QDoubleSpinBox, QSizePolicy, QHBoxLayout, QCheckBox
 
 
 class RangeSelector(QWidget):
@@ -56,6 +56,12 @@ class RangeSelector(QWidget):
         # Add the spinbox layout to the main layout
         layout.addLayout(spinbox_layout)
 
+        # Checkbox for linear/logarithmic scale
+        self.scale_checkbox = QCheckBox("Log Scale")
+        self.scale_checkbox.setEnabled(False)  # Disable by default
+        spinbox_layout.addWidget(self.scale_checkbox)
+
+        # Set the overall layout for the widget
         self.setLayout(layout)
 
     def set_range(self, min_value, max_value, min_step_value, max_step_value, step_value):
@@ -80,3 +86,13 @@ class RangeSelector(QWidget):
         self.min_spinbox.setDecimals(min_decimals)
         self.max_spinbox.setDecimals(max_decimals)
         self.step_spinbox.setDecimals(step_decimals)
+
+    def get_log_scale(self):
+        return self.scale_checkbox.isChecked()
+
+    def disable_log_scale_checkbox(self):
+        self.scale_checkbox.setChecked(False)
+        self.scale_checkbox.setEnabled(False)
+
+    def enable_log_scale_checkbox(self):
+        self.scale_checkbox.setEnabled(True)

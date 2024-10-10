@@ -1,8 +1,6 @@
 import pandas as pd
 import matplotlib.pyplot as plt
-from mnt import pyfiction
 import numpy as np
-
 
 # Define colors
 GRAY = (0.75, 0.75, 0.75)
@@ -67,8 +65,8 @@ def calculate_colors(y_values, z_values):
     return np.clip(colors, 0, 1)
 
 
-def plot_data(ax, x_data, y_data, z_data=None, log_scale=(False, False), label=None, color=BASE_PURPLE, marker_size=4,
-              alpha=1.0):
+def plot_data(ax, x_data, y_data, z_data=None, log_scale=(False, False, False), label=None, color=BASE_PURPLE,
+              marker_size=4, alpha=1.0):
     """
     Plot data on a given axis with optional log scaling and 3D support.
 
@@ -77,7 +75,7 @@ def plot_data(ax, x_data, y_data, z_data=None, log_scale=(False, False), label=N
         x_data (list): List of X-axis data.
         y_data (list): List of Y-axis data.
         z_data (list): List of Z-axis data (optional).
-        log_scale (tuple): Tuple of booleans indicating whether to use log scale for X and Y axes.
+        log_scale (tuple): Tuple of booleans indicating whether to use log scale for X, Y, and Z axes.
         label (str): Label for the data in the plot.
         color (tuple): RGB tuple for the color.
         marker_size (int): Size of the markers in the plot.
@@ -85,11 +83,18 @@ def plot_data(ax, x_data, y_data, z_data=None, log_scale=(False, False), label=N
     """
     plot_func = ax.plot
 
+    x_plot_data = np.concatenate(x_data)
+    y_plot_data = np.concatenate(y_data)
+
     if z_data:
         # 3D plot
-        colors = calculate_colors(np.concatenate(y_data), np.concatenate(z_data))
-        ax.scatter(np.concatenate(x_data), np.concatenate(y_data), np.concatenate(z_data), c=colors, s=marker_size,
-                   label=label, alpha=alpha)
+        z_plot_data = np.concatenate(z_data)
+
+        colors = None
+        if y_data and z_data:
+            colors = calculate_colors(y_plot_data, z_plot_data)
+
+        ax.scatter(x_plot_data, y_plot_data, z_plot_data, c=colors, s=marker_size, label=label, alpha=alpha)
     else:
         # 2D plot
         if log_scale[0] and log_scale[1]:
@@ -99,13 +104,12 @@ def plot_data(ax, x_data, y_data, z_data=None, log_scale=(False, False), label=N
         elif log_scale[1]:
             plot_func = ax.semilogy
 
-        plot_func(np.concatenate(x_data), np.concatenate(y_data), "o", color=color, markersize=marker_size, label=label,
-                  alpha=alpha)
+        plot_func(x_plot_data, y_plot_data, "o", color=color, markersize=marker_size, label=label, alpha=alpha)
 
 
 def generate_plot(csv_files, x_param, y_param, z_param=None, title="Operational Domain", xlog=False, ylog=False,
-                  include_non_operational=True, show_legend=True, x_range=(0.5, 10.5), y_range=(0.5, 10.5),
-                  z_range=(-0.55, -0.05), layout = None):
+                  zlog=False, include_non_operational=True, show_legend=True, x_range=(0.5, 10.5), y_range=(0.5, 10.5),
+                  z_range=(-0.55, -0.05)):
     """
     Generate a 2D or 3D scatter plot from operational domain data.
 
@@ -117,6 +121,7 @@ def generate_plot(csv_files, x_param, y_param, z_param=None, title="Operational 
         title (str): Title of the plot.
         xlog (bool): Whether to use a logarithmic scale for the X-axis.
         ylog (bool): Whether to use a logarithmic scale for the Y-axis.
+        zlog (bool): Whether to use a logarithmic scale for the Z-axis.
         include_non_operational (bool): Whether to include non-operational data in the plot.
         show_legend (bool): Whether to display a legend.
         x_range (tuple): Tuple specifying the min and max values for the X-axis.
@@ -158,10 +163,10 @@ def generate_plot(csv_files, x_param, y_param, z_param=None, title="Operational 
         ax.zaxis.set_rotate_label(False)  # Disable automatic rotation
 
         # Plot the data
-        plot_data(ax, x_op, y_op, z_data=z_op, label='Operational', marker_size=4)
+        plot_data(ax, x_op, y_op, z_data=z_op, label='Operational', marker_size=4, log_scale=(xlog, ylog, zlog))
         if include_non_operational:
             plot_data(ax, x_non_op, y_non_op, z_data=z_non_op, label='Non-Operational', color=GRAY, marker_size=2,
-                      alpha=0.1)
+                      alpha=0.1, log_scale=(xlog, ylog, zlog))
 
         ax.view_init(elev=30, azim=45)  # Fixed angle for 3D view
     else:
@@ -183,6 +188,6 @@ def generate_plot(csv_files, x_param, y_param, z_param=None, title="Operational 
                       log_scale=(xlog, ylog))
 
     if show_legend:
-        ax.legend(loc='upper left')  # Moves legend to the upper-left, outside of the plot
+        ax.legend(loc='upper left')  # Moves legend to the upper-left
 
     return fig, ax
