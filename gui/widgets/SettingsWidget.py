@@ -223,7 +223,8 @@ class SettingsWidget(QWidget):
         x_dimension_layout.addWidget(x_dimension_label, 30)
         x_dimension_layout.addWidget(self.x_dimension_dropdown, 70)
         self.x_dimension_dropdown.currentIndexChanged.connect(
-            lambda: self.update_range_selector(self.x_dimension_dropdown.currentText(), self.x_parameter_range_selector)
+            lambda: self.update_parameter_range(self.x_dimension_dropdown.currentText(),
+                                                self.x_parameter_range_selector)
         )
         operational_domain_sweep_layout.addLayout(x_dimension_layout)  # Add to the sub-group's QVBoxLayout
 
@@ -239,7 +240,8 @@ class SettingsWidget(QWidget):
         y_dimension_layout.addWidget(y_dimension_label, 30)
         y_dimension_layout.addWidget(self.y_dimension_dropdown, 70)
         self.y_dimension_dropdown.currentIndexChanged.connect(
-            lambda: self.update_range_selector(self.y_dimension_dropdown.currentText(), self.y_parameter_range_selector)
+            lambda: self.update_parameter_range(self.y_dimension_dropdown.currentText(),
+                                                self.y_parameter_range_selector)
         )
         operational_domain_sweep_layout.addLayout(y_dimension_layout)  # Add to the sub-group's QVBoxLayout
 
@@ -254,8 +256,8 @@ class SettingsWidget(QWidget):
         z_dimension_layout.addWidget(z_dimension_label, 30)
         z_dimension_layout.addWidget(self.z_dimension_dropdown, 70)
         self.z_dimension_dropdown.currentIndexChanged.connect(
-            lambda: self.update_range_selector(self.z_dimension_dropdown.currentText(),
-                                               self.z_parameter_range_selector)
+            lambda: self.update_parameter_range(self.z_dimension_dropdown.currentText(),
+                                                self.z_parameter_range_selector)
         )
         # disable contour tracing if 3D sweeps are selected
         self.z_dimension_dropdown.currentIndexChanged.connect(
@@ -354,8 +356,8 @@ class SettingsWidget(QWidget):
             if self.algorithm_dropdown.currentText() == 'Contour Tracing':
                 self.algorithm_dropdown.setCurrentIndex(0)
 
-    def update_range_selector(self, selected_sweep_parameter, range_selector):
-        if selected_sweep_parameter == 'µ_':
+    def update_parameter_range(self, selected_sweep_parameter, range_selector):
+        if selected_sweep_parameter == 'µ_ [eV]':
             range_selector.set_range(-0.5, -0.1, 0.0001, 0.1, 0.005)
             range_selector.set_single_steps(0.01, 0.01, 0.001)
             range_selector.set_decimal_precision(2, 2, 3)
