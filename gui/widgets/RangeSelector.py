@@ -1,13 +1,12 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QDoubleSpinBox, QSizePolicy, QHBoxLayout, QCheckBox, \
     QToolButton
 
-from gui.widgets import IconLoader
+from gui.widgets import InfoTag
 
 
 class RangeSelector(QWidget):
     def __init__(self, label_text, default_min, default_max, default_step, parent=None):
         super().__init__(parent)
-        self.icon_loader = IconLoader()
         self.initUI(label_text, default_min, default_max, default_step)
 
     def initUI(self, label_text, default_min, default_max, default_step):
@@ -65,10 +64,9 @@ class RangeSelector(QWidget):
         self.scale_checkbox.setEnabled(False)  # Disable by default
         spinbox_layout.addWidget(self.scale_checkbox)
 
-        # Add help icon as a QLabel
-        help_icon = QLabel()
-        help_icon.setPixmap(self.icon_loader.load_help_icon().pixmap(16, 16))
-        help_icon.setToolTip("Use logarithmic axis scale instead of linear one. Logarithmic axes are not supported for 3D operational domain plots.")  # Tooltip when hovered
+        # Add help icon with tooltip
+        help_icon = InfoTag(
+            "Use logarithmic axis scale instead of linear one. Logarithmic axes are not supported for 3D operational domain plots.")
         spinbox_layout.addWidget(help_icon)
 
         # Set the overall layout for the widget
