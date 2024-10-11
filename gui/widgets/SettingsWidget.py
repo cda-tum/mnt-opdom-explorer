@@ -5,6 +5,8 @@ from PyQt6.QtCore import Qt
 from gui.widgets import RangeSelector
 from gui.widgets import IconLoader
 from gui.widgets.IconGroupBox import IconGroupBox
+from gui.widgets import InfoTag
+
 import os
 
 
@@ -115,7 +117,12 @@ class SettingsWidget(QWidget):
         self.engine_dropdown.addItems(['ExGS', 'QuickExact', 'QuickSim'])
         self.engine_dropdown.setCurrentIndex(1)  # Set QuickExact as default
         engine_layout.addWidget(engine_label, 30)  # 30% of the space goes to the label
-        engine_layout.addWidget(self.engine_dropdown, 70)  # 70% of the space goes to the dropdown
+        engine_layout.addWidget(self.engine_dropdown, 69)  # 69% of the space goes to the dropdown
+        engine_info_tag = InfoTag(
+            'Exhaustive Ground State Search (ExGS) is an exact but slow engine.\n'
+            'QuickExact offers the same optimality guarantee as ExGS but has a runtime advantage of several orders of magnitude.\n'
+            'QuickSim is a fast but approximate engine that is best suited for small gates.')
+        engine_layout.addWidget(engine_info_tag, 1)  # 1% of the space goes to the info tag
         self.physical_simulation_group.addLayout(engine_layout)  # Add to the group's QVBoxLayout
 
         # µ_ number selector
@@ -127,7 +134,10 @@ class SettingsWidget(QWidget):
         self.mu_minus_selector.setSingleStep(0.01)
         self.mu_minus_selector.setValue(-0.28)
         mu_layout.addWidget(mu_label, 30)  # 30% of the space goes to the label
-        mu_layout.addWidget(self.mu_minus_selector, 70)  # 70% of the space goes to the selector
+        mu_layout.addWidget(self.mu_minus_selector, 69)  # 69% of the space goes to the selector
+        mu_info_tag = InfoTag(
+            'µ_ is the energy difference between the Fermi Energy and the charge transition level (0/−) in eV.')
+        mu_layout.addWidget(mu_info_tag, 1)  # 1% of the space goes to the info tag
         self.physical_simulation_group.addLayout(mu_layout)  # Add to the group's QVBoxLayout
 
         # epsilon_r number selector
@@ -139,7 +149,9 @@ class SettingsWidget(QWidget):
         self.epsilon_r_selector.setSingleStep(0.1)
         self.epsilon_r_selector.setValue(5.6)
         epsilon_r_layout.addWidget(epsilon_r_label, 30)  # 30% of the space goes to the label
-        epsilon_r_layout.addWidget(self.epsilon_r_selector, 70)  # 70% of the space goes to the selector
+        epsilon_r_layout.addWidget(self.epsilon_r_selector, 69)  # 69% of the space goes to the selector
+        epsilon_r_info_tag = InfoTag('epsilon_r is the dielectric constant.')
+        epsilon_r_layout.addWidget(epsilon_r_info_tag, 1)  # 1% of the space goes to the info tag
         self.physical_simulation_group.addLayout(epsilon_r_layout)  # Add to the group's QVBoxLayout
 
         # lambda_TF number selector
@@ -151,7 +163,9 @@ class SettingsWidget(QWidget):
         self.lambda_tf_selector.setSingleStep(0.1)
         self.lambda_tf_selector.setValue(5.0)
         lambda_tf_layout.addWidget(lambda_tf_label, 30)  # 30% of the space goes to the label
-        lambda_tf_layout.addWidget(self.lambda_tf_selector, 70)  # 70% of the space goes to the selector
+        lambda_tf_layout.addWidget(self.lambda_tf_selector, 69)  # 69% of the space goes to the selector
+        lambda_tf_info_tag = InfoTag('lambda_TF is the Thomas-Fermi screening length in nm.')
+        lambda_tf_layout.addWidget(lambda_tf_info_tag, 1)  # 1% of the space goes to the info tag
         self.physical_simulation_group.addLayout(lambda_tf_layout)  # Add to the group's QVBoxLayout
 
         # Add the group box to the settings layout
@@ -177,8 +191,12 @@ class SettingsWidget(QWidget):
         else:
             self.boolean_function_dropdown.setCurrentIndex(0)  # Set 'AND' as default if extraction fails
 
-        boolean_function_layout.addWidget(boolean_function_label, 30)
-        boolean_function_layout.addWidget(self.boolean_function_dropdown, 70)
+        boolean_function_layout.addWidget(boolean_function_label, 30)  # 30% of the space goes to the label
+        boolean_function_layout.addWidget(self.boolean_function_dropdown, 69)  # 69% of the space goes to the dropdown
+        boolean_function_info_tag = InfoTag(
+            'The Boolean function that the SiDB layout is expected to implement. '
+            'The operational domain plot will be generated based on this function.')
+        boolean_function_layout.addWidget(boolean_function_info_tag, 1)  # 1% of the space goes to the info tag
         self.gate_function_group.addLayout(boolean_function_layout)
 
         # Add the group box to the settings layout
@@ -195,6 +213,12 @@ class SettingsWidget(QWidget):
 
         algorithm_layout.addWidget(algorithm_label, 30)
         algorithm_layout.addWidget(self.algorithm_dropdown, 70)
+        algorithm_info_tag = InfoTag(
+            'Grid Search is a brute-force algorithm that evaluates all possible combinations of parameters. It recreates the entire operational domain within the parameter range.\n'
+            'Random Sampling randomly samples from the parameter range and will (most likely) not recover the entire operational domain.\n'
+            'Flood Fill is a seed-based algorithm that grows the operational domain from a randomly sampled seed. It will fully recreate all operational domain islands that were hit by the initial random samples.\n'
+            'Contour Tracing is also seed-based but aims at tracing only the edges of each operational domain island that was discovered by the initial random sampling.')
+        algorithm_layout.addWidget(algorithm_info_tag, 1)  # 1% of the space goes to the info tag
         self.operational_domain_group.addLayout(algorithm_layout)  # Add to the group's QVBoxLayout
 
         # Random Samples spinbox
@@ -205,7 +229,11 @@ class SettingsWidget(QWidget):
         self.random_samples_spinbox.setValue(0)
         self.random_samples_spinbox.setDisabled(True)  # Disable by default
         random_samples_layout.addWidget(random_samples_label, 30)
-        random_samples_layout.addWidget(self.random_samples_spinbox, 70)
+        random_samples_layout.addWidget(self.random_samples_spinbox, 69)
+        random_samples_info_tag = InfoTag(
+            'Number of random samples to take. If the Random Sampling algorithm is selected, this represents the total number of simulation samples to conduct. '
+            'If Flood Fill or Contour Tracing are selected however, this represents the number of random samples to take for the initial seed.')
+        random_samples_layout.addWidget(random_samples_info_tag, 1)  # 1% of the space goes to the info tag
         self.operational_domain_group.addLayout(random_samples_layout)  # Add to the group's QVBoxLayout
 
         # Connect the currentTextChanged signal of the algorithm_dropdown to the new slot method
