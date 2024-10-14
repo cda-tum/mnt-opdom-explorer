@@ -4,12 +4,38 @@ import numpy as np
 from pathlib import Path
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QMessageBox
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QMessageBox, QProgressBar, QApplication
+from PyQt6.QtCore import QThread, pyqtSignal
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from PyQt6.QtGui import QPixmap
 
 from gui.widgets import IconLoader
 from mnt import pyfiction
+
+
+class SimulationThread(QThread):
+    progress = pyqtSignal(int)
+    finished = pyqtSignal(str)
+
+    def __init__(self, widget):
+        super().__init__()
+        self.widget = widget
+
+    def run(self):
+        input_iterator_initial = pyfiction.bdl_input_iterator_100(self.widget.lyt)
+        total_steps = 2 ** self.widget.input_iterator.num_input_pairs()  # Calculate total steps
+        for i in range(total_steps):
+            if i == total_steps-1:
+                self.widget.simulate(i, input_iterator_initial, True)
+            else:
+                self.widget.simulate(i, input_iterator_initial)  # Pass current step index
+
+            # Emit the progress update after each iteration
+            self.progress.emit(int(((i + 1) / total_steps) * 100))  # Update progress (0-100)
+            input_iterator_initial += 1
+
+        self.finished.emit("Simulation Completed!")  # Emit signal on completion
+
 
 
 class PlotWidget(QWidget):
@@ -29,6 +55,10 @@ class PlotWidget(QWidget):
         self.max_pos = max_pos_initial
         self.min_pos = min_pos_initial
         self.plot_label = qlabel
+
+        # Initialize the progress bar
+        self.progress_bar = QProgressBar(self)
+        self.layout.addWidget(self.progress_bar)
 
         # Map the Boolean function string to the corresponding pyfiction function
         self.boolean_function_map = {
@@ -89,6 +119,10 @@ class PlotWidget(QWidget):
                                                         :2]) if self.three_dimensional_plot else None,
                                           include_non_operational=not self.three_dimensional_plot,
                                           show_legend=True)
+
+        self.simulation_thread = SimulationThread(self)
+        self.simulation_thread.progress.connect(self.update_progress_bar)
+        self.simulation_thread.finished.connect(self.simulation_finished)
 
         # Delete the CSV file after it's used
         csv_file_path = 'op_dom.csv'
@@ -318,15 +352,25 @@ class PlotWidget(QWidget):
             self.fig.canvas.draw()
 
             # TODO replace simulation with cache access?
-            # Perform simulation with the new coordinates
-            self.simulate()
+            # Process any pending events to ensure GUI updates are shown
+            QApplication.processEvents()
+
+            # Start the simulation in a separate thread
+            self.simulation_thread.start()
         else:
             print('Clicked outside axes bounds but inside plot window')
 
     def get_slider_value(self):
         return self.slider_value
 
-    def simulate(self):
+    def update_progress_bar(self, value):
+        self.progress_bar.setValue(value)
+
+    def simulation_finished(self, message):
+        QMessageBox.information(self, "Simulation Result", message)
+        self.progress_bar.setValue(0)  # Reset the progress bar
+
+    def simulate(self, iteration, input_iterator_initial, final_pattern = False):
         gate_func = self.boolean_function_map[self.settings_widget.get_boolean_function()]
 
         qe_sim_params = self.sim_params
@@ -354,47 +398,37 @@ class PlotWidget(QWidget):
         qe_params.base_number_detection = pyfiction.automatic_base_number_detection.ON
         qe_params.simulation_parameters = qe_sim_params
 
-        input_iterator_copy = pyfiction.bdl_input_iterator_100(self.lyt)
-        slider_value = 0
-
         is_op_params = pyfiction.is_operational_params()
         is_op_params.simulation_parameters = qe_sim_params
         self.operational_patterns = pyfiction.operational_input_patterns(self.lyt, gate_func, is_op_params)
 
-        for _ in range(2 ** input_iterator_copy.num_input_pairs()):
-            print(slider_value)
+        sim_result = pyfiction.quickexact(input_iterator_initial.get_layout(), qe_params)
 
-            sim_result = pyfiction.quickexact(input_iterator_copy.get_layout(), qe_params)
+        gs = pyfiction.determine_groundstate_from_simulation_results(sim_result)[0]
 
-            gs = pyfiction.determine_groundstate_from_simulation_results(sim_result)[0]
+        if not sim_result.charge_distributions:
+            QMessageBox.warning(self, "No Ground State",
+                                f"The ground state could not be detected for ({round(self.x, 3)},{round(self.y, 3)}).")
+            return
 
-            if not sim_result.charge_distributions:
-                QMessageBox.warning(self, "No Ground State",
-                                    f"The ground state could not be detected for ({round(self.x, 3)},{round(self.y, 3)}).")
-                return
+        #print(iteration)
+        #print(self.operational_patterns)
 
-            pattern = slider_value
+        status = pyfiction.operational_status.NON_OPERATIONAL
+        if iteration in self.operational_patterns:
+            if iteration == input_iterator_initial:
+                status = pyfiction.operational_status.OPERATIONAL
 
-            print(pattern)
-            print(self.operational_patterns)
+        # Plot the new layout and charge distribution, then update the QLabel
+        _ = self.plot_layout(input_iterator_initial.get_layout(), iteration, gs, status,
+                             parameter_point=(self.x, self.y))
 
-            status = pyfiction.operational_status.NON_OPERATIONAL
-            if pattern in self.operational_patterns:
-                if pattern == input_iterator_copy:
-                    status = pyfiction.operational_status.OPERATIONAL
+        if final_pattern:
+            plot_image_path = self.plot_layout(self.input_iterator.get_layout(), self.get_slider_value(), "not-none",
+                                               parameter_point=(self.x, self.y))
 
-            # Plot the new layout and charge distribution, then update the QLabel
-            _ = self.plot_layout(input_iterator_copy.get_layout(), slider_value, gs, status,
-                                 parameter_point=(self.x, self.y))
-
-            input_iterator_copy += 1
-            slider_value += 1
-
-        plot_image_path = self.plot_layout(self.input_iterator.get_layout(), self.get_slider_value(), "not-none",
-                                           parameter_point=(self.x, self.y))
-
-        self.pixmap = QPixmap(str(plot_image_path))
-        self.plot_label.setPixmap(self.pixmap)
+            self.pixmap = QPixmap(str(plot_image_path))
+            self.plot_label.setPixmap(self.pixmap)
 
     def picked_x_y(self):
         return [self.x, self.y]
