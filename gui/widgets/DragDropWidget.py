@@ -39,12 +39,7 @@ class DragDropWidget(QWidget):
         self.progress_bar_chunk_color = self.button_color
 
         # Set background color and border radius for the widget
-        self.setStyleSheet(f"""
-            QWidget {{
-                background-color: {self.bg_color.name()};
-                border-radius: 10px;
-            }}
-        """)
+
 
         icon_loader = IconLoader()
 
@@ -101,18 +96,18 @@ class DragDropWidget(QWidget):
         # Create a browse button with hover effects
         browse_icon = icon_loader.load_folder_open_icon()
         browse_button = QPushButton(browse_icon, 'Browse', self)
-        browse_button.setStyleSheet(f"""
-            QPushButton {{
-                background-color: {self.button_color.name()};
-                color: white;
-                padding: 10px 20px;
-                border-radius: 5px;
-                font-size: 14px;
-            }}
-            QPushButton:hover {{
-                background-color: {self.button_color.name()};
-            }}
-        """)
+        # browse_button.setStyleSheet(f"""
+        #     QPushButton {{
+        #         background-color: {self.button_color.name()};
+        #         color: white;
+        #         padding: 10px 20px;
+        #         border-radius: 5px;
+        #         font-size: 14px;
+        #     }}
+        #     QPushButton:hover {{
+        #         background-color: {self.button_color.name()};
+        #     }}
+        # """)
         browse_button.clicked.connect(self.openFileDialog)
 
         # Add the button at the bottom of the layout
