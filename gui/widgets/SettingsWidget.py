@@ -211,8 +211,8 @@ class SettingsWidget(QWidget):
         self.algorithm_dropdown = QComboBox()
         self.algorithm_dropdown.addItems(['Grid Search', 'Random Sampling', 'Flood Fill', 'Contour Tracing'])
 
-        algorithm_layout.addWidget(algorithm_label, 30)
-        algorithm_layout.addWidget(self.algorithm_dropdown, 70)
+        algorithm_layout.addWidget(algorithm_label, 30)  # 30% of the space goes to the label
+        algorithm_layout.addWidget(self.algorithm_dropdown, 69)  # 69% of the space goes to the dropdown
         algorithm_info_tag = InfoTag(
             'Grid Search is a brute-force algorithm that evaluates all possible combinations of parameters. It recreates the entire operational domain within the parameter range.\n'
             'Random Sampling randomly samples from the parameter range and will (most likely) not recover the entire operational domain.\n'
