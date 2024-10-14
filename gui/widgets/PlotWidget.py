@@ -15,7 +15,7 @@ from mnt import pyfiction
 
 class SimulationThread(QThread):
     progress = pyqtSignal(int)
-    finished = pyqtSignal(str)
+    finished = pyqtSignal()
 
     def __init__(self, widget):
         super().__init__()
@@ -34,7 +34,7 @@ class SimulationThread(QThread):
             self.progress.emit(int(((i + 1) / total_steps) * 100))  # Update progress (0-100)
             input_iterator_initial += 1
 
-        self.finished.emit("Simulation Completed!")  # Emit signal on completion
+        self.finished.emit()  # Emit signal on completion
 
 
 
@@ -366,11 +366,11 @@ class PlotWidget(QWidget):
     def update_progress_bar(self, value):
         self.progress_bar.setValue(value)
 
-    def simulation_finished(self, message):
-        QMessageBox.information(self, "Simulation Result", message)
+    def simulation_finished(self):
         self.progress_bar.setValue(0)  # Reset the progress bar
 
     def simulate(self, iteration, input_iterator_initial, final_pattern = False):
+
         gate_func = self.boolean_function_map[self.settings_widget.get_boolean_function()]
 
         qe_sim_params = self.sim_params
