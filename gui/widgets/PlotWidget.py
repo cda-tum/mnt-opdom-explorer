@@ -5,9 +5,9 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QMessageBox, QProgressBar, QApplication
-from PyQt6.QtCore import QThread, pyqtSignal
+from PyQt6.QtCore import QThread, pyqtSignal, Qt
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
-from PyQt6.QtGui import QPixmap
+from PyQt6.QtGui import QPixmap, QCursor
 
 from gui.widgets import IconLoader
 from mnt import pyfiction
@@ -25,7 +25,7 @@ class SimulationThread(QThread):
         input_iterator_initial = pyfiction.bdl_input_iterator_100(self.widget.lyt)
         total_steps = 2 ** self.widget.input_iterator.num_input_pairs()  # Calculate total steps
         for i in range(total_steps):
-            if i == total_steps-1:
+            if i == total_steps - 1:
                 self.widget.simulate(i, input_iterator_initial, True)
             else:
                 self.widget.simulate(i, input_iterator_initial)  # Pass current step index
@@ -35,7 +35,6 @@ class SimulationThread(QThread):
             input_iterator_initial += 1
 
         self.finished.emit()  # Emit signal on completion
-
 
 
 class PlotWidget(QWidget):
@@ -59,6 +58,9 @@ class PlotWidget(QWidget):
         # Initialize the progress bar
         self.progress_bar = QProgressBar(self)
         self.layout.addWidget(self.progress_bar)
+
+        # Initialize the simulation running flag
+        self.simulation_running = False  # Flag to track simulation status
 
         # Map the Boolean function string to the corresponding pyfiction function
         self.boolean_function_map = {
@@ -119,15 +121,6 @@ class PlotWidget(QWidget):
                                                         :2]) if self.three_dimensional_plot else None,
                                           include_non_operational=not self.three_dimensional_plot,
                                           show_legend=True)
-
-        self.simulation_thread = SimulationThread(self)
-        self.simulation_thread.progress.connect(self.update_progress_bar)
-        self.simulation_thread.finished.connect(self.simulation_finished)
-
-        # Delete the CSV file after it's used
-        csv_file_path = 'op_dom.csv'
-        if os.path.exists(csv_file_path):
-            os.remove(csv_file_path)
 
         # Delete the CSV file after it's used
         csv_file_path = 'op_dom.csv'
@@ -320,6 +313,17 @@ class PlotWidget(QWidget):
     def on_click(self, event):
         # Check if the click was on the plot
         if event.inaxes is not None:
+            # Check if a simulation is already running
+            if self.simulation_running:
+                # Inform the user that a simulation is already running
+                QMessageBox.information(self, "Simulation in Progress",
+                                        "A simulation is already running. Please wait until it finishes.")
+                return  # Ignore the click
+
+            # Proceed with handling the click
+            self.simulation_running = True  # Set the flag
+            QApplication.setOverrideCursor(QCursor(Qt.CursorShape.WaitCursor))  # Set the wait cursor
+
             # Get the step sizes for the x and y dimensions
             x_min, x_max, x_step = self.settings_widget.get_x_parameter_range()
             y_min, y_max, y_step = self.settings_widget.get_y_parameter_range()
@@ -351,14 +355,22 @@ class PlotWidget(QWidget):
             # Redraw the plot
             self.fig.canvas.draw()
 
-            # TODO replace simulation with cache access?
             # Process any pending events to ensure GUI updates are shown
             QApplication.processEvents()
 
             # Start the simulation in a separate thread
-            self.simulation_thread.start()
+            self.start_simulation_thread()
         else:
             print('Clicked outside axes bounds but inside plot window')
+
+    def start_simulation_thread(self):
+        # Create a new simulation thread
+        self.simulation_thread = SimulationThread(self)
+        self.simulation_thread.progress.connect(self.update_progress_bar)
+        self.simulation_thread.finished.connect(self.simulation_finished)
+        self.simulation_thread.finished.connect(self.simulation_thread.deleteLater)
+        # Start the thread
+        self.simulation_thread.start()
 
     def get_slider_value(self):
         return self.slider_value
@@ -368,8 +380,11 @@ class PlotWidget(QWidget):
 
     def simulation_finished(self):
         self.progress_bar.setValue(0)  # Reset the progress bar
+        self.simulation_running = False  # Reset the simulation flag
+        QApplication.restoreOverrideCursor()  # Restore the cursor
+        print("Simulation finished. You can click again.")
 
-    def simulate(self, iteration, input_iterator_initial, final_pattern = False):
+    def simulate(self, iteration, input_iterator_initial, final_pattern=False):
 
         gate_func = self.boolean_function_map[self.settings_widget.get_boolean_function()]
 
@@ -410,9 +425,6 @@ class PlotWidget(QWidget):
             QMessageBox.warning(self, "No Ground State",
                                 f"The ground state could not be detected for ({round(self.x, 3)},{round(self.y, 3)}).")
             return
-
-        #print(iteration)
-        #print(self.operational_patterns)
 
         status = pyfiction.operational_status.NON_OPERATIONAL
         if iteration in self.operational_patterns:
