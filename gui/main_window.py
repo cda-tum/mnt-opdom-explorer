@@ -18,7 +18,7 @@ from PyQt6.QtWidgets import (
 )
 
 from gui.widgets import DragDropWidget, PlotWidget, SettingsWidget
-from mnt.pyfiction import *
+import mnt.pyfiction as pyfiction
 from gui.widgets.IconLoader import IconLoader
 
 from PyQt6.QtWidgets import QSlider
@@ -161,13 +161,12 @@ class MainWindow(QMainWindow):
             shutil.rmtree(caching_dir)  # This will delete the entire caching directory and its contents
 
         # Parse the layout file and initialize the BDL input iterator
-        self.lyt = read_sqd_layout_100(file_path)
+        self.lyt = pyfiction.read_sqd_layout_100(file_path)
         self.min_pos, self.max_pos = self.lyt.bounding_box_2d()
-        self.bdl_input_iterator = bdl_input_iterator_100(self.lyt)
+        self.bdl_input_iterator = pyfiction.bdl_input_iterator_100(self.lyt)
 
         # Create layout for display
         box_layout_view = QVBoxLayout()
-
 
         button_file_layout = QHBoxLayout()
         # Add button to go back to the drag & drop widget
@@ -196,18 +195,13 @@ class MainWindow(QMainWindow):
         self.slider.setRange(0, 2 ** self.bdl_input_iterator.num_input_pairs() - 1)
         self.slider.setTickInterval(1)  # Ticks at each integer position
         self.slider.setTickPosition(QSlider.TicksBelow)
-        #self.slider.add_checkmark(0)  # Set tick 0 to red
-        #self.slider.add_crossmark(2)  # Set tick 2 to blue
+        # self.slider.add_checkmark(0)  # Set tick 0 to red
+        # self.slider.add_crossmark(2)  # Set tick 2 to blue
         self.slider.setValue(0)  # Set the initial slider value to 0
         grouped_layout.addWidget(self.slider)  # Add the slider to your layout
 
-
         self.previous_slider_value = 0
 
-        # Add the input combination label below the slider
-        self.slider_label = QLabel('Input Combination: 0', self)
-        self.slider_label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)  # Fixed size policy for better control
-        grouped_layout.addWidget(self.slider_label)
         # Connect the slider value change signal to the label update method
         self.slider.valueChanged.connect(self.update_slider_label)
 
@@ -247,7 +241,7 @@ class MainWindow(QMainWindow):
         issue_button.setFixedSize(120, 30)  # Set a fixed size for the button
         issue_button.clicked.connect(lambda: self.open_issue_report())  # Connect to the open issue report function
         # TODO: Activate when repo is set to public
-        #button_layout.addWidget(issue_button)  # Add to horizontal layout
+        # button_layout.addWidget(issue_button)  # Add to horizontal layout
 
         # Align buttons to the left
         button_layout.setAlignment(Qt.AlignmentFlag.AlignLeft)  # Align to the left
@@ -275,23 +269,28 @@ class MainWindow(QMainWindow):
         self.stacked_widget.setCurrentWidget(splitter)
 
         # Set up the plot and load the image into the QLabel
-        self.plot = PlotWidget(self.settings, self.lyt, self.bdl_input_iterator, self.max_pos, self.min_pos,
-                               self.plot_label, self.slider.value())
+        self.plot = PlotWidget(
+            self.settings, self.lyt, self.bdl_input_iterator, self.max_pos, self.min_pos,
+            self.plot_label, self.slider.value())
 
-        # Store the QSplitter widget in a class variable
-        for i in range(2 ** self.bdl_input_iterator.num_input_pairs()):  # Increment the iterator manually
-            _ = self.plot.plot_layout(self.bdl_input_iterator.get_layout(), slider_value=i)
+        # Generate plots for each slider value
+        for i in range(2 ** self.bdl_input_iterator.num_input_pairs()):
+            _ = self.plot.plot_layout(
+                self.lyt,
+                self.bdl_input_iterator.get_layout(),
+                slider_value=i,
+                bin_value=bin(i)[2:].zfill(self.bdl_input_iterator.num_input_pairs()))
             self.bdl_input_iterator += 1
 
-        self.bdl_input_iterator = bdl_input_iterator_100(self.lyt)  # Reset the iterator
+        self.bdl_input_iterator = pyfiction.bdl_input_iterator_100(self.lyt)  # Reset the iterator
 
         # Get the current script directory
         script_dir = Path(__file__).resolve().parent
-        print(script_dir)
+
         # Construct the full path to the file
         plot_image_path = script_dir / 'widgets' / 'caching' / f'lyt_plot_{self.slider.value()}.svg'
+
         # Load the image using QPixmap
-        print(plot_image_path)
         pixmap = QPixmap(str(plot_image_path))  # Convert Path object to string
         # Check if the pixmap was successfully loaded
         if not pixmap.isNull():
@@ -327,7 +326,7 @@ class MainWindow(QMainWindow):
             self.bdl_input_iterator += value_diff
 
             # Convert value to a binary string
-            bin_value = bin(value)[2:].zfill(self.bdl_input_iterator.num_input_pairs())
+            self.bin_value = bin(value)[2:].zfill(self.bdl_input_iterator.num_input_pairs())
 
             self.previous_slider_value = value
 
@@ -350,8 +349,6 @@ class MainWindow(QMainWindow):
             self.pixmap = self.pixmap.scaled(self.desired_width, self.desired_height, Qt.KeepAspectRatio, Qt.SmoothTransformation)
             self.plot_label.setPixmap(self.pixmap)
 
-            # Update the slider label text
-            self.slider_label.setText(f'Input Combination: {bin_value}')
 
 
 
@@ -397,8 +394,7 @@ class MainWindow(QMainWindow):
         self.pixmap = self.pixmap.scaled(self.desired_width, self.desired_height, Qt.KeepAspectRatio, Qt.SmoothTransformation)
         self.plot_label.setPixmap(self.pixmap)
 
-
         # Update the slider label
-        bin_value = bin(self.slider.value())[2:].zfill(self.bdl_input_iterator.num_input_pairs())
-        self.slider_label.setText(f'Input Combination: {bin_value}')
+        self.bin_value = bin(self.slider.value())[2:].zfill(self.bdl_input_iterator.num_input_pairs())
+
 
