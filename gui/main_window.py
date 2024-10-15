@@ -222,22 +222,18 @@ class MainWindow(QMainWindow):
         # Create a horizontal layout for the buttons
         button_layout = QHBoxLayout()
 
-        # Create buttons for links using IconLoader
-        email_icon = self.icon_loader.load_email_icon()  # Load the email icon
-        issue_icon = self.icon_loader.load_bug_icon()  # Load the issue report icon
-
         # Create button for Email Support
+        email_icon = self.icon_loader.load_email_icon()  # Load the email icon
         email_button = QPushButton("Email Support", self)
         email_button.setIcon(email_icon)
-        email_button.setIconSize(QSize(16, 16))  # Set smaller icon size
         email_button.setFixedSize(120, 30)  # Set a fixed size for the button
         email_button.clicked.connect(lambda: self.open_email())  # Connect to the open email function
         button_layout.addWidget(email_button)  # Add to horizontal layout
 
         # Create button for Reporting Issues
+        issue_icon = self.icon_loader.load_bug_icon()  # Load the issue report icon
         issue_button = QPushButton("Report an Issue", self)
         issue_button.setIcon(issue_icon)
-        issue_button.setIconSize(QSize(16, 16))  # Set smaller icon size
         issue_button.setFixedSize(120, 30)  # Set a fixed size for the button
         issue_button.clicked.connect(lambda: self.open_issue_report())  # Connect to the open issue report function
         # TODO: Activate when repo is set to public
@@ -250,7 +246,7 @@ class MainWindow(QMainWindow):
         box_layout_view.addLayout(button_layout)
 
         # Optionally, add more spacing below the buttons
-        box_layout_view.addItem(QSpacerItem(20, 20, QSizePolicy.Minimum, QSizePolicy.Fixed))
+        box_layout_view.addItem(QSpacerItem(5, 5, QSizePolicy.Minimum, QSizePolicy.Fixed))
 
         # Create a QWidget and QSplitter
         widget = QWidget()
