@@ -4,7 +4,7 @@ import numpy as np
 from pathlib import Path
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QMessageBox, QProgressBar, QApplication
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QMessageBox, QProgressBar, QApplication, QLabel
 from PyQt6.QtCore import QThread, pyqtSignal, Qt
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from PyQt6.QtGui import QPixmap, QCursor
@@ -14,27 +14,43 @@ from mnt import pyfiction
 
 
 class SimulationThread(QThread):
-    progress = pyqtSignal(int)
-    finished = pyqtSignal()
+    # Signals to communicate with the main thread
+    progress = pyqtSignal(int)  # Progress percentage
+    finished = pyqtSignal()     # Signal when the thread is finished
+    simulation_result_ready = pyqtSignal(int, object)  # Iteration index and simulation result
 
-    def __init__(self, widget):
+    def __init__(self, lyt, qe_params, num_input_pairs):
         super().__init__()
-        self.widget = widget
+        self.lyt = lyt
+        self.qe_params = qe_params
+        self.num_input_pairs = num_input_pairs
 
     def run(self):
-        input_iterator_initial = pyfiction.bdl_input_iterator_100(self.widget.lyt)
-        total_steps = 2 ** self.widget.input_iterator.num_input_pairs()  # Calculate total steps
+        input_iterator = pyfiction.bdl_input_iterator_100(self.lyt)
+        total_steps = 2 ** self.num_input_pairs  # Calculate total steps
+        print(f"Total steps: {total_steps}")  # Debugging statement
+
         for i in range(total_steps):
-            if i == total_steps - 1:
-                self.widget.simulate(i, input_iterator_initial, True)
-            else:
-                self.widget.simulate(i, input_iterator_initial)  # Pass current step index
+            #print(f"Running simulation for iteration {i}")  # Debugging statement
+
+            # Proceed with the simulation for the current input pattern
+            sim_result = pyfiction.quickexact(input_iterator.get_layout(), self.qe_params)
+
+            # Emit the simulation result for this iteration
+            self.simulation_result_ready.emit(i, sim_result)
 
             # Emit the progress update after each iteration
-            self.progress.emit(int(((i + 1) / total_steps) * 100))  # Update progress (0-100)
-            input_iterator_initial += 1
+            progress_value = int(((i + 1) / total_steps) * 100)
+            #print(f"Emitting progress: {progress_value}%")  # Debugging statement
+            self.progress.emit(progress_value)  # Update progress (0-100)
 
-        self.finished.emit()  # Emit signal on completion
+            # Move to the next input pattern
+            input_iterator += 1
+
+            # Optional delay for testing purposes
+            # time.sleep(0.1)  # Uncomment this line to slow down the simulation for testing
+
+        self.finished.emit()  # Signal that the thread has finished
 
 
 class PlotWidget(QWidget):
@@ -57,6 +73,9 @@ class PlotWidget(QWidget):
 
         # Initialize the progress bar
         self.progress_bar = QProgressBar(self)
+        self.progress_bar.setMinimum(0)
+        self.progress_bar.setMaximum(100)
+        self.progress_bar.setValue(0)  # Ensure it starts at 0
         self.layout.addWidget(self.progress_bar)
 
         # Initialize the simulation running flag
@@ -151,8 +170,8 @@ class PlotWidget(QWidget):
     def set_pixmap(self, pixmap):
         self.pixmap = pixmap
 
-    def plot_layout(self, lyt, slider_value, charge_lyt=None, operation_status=None, parameter_point=None):
-        # Check if the plot already exists
+    def plot_layout(self, lyt_original, lyt, slider_value, charge_lyt=None, operation_status=None, parameter_point=None, bin_value=None):
+        # Generate the plot and return the path to the saved image
         script_dir = Path(__file__).resolve().parent
 
         # Define the plot path based on the script directory
@@ -165,11 +184,7 @@ class PlotWidget(QWidget):
         if not plot_image_path.parent.exists():
             plot_image_path.parent.mkdir(parents=True, exist_ok=True)
 
-        # Check if the file already exists
-        if plot_image_path.exists():
-            return str(plot_image_path)
-
-        # Proceed with generating the plot if it doesn't exist
+        # Proceed with generating the plot
         all_cells = lyt.cells()
 
         markersize = 10
@@ -218,6 +233,29 @@ class PlotWidget(QWidget):
             else:
                 ax.plot(nm_pos[0], -nm_pos[1], 'o', markerfacecolor=highlight_fill_color,
                         markeredgecolor=highlight_border_color, markersize=markersize, markeredgewidth=edge_width)
+
+        if bin_value is not None:
+            # Define input cells and add the binary value annotations
+            input_cells = pyfiction.detect_bdl_pairs(lyt_original, pyfiction.sidb_technology.cell_type.INPUT)
+
+            for idx, cell in enumerate(input_cells):
+                cell.upper.x += 2
+                cell.upper.y += 2
+
+                cell.lower.x += 2
+                cell.lower.y += 2
+
+                # Get the input cell's SiDB nm position
+                nm_pos_lower = pyfiction.sidb_nm_position(lyt, cell.lower)
+                nm_pos_upper = pyfiction.sidb_nm_position(lyt, cell.upper)
+
+                nm_pos_x = (nm_pos_lower[0] + nm_pos_upper[0]) / 2
+
+                # Plot the binary value corresponding to the input cell
+                bin_digit = bin_value[
+                    len(input_cells) - 1 - idx]  # Get the corresponding binary digit for this input cell
+                ax.text(nm_pos_x, -nm_pos_upper[1] + 1.0, bin_digit, color='gray', fontsize=40, fontweight='bold',
+                        horizontalalignment='center', verticalalignment='center')
 
         if operation_status is not None:
             output_cells = pyfiction.detect_bdl_pairs(lyt, pyfiction.sidb_technology.cell_type.OUTPUT)
@@ -364,31 +402,8 @@ class PlotWidget(QWidget):
             print('Clicked outside axes bounds but inside plot window')
 
     def start_simulation_thread(self):
-        # Create a new simulation thread
-        self.simulation_thread = SimulationThread(self)
-        self.simulation_thread.progress.connect(self.update_progress_bar)
-        self.simulation_thread.finished.connect(self.simulation_finished)
-        self.simulation_thread.finished.connect(self.simulation_thread.deleteLater)
-        # Start the thread
-        self.simulation_thread.start()
-
-    def get_slider_value(self):
-        return self.slider_value
-
-    def update_progress_bar(self, value):
-        self.progress_bar.setValue(value)
-
-    def simulation_finished(self):
-        self.progress_bar.setValue(0)  # Reset the progress bar
-        self.simulation_running = False  # Reset the simulation flag
-        QApplication.restoreOverrideCursor()  # Restore the cursor
-        print("Simulation finished. You can click again.")
-
-    def simulate(self, iteration, input_iterator_initial, final_pattern=False):
-
-        gate_func = self.boolean_function_map[self.settings_widget.get_boolean_function()]
-
-        qe_sim_params = self.sim_params
+        # Set up simulation parameters
+        self.qe_sim_params = self.sim_params
 
         # Get the selected x and y dimensions
         x_dimension = self.settings_widget.get_x_dimension()
@@ -396,51 +411,127 @@ class PlotWidget(QWidget):
 
         # Set the parameters based on the selected dimensions
         if x_dimension == 'epsilon_r':
-            qe_sim_params.epsilon_r = self.x
+            self.qe_sim_params.epsilon_r = self.x
         elif x_dimension == 'lambda_TF':
-            qe_sim_params.lambda_tf = self.x
+            self.qe_sim_params.lambda_tf = self.x
         elif x_dimension == 'µ_':
-            qe_sim_params.mu_minus = self.x
+            self.qe_sim_params.mu_minus = self.x
 
         if y_dimension == 'epsilon_r':
-            qe_sim_params.epsilon_r = self.y
+            self.qe_sim_params.epsilon_r = self.y
         elif y_dimension == 'lambda_TF':
-            qe_sim_params.lambda_tf = self.y
+            self.qe_sim_params.lambda_tf = self.y
         elif y_dimension == 'µ_':
-            qe_sim_params.mu_minus = self.y
+            self.qe_sim_params.mu_minus = self.y
 
-        qe_params = pyfiction.quickexact_params()
-        qe_params.base_number_detection = pyfiction.automatic_base_number_detection.ON
-        qe_params.simulation_parameters = qe_sim_params
+        # Perform Positive Charges Check in the Main Thread
+        positive_charges_possible = pyfiction.can_positive_charges_occur(self.lyt, self.qe_sim_params)
 
+        if positive_charges_possible:
+            # Display a QMessageBox with OK and Back buttons
+            msg_box = QMessageBox(self)
+            msg_box.setWindowTitle("Positive Charges May Occur")
+            msg_box.setText("Positive charges may occur at the selected parameter point.")
+            msg_box.setInformativeText("Do you want to proceed or go back?")
+            msg_box.setIcon(QMessageBox.Warning)
+            ok_button = msg_box.addButton("OK", QMessageBox.AcceptRole)
+            back_button = msg_box.addButton("Back", QMessageBox.RejectRole)
+            msg_box.setDefaultButton(back_button)
+            msg_box.exec()
+
+            if msg_box.clickedButton() == back_button:
+                # User chose to go back
+                print("User chose to go back.")
+                # Remove the highlighted point
+                if self.previous_dot is not None:
+                    self.previous_dot.remove()
+                    self.previous_text.remove()
+                    self.previous_dot = None
+                    self.previous_text = None
+                self.fig.canvas.draw()
+                self.simulation_running = False  # Reset the simulation flag
+                QApplication.restoreOverrideCursor()  # Restore the cursor
+                return  # Exit the method
+            else:
+                # User chose to proceed
+                print("User chose to proceed despite possible positive charges.")
+
+        # Proceed to set up the simulation parameters for QuickExact
+        self.qe_params = pyfiction.quickexact_params()
+        self.qe_params.base_number_detection = pyfiction.automatic_base_number_detection.ON
+        self.qe_params.simulation_parameters = self.qe_sim_params
+
+        # Reset the input iterator
+        self.input_iterator = pyfiction.bdl_input_iterator_100(self.lyt)
+        self.input_iterator_initial = pyfiction.bdl_input_iterator_100(self.lyt)
+
+        # Get the gate function
+        gate_func = self.boolean_function_map[self.settings_widget.get_boolean_function()]
         is_op_params = pyfiction.is_operational_params()
-        is_op_params.simulation_parameters = qe_sim_params
+        is_op_params.simulation_parameters = self.qe_sim_params
         self.operational_patterns = pyfiction.operational_input_patterns(self.lyt, gate_func, is_op_params)
 
-        sim_result = pyfiction.quickexact(input_iterator_initial.get_layout(), qe_params)
+        # Calculate number of input pairs
+        num_input_pairs = self.input_iterator.num_input_pairs()
 
-        gs = pyfiction.determine_groundstate_from_simulation_results(sim_result)[0]
+        # Create a new simulation thread with necessary data
+        self.simulation_thread = SimulationThread(self.lyt, self.qe_params, num_input_pairs)
+        self.simulation_thread.progress.connect(self.update_progress_bar, Qt.ConnectionType.QueuedConnection)
+        self.simulation_thread.finished.connect(self.simulation_finished, Qt.ConnectionType.QueuedConnection)
+        self.simulation_thread.finished.connect(self.simulation_thread.deleteLater, Qt.ConnectionType.QueuedConnection)
+        self.simulation_thread.simulation_result_ready.connect(self.handle_simulation_result, Qt.ConnectionType.QueuedConnection)
+        # Start the thread
+        self.simulation_thread.start()
+
+    def handle_simulation_result(self, iteration, sim_result):
+        # This method is called in the main thread
 
         if not sim_result.charge_distributions:
             QMessageBox.warning(self, "No Ground State",
-                                f"The ground state could not be detected for ({round(self.x, 3)},{round(self.y, 3)}).")
+                                f"The ground state could not be detected for input pattern {iteration} at ({round(self.x, 3)},{round(self.y, 3)}).")
             return
 
+        gs = pyfiction.determine_groundstate_from_simulation_results(sim_result)[0]
+
+        # Determine operational status
         status = pyfiction.operational_status.NON_OPERATIONAL
         if iteration in self.operational_patterns:
-            if iteration == input_iterator_initial:
-                status = pyfiction.operational_status.OPERATIONAL
+            status = pyfiction.operational_status.OPERATIONAL
 
-        # Plot the new layout and charge distribution, then update the QLabel
-        _ = self.plot_layout(input_iterator_initial.get_layout(), iteration, gs, status,
-                             parameter_point=(self.x, self.y))
+        # Plot the new layout and charge distribution
+        _ = self.plot_layout(
+            self.lyt, self.input_iterator_initial.get_layout(), iteration, gs, status,
+            parameter_point=(self.x, self.y),
+            bin_value=bin(iteration)[2:].zfill(self.input_iterator.num_input_pairs())
+        )
 
-        if final_pattern:
-            plot_image_path = self.plot_layout(self.input_iterator.get_layout(), self.get_slider_value(), "not-none",
-                                               parameter_point=(self.x, self.y))
+        # Update the QLabel if this is the current slider value
+        if iteration == self.get_slider_value():
+            plot_image_path = self.plot_layout(
+                self.lyt, self.input_iterator_initial.get_layout(), self.get_slider_value(), gs, status,
+                parameter_point=(self.x, self.y),
+                bin_value=bin(self.get_slider_value())[2:].zfill(self.input_iterator.num_input_pairs())
+            )
 
             self.pixmap = QPixmap(str(plot_image_path))
             self.plot_label.setPixmap(self.pixmap)
+
+        # Move to the next input pattern
+        self.input_iterator_initial += 1
+
+    def get_slider_value(self):
+        return self.slider_value
+
+    def update_progress_bar(self, value):
+        #print(f"update_progress_bar called with value: {value}")  # Debugging statement
+        self.progress_bar.setValue(value)
+        QApplication.processEvents()  # Ensure the GUI updates
+
+    def simulation_finished(self):
+        self.progress_bar.setValue(0)  # Reset the progress bar
+        self.simulation_running = False  # Reset the simulation flag
+        QApplication.restoreOverrideCursor()  # Restore the cursor
+        #print("Simulation finished. You can click again.")
 
     def picked_x_y(self):
         return [self.x, self.y]
