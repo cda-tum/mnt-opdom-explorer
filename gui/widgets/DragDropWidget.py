@@ -1,13 +1,14 @@
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
 from PyQt6.QtGui import QColor, QFont, QPalette, QCursor
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QPushButton, QFileDialog, QProgressBar, QMessageBox, QApplication
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QPushButton, QFileDialog, QProgressBar, QMessageBox, \
+    QApplication
 
 from gui.widgets.IconLoader import IconLoader
 
 
 class FileLoaderThread(QThread):
     file_loaded = pyqtSignal(str)  # Signal to emit when the file is loaded
-    progress = pyqtSignal(int)     # Signal to emit progress updates
+    progress = pyqtSignal(int)  # Signal to emit progress updates
 
     def __init__(self, file_path):
         super().__init__()
@@ -17,7 +18,7 @@ class FileLoaderThread(QThread):
         # Simulate file loading with progress updates
         for i in range(101):
             self.progress.emit(i)  # Emit progress value
-            self.msleep(10)        # Sleep for 10 milliseconds (adjust as needed)
+            self.msleep(10)  # Sleep for 10 milliseconds (adjust as needed)
         # After progress reaches 100%, emit file_loaded
         self.file_loaded.emit(self.file_path)
 
@@ -49,6 +50,9 @@ class DragDropWidget(QWidget):
         layout = QVBoxLayout()
         layout.setContentsMargins(20, 20, 20, 20)  # Add padding around the content
 
+        # Add stretch to push the icon_layout to the center
+        layout.addStretch()
+
         # Create a large drop file icon in the center
         icon_label = QLabel()
         icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -64,10 +68,12 @@ class DragDropWidget(QWidget):
         icon_layout = QVBoxLayout()
         icon_layout.addWidget(icon_label)
         icon_layout.addWidget(label)
-        icon_layout.setSpacing(10)  # Adjust the spacing between the icon and the label
+        icon_layout.setSpacing(5)  # Adjust the spacing between the icon and the label
 
         # Add the icon layout to the main layout
         layout.addLayout(icon_layout)
+
+        icon_layout.setSpacing(5)  # Adjust the spacing between the icon and the progress bar
 
         # Create a progress bar (hidden by default) with custom styling
         self.progress_bar = QProgressBar(self)
@@ -94,6 +100,9 @@ class DragDropWidget(QWidget):
         self.loading_label.setStyleSheet(f"color: {self.loading_text_color.name()};")
         self.loading_label.setVisible(False)  # Hidden initially
         layout.addWidget(self.loading_label)
+
+        # Add stretch to push the button to the bottom
+        layout.addStretch()
 
         # Create a browse button
         browse_icon = icon_loader.load_folder_open_icon()
