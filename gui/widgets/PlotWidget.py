@@ -427,7 +427,7 @@ class PlotWidget(QWidget):
         # Perform Positive Charges Check in the Main Thread
         positive_charges_possible = pyfiction.can_positive_charges_occur(self.lyt, self.qe_sim_params)
 
-        if positive_charges_possible:
+        if positive_charges_possible and self.lyt.num_cells() > 15:
             # Display a QMessageBox with OK and Back buttons
             msg_box = QMessageBox(self)
             msg_box.setWindowTitle("Positive Charges May Occur")
