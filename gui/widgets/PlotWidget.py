@@ -4,7 +4,7 @@ import numpy as np
 from pathlib import Path
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QMessageBox, QProgressBar, QApplication, QLabel
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QMessageBox, QProgressBar, QApplication
 from PyQt6.QtCore import QThread, pyqtSignal, Qt
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from PyQt6.QtGui import QPixmap, QCursor
@@ -16,7 +16,7 @@ from mnt import pyfiction
 class SimulationThread(QThread):
     # Signals to communicate with the main thread
     progress = pyqtSignal(int)  # Progress percentage
-    finished = pyqtSignal()     # Signal when the thread is finished
+    finished = pyqtSignal()  # Signal when the thread is finished
     simulation_result_ready = pyqtSignal(int, object)  # Iteration index and simulation result
 
     def __init__(self, lyt, qe_params, num_input_pairs):
@@ -31,7 +31,7 @@ class SimulationThread(QThread):
         print(f"Total steps: {total_steps}")  # Debugging statement
 
         for i in range(total_steps):
-            #print(f"Running simulation for iteration {i}")  # Debugging statement
+            # print(f"Running simulation for iteration {i}")  # Debugging statement
 
             # Proceed with the simulation for the current input pattern
             sim_result = pyfiction.quickexact(input_iterator.get_layout(), self.qe_params)
@@ -41,7 +41,7 @@ class SimulationThread(QThread):
 
             # Emit the progress update after each iteration
             progress_value = int(((i + 1) / total_steps) * 100)
-            #print(f"Emitting progress: {progress_value}%")  # Debugging statement
+            # print(f"Emitting progress: {progress_value}%")  # Debugging statement
             self.progress.emit(progress_value)  # Update progress (0-100)
 
             # Move to the next input pattern
@@ -170,7 +170,8 @@ class PlotWidget(QWidget):
     def set_pixmap(self, pixmap):
         self.pixmap = pixmap
 
-    def plot_layout(self, lyt_original, lyt, slider_value, charge_lyt=None, operation_status=None, parameter_point=None, bin_value=None):
+    def plot_layout(self, lyt_original, lyt, slider_value, charge_lyt=None, operation_status=None, parameter_point=None,
+                    bin_value=None):
         # Generate the plot and return the path to the saved image
         script_dir = Path(__file__).resolve().parent
 
@@ -431,11 +432,12 @@ class PlotWidget(QWidget):
             # Display a QMessageBox with OK and Back buttons
             msg_box = QMessageBox(self)
             msg_box.setWindowTitle("Positive Charges May Occur")
-            msg_box.setText("Positive charges may occur at the selected parameter point.")
-            msg_box.setInformativeText("Do you want to proceed or go back?")
+            msg_box.setText(
+                "Positive charges may occur at the selected parameter point. Detailed simulation might take several minutes. It is recommended to abort because the sole existence of positive charges constitutes as a reason for gate non-operationality.")
+            msg_box.setInformativeText("Do you want to proceed or abort?")
             msg_box.setIcon(QMessageBox.Warning)
-            ok_button = msg_box.addButton("OK", QMessageBox.AcceptRole)
-            back_button = msg_box.addButton("Back", QMessageBox.RejectRole)
+            ok_button = msg_box.addButton("Proceed", QMessageBox.AcceptRole)
+            back_button = msg_box.addButton("Abort", QMessageBox.RejectRole)
             msg_box.setDefaultButton(back_button)
             msg_box.exec()
 
@@ -479,7 +481,8 @@ class PlotWidget(QWidget):
         self.simulation_thread.progress.connect(self.update_progress_bar, Qt.ConnectionType.QueuedConnection)
         self.simulation_thread.finished.connect(self.simulation_finished, Qt.ConnectionType.QueuedConnection)
         self.simulation_thread.finished.connect(self.simulation_thread.deleteLater, Qt.ConnectionType.QueuedConnection)
-        self.simulation_thread.simulation_result_ready.connect(self.handle_simulation_result, Qt.ConnectionType.QueuedConnection)
+        self.simulation_thread.simulation_result_ready.connect(self.handle_simulation_result,
+                                                               Qt.ConnectionType.QueuedConnection)
         # Start the thread
         self.simulation_thread.start()
 
@@ -523,7 +526,7 @@ class PlotWidget(QWidget):
         return self.slider_value
 
     def update_progress_bar(self, value):
-        #print(f"update_progress_bar called with value: {value}")  # Debugging statement
+        # print(f"update_progress_bar called with value: {value}")  # Debugging statement
         self.progress_bar.setValue(value)
         QApplication.processEvents()  # Ensure the GUI updates
 
@@ -531,7 +534,7 @@ class PlotWidget(QWidget):
         self.progress_bar.setValue(0)  # Reset the progress bar
         self.simulation_running = False  # Reset the simulation flag
         QApplication.restoreOverrideCursor()  # Restore the cursor
-        #print("Simulation finished. You can click again.")
+        # print("Simulation finished. You can click again.")
 
     def picked_x_y(self):
         return [self.x, self.y]
