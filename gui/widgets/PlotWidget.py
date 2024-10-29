@@ -298,9 +298,12 @@ class PlotWidget(QWidget):
         self.sim_params.mu_minus = self.settings_widget.get_mu_minus()
         self.sim_params.lambda_tf = self.settings_widget.get_lambda_tf()
 
+        is_op_params = pyfiction.is_operational_params()
+        is_op_params.simulation_parameters = self.sim_params
+        is_op_params.sim_engine = self.engine_map[self.settings_widget.get_simulation_engine()]
+
         op_dom_params = pyfiction.operational_domain_params()
-        op_dom_params.simulation_parameters = self.sim_params
-        op_dom_params.sim_engine = self.engine_map[self.settings_widget.get_simulation_engine()]
+        op_dom_params.operational_params = is_op_params
 
         sweep_dimensions = []
 
