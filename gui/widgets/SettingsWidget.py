@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QLabel, QFrame, QGroupBox, QHBoxLayout, QComboBox, QDoubleSpinBox,
-                             QPushButton, QSpinBox, QApplication, QScrollArea, QSizePolicy)
+                             QPushButton, QSpinBox, QApplication, QScrollArea, QSizePolicy, QRadioButton, QButtonGroup)
 from PyQt6.QtCore import Qt
 
 from gui.widgets import RangeSelector
@@ -221,6 +221,9 @@ class SettingsWidget(QWidget):
         algorithm_layout.addWidget(algorithm_info_tag, 1)  # 1% of the space goes to the info tag
         self.operational_domain_group.addLayout(algorithm_layout)  # Add to the group's QVBoxLayout
 
+        # Connect the currentTextChanged signal of the algorithm_dropdown to the new slot method
+        self.algorithm_dropdown.currentTextChanged.connect(self.set_algorithm_specific_random_sample_count)
+
         # Random Samples spinbox
         random_samples_layout = QHBoxLayout()
         random_samples_label = QLabel('Random Samples')
@@ -228,16 +231,41 @@ class SettingsWidget(QWidget):
         self.random_samples_spinbox.setRange(0, 0)
         self.random_samples_spinbox.setValue(0)
         self.random_samples_spinbox.setDisabled(True)  # Disable by default
-        random_samples_layout.addWidget(random_samples_label, 30)
-        random_samples_layout.addWidget(self.random_samples_spinbox, 69)
+        random_samples_layout.addWidget(random_samples_label, 30)  # 30% of the space goes to the label
+        random_samples_layout.addWidget(self.random_samples_spinbox, 69)  # 69% of the space goes to the spinbox
         random_samples_info_tag = InfoTag(
             'Number of random samples to take. If the Random Sampling algorithm is selected, this represents the total number of simulation samples to conduct. '
             'If Flood Fill or Contour Tracing are selected however, this represents the number of random samples to take for the initial seed.')
         random_samples_layout.addWidget(random_samples_info_tag, 1)  # 1% of the space goes to the info tag
         self.operational_domain_group.addLayout(random_samples_layout)  # Add to the group's QVBoxLayout
 
-        # Connect the currentTextChanged signal of the algorithm_dropdown to the new slot method
-        self.algorithm_dropdown.currentTextChanged.connect(self.set_algorithm_specific_random_sample_count)
+        # Operational Condition settings
+        operational_condition_layout = QHBoxLayout()
+        operational_condition_label = QLabel('Operational Condition')
+
+        # Radio buttons
+        tolerate_kinks_radio = QRadioButton('Tolerate Kinks')
+        reject_kinks_radio = QRadioButton('Reject Kinks')
+
+        self.operational_condition_group = QButtonGroup(self)
+        self.operational_condition_group.addButton(tolerate_kinks_radio)
+        self.operational_condition_group.addButton(reject_kinks_radio)
+
+        operational_condition_layout.addWidget(operational_condition_label, 30)
+        operational_condition_layout.addWidget(tolerate_kinks_radio, 34)
+        operational_condition_layout.addWidget(reject_kinks_radio, 34)
+
+        operational_condition_info_tag = InfoTag(
+            'Condition to decide if a layout is considered operational or non-operational at any given parameter point.\n'
+            'Tolerate Kinks: The layout is considered operational even if a wire exhibits kink states as long as the output BDL pair is in the correct logic state.\n'
+            'Reject Kinks: The layout is considered non-operational if any wire exhibits kink states.')
+        operational_condition_layout.addWidget(operational_condition_info_tag,
+                                               1)  # 1% of the space goes to the info tag
+
+        # Set default selection
+        tolerate_kinks_radio.setChecked(True)  # Set default option if desired
+
+        self.operational_domain_group.addLayout(operational_condition_layout)
 
         # Operational Domain Sweep Sub-group
         self.operational_domain_sweep_group = QGroupBox('Sweep Settings')
@@ -477,6 +505,12 @@ class SettingsWidget(QWidget):
 
     def get_random_samples(self):
         return self.random_samples_spinbox.value()
+
+    def get_operational_condition(self):
+        for button in self.operational_condition_group.buttons():
+            if button.isChecked():  # Check if the button is selected
+                return button.text()
+        return None  # Return None if no button is selected (edge case)
 
     def get_x_dimension(self):
         return self.DISPLAY_TO_INTERNAL.get(self.x_dimension_dropdown.currentText())

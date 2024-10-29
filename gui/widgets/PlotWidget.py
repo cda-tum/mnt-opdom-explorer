@@ -97,6 +97,11 @@ class PlotWidget(QWidget):
             'QuickSim': pyfiction.sidb_simulation_engine.QUICKSIM
         }
 
+        self.op_condition_map = {
+            'Tolerate Kinks': pyfiction.operational_condition.TOLERATE_KINKS,
+            'Reject Kinks': pyfiction.operational_condition.REJECT_KINKS
+        }
+
         # Map the sweep dimension string to the corresponding pyfiction sweep dimension
         self.sweep_dimension_map = {
             'epsilon_r': pyfiction.sweep_parameter.EPSILON_R,
@@ -301,6 +306,7 @@ class PlotWidget(QWidget):
         is_op_params = pyfiction.is_operational_params()
         is_op_params.simulation_parameters = self.sim_params
         is_op_params.sim_engine = self.engine_map[self.settings_widget.get_simulation_engine()]
+        is_op_params.op_condition = self.op_condition_map[self.settings_widget.get_operational_condition()]
 
         op_dom_params = pyfiction.operational_domain_params()
         op_dom_params.operational_params = is_op_params
