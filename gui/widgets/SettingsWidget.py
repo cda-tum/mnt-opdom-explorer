@@ -98,6 +98,112 @@ class SettingsWidget(QWidget):
 
         return separator
 
+    def createEngineDropDown(self) -> QHBoxLayout:
+        """
+        Creates a drop-down widget for selecting the physical simulation engine.
+
+        Returns:
+            QComboBox: The drop-down widget for selecting the engine.
+        """
+        engine_layout = QHBoxLayout()
+        engine_label = QLabel('Engine')
+        self.engine_dropdown = QComboBox()
+        self.engine_dropdown.addItems(['ExGS', 'QuickExact', 'QuickSim'])
+        self.engine_dropdown.setCurrentIndex(1)  # Set QuickExact as default
+        engine_layout.addWidget(engine_label, 30)  # 30% of the space goes to the label
+        engine_layout.addWidget(self.engine_dropdown, 69)  # 69% of the space goes to the dropdown
+        engine_info_tag = InfoTag(
+            'Exhaustive Ground State Search (ExGS) is an exact but slow engine.\n'
+            'QuickExact offers the same optimality guarantee as ExGS but has a runtime advantage of several orders of magnitude.\n'
+            'QuickSim is a fast but approximate engine that is best suited for small gates.')
+        engine_layout.addWidget(engine_info_tag, 1)  # 1% of the space goes to the info tag
+
+        return engine_layout
+
+    def createMuMinusValueSelector(self) -> QHBoxLayout:
+        """
+        Creates a double spinbox widget for selecting the µ_ value.
+
+        Returns:
+            QHBoxLayout: The layout containing the µ_ value selector.
+        """
+        mu_layout = QHBoxLayout()
+        mu_label = QLabel('µ_ [eV]')
+        self.mu_minus_selector = QDoubleSpinBox()
+        self.mu_minus_selector.setRange(-1.0, 1.0)
+        self.mu_minus_selector.setDecimals(2)
+        self.mu_minus_selector.setSingleStep(0.01)
+        self.mu_minus_selector.setValue(-0.28)
+        mu_layout.addWidget(mu_label, 30)  # 30% of the space goes to the label
+        mu_layout.addWidget(self.mu_minus_selector, 69)  # 69% of the space goes to the selector
+        mu_info_tag = InfoTag(
+            'µ_ is the energy difference between the Fermi Energy and the charge transition level (0/−) in eV.')
+        mu_layout.addWidget(mu_info_tag, 1)  # 1% of the space goes to the info tag
+
+        return mu_layout
+
+    def createEpsilonRValueSelector(self) -> QHBoxLayout:
+        """
+        Creates a double spinbox widget for selecting the epsilon_r value.
+
+        Returns:
+            QHBoxLayout: The layout containing the epsilon_r value selector.
+        """
+        epsilon_r_layout = QHBoxLayout()
+        epsilon_r_label = QLabel('epsilon_r')
+        self.epsilon_r_selector = QDoubleSpinBox()
+        self.epsilon_r_selector.setRange(1.0, 10.0)
+        self.epsilon_r_selector.setDecimals(2)
+        self.epsilon_r_selector.setSingleStep(0.1)
+        self.epsilon_r_selector.setValue(5.6)
+        epsilon_r_layout.addWidget(epsilon_r_label, 30)  # 30% of the space goes to the label
+        epsilon_r_layout.addWidget(self.epsilon_r_selector, 69)  # 69% of the space goes to the selector
+        epsilon_r_info_tag = InfoTag('epsilon_r is the dielectric constant.')
+        epsilon_r_layout.addWidget(epsilon_r_info_tag, 1)  # 1% of the space goes to the info tag
+
+        return epsilon_r_layout
+
+    def createLambdaTFValueSelector(self) -> QHBoxLayout:
+        """
+        Creates a double spinbox widget for selecting the lambda_TF value.
+
+        Returns:
+            QHBoxLayout: The layout containing the lambda_TF value selector.
+        """
+        lambda_tf_layout = QHBoxLayout()
+        lambda_tf_label = QLabel('lambda_TF [nm]')
+        self.lambda_tf_selector = QDoubleSpinBox()
+        self.lambda_tf_selector.setRange(1.0, 10.0)
+        self.lambda_tf_selector.setDecimals(2)
+        self.lambda_tf_selector.setSingleStep(0.1)
+        self.lambda_tf_selector.setValue(5.0)
+        lambda_tf_layout.addWidget(lambda_tf_label, 30)  # 30% of the space goes to the label
+        lambda_tf_layout.addWidget(self.lambda_tf_selector, 69)  # 69% of the space goes to the selector
+        lambda_tf_info_tag = InfoTag('lambda_TF is the Thomas-Fermi screening length in nm.')
+        lambda_tf_layout.addWidget(lambda_tf_info_tag, 1)  # 1% of the space goes to the info tag
+
+        return lambda_tf_layout
+
+    def createPhysicalSimulationGroup(self) -> IconGroupBox:
+        """
+        Creates the physical simulation group containing the physical simulation engine, µ_ value selector, epsilon_r
+        value selector, and lambda_TF value selector.
+
+        Returns:
+            IconGroupBox: The group box containing all physical simulation settings.
+        """
+        physical_simulation_group = IconGroupBox('Physical Simulation', self.icon_loader.load_atom_icon())
+        # Physical simulation engine
+        physical_simulation_group.addLayout(self.createEngineDropDown())
+        # µ_ value selector
+        physical_simulation_group.addLayout(self.createMuMinusValueSelector())
+        # epsilon_r value selector
+        physical_simulation_group.addLayout(self.createEpsilonRValueSelector())
+        # lambda_TF value selector
+        physical_simulation_group.addLayout(self.createLambdaTFValueSelector())
+
+        return physical_simulation_group
+
     def initUI(self):
         self.icon_loader = IconLoader()
 
@@ -117,68 +223,8 @@ class SettingsWidget(QWidget):
         # Add some spacing below the line
         self.settings_layout.addSpacing(15)
 
-        self.physical_simulation_group = IconGroupBox('Physical Simulation', self.icon_loader.load_atom_icon())
-
-        # engine drop-down
-        engine_layout = QHBoxLayout()
-        engine_label = QLabel('Engine')
-        self.engine_dropdown = QComboBox()
-        self.engine_dropdown.addItems(['ExGS', 'QuickExact', 'QuickSim'])
-        self.engine_dropdown.setCurrentIndex(1)  # Set QuickExact as default
-        engine_layout.addWidget(engine_label, 30)  # 30% of the space goes to the label
-        engine_layout.addWidget(self.engine_dropdown, 69)  # 69% of the space goes to the dropdown
-        engine_info_tag = InfoTag(
-            'Exhaustive Ground State Search (ExGS) is an exact but slow engine.\n'
-            'QuickExact offers the same optimality guarantee as ExGS but has a runtime advantage of several orders of magnitude.\n'
-            'QuickSim is a fast but approximate engine that is best suited for small gates.')
-        engine_layout.addWidget(engine_info_tag, 1)  # 1% of the space goes to the info tag
-        self.physical_simulation_group.addLayout(engine_layout)  # Add to the group's QVBoxLayout
-
-        # µ_ number selector
-        mu_layout = QHBoxLayout()
-        mu_label = QLabel('µ_ [eV]')
-        self.mu_minus_selector = QDoubleSpinBox()
-        self.mu_minus_selector.setRange(-1.0, 1.0)
-        self.mu_minus_selector.setDecimals(2)
-        self.mu_minus_selector.setSingleStep(0.01)
-        self.mu_minus_selector.setValue(-0.28)
-        mu_layout.addWidget(mu_label, 30)  # 30% of the space goes to the label
-        mu_layout.addWidget(self.mu_minus_selector, 69)  # 69% of the space goes to the selector
-        mu_info_tag = InfoTag(
-            'µ_ is the energy difference between the Fermi Energy and the charge transition level (0/−) in eV.')
-        mu_layout.addWidget(mu_info_tag, 1)  # 1% of the space goes to the info tag
-        self.physical_simulation_group.addLayout(mu_layout)  # Add to the group's QVBoxLayout
-
-        # epsilon_r number selector
-        epsilon_r_layout = QHBoxLayout()
-        epsilon_r_label = QLabel('epsilon_r')
-        self.epsilon_r_selector = QDoubleSpinBox()
-        self.epsilon_r_selector.setRange(1.0, 10.0)
-        self.epsilon_r_selector.setDecimals(2)
-        self.epsilon_r_selector.setSingleStep(0.1)
-        self.epsilon_r_selector.setValue(5.6)
-        epsilon_r_layout.addWidget(epsilon_r_label, 30)  # 30% of the space goes to the label
-        epsilon_r_layout.addWidget(self.epsilon_r_selector, 69)  # 69% of the space goes to the selector
-        epsilon_r_info_tag = InfoTag('epsilon_r is the dielectric constant.')
-        epsilon_r_layout.addWidget(epsilon_r_info_tag, 1)  # 1% of the space goes to the info tag
-        self.physical_simulation_group.addLayout(epsilon_r_layout)  # Add to the group's QVBoxLayout
-
-        # lambda_TF number selector
-        lambda_tf_layout = QHBoxLayout()
-        lambda_tf_label = QLabel('lambda_TF [nm]')
-        self.lambda_tf_selector = QDoubleSpinBox()
-        self.lambda_tf_selector.setRange(1.0, 10.0)
-        self.lambda_tf_selector.setDecimals(2)
-        self.lambda_tf_selector.setSingleStep(0.1)
-        self.lambda_tf_selector.setValue(5.0)
-        lambda_tf_layout.addWidget(lambda_tf_label, 30)  # 30% of the space goes to the label
-        lambda_tf_layout.addWidget(self.lambda_tf_selector, 69)  # 69% of the space goes to the selector
-        lambda_tf_info_tag = InfoTag('lambda_TF is the Thomas-Fermi screening length in nm.')
-        lambda_tf_layout.addWidget(lambda_tf_info_tag, 1)  # 1% of the space goes to the info tag
-        self.physical_simulation_group.addLayout(lambda_tf_layout)  # Add to the group's QVBoxLayout
-
-        # Add the group box to the settings layout
-        self.scroll_container_layout.addWidget(self.physical_simulation_group)
+        # Physical Simulation settings group
+        self.scroll_container_layout.addWidget(self.createPhysicalSimulationGroup())
 
         # Gate Function settings
         self.gate_function_group = IconGroupBox('Gate Function', self.icon_loader.load_function_icon())
