@@ -24,41 +24,37 @@ class SettingsWidget(QWidget):
         self.three_dimensional_sweep = False  # flag for 3D sweeps
         self.initUI()
 
-    def initUI(self):
-        # Assuming IconLoader is already defined as shown previously
-        icon_loader = IconLoader()
+    def createTitleBar(self) -> QWidget:
+        """
+        Creates a title bar widget with a settings icon, title text, and logos.
 
-        self.scroll_widget = QWidget()
-        self.scroll_container_layout = QVBoxLayout(self.scroll_widget)
-
-        # Right panel for settings wrapped in a widget for the splitter
-        settings_widget = QWidget()
-        self.settings_layout = QVBoxLayout()  # Create a new QVBoxLayout
-
+        Returns:
+            QWidget: The title bar widget.
+        """
         # Create a dedicated widget for the title bar layout
         title_bar_widget = QWidget()
-        title_bar_layout = QHBoxLayout(title_bar_widget)  # Set layout directly on the widget
+        title_bar_layout = QHBoxLayout(title_bar_widget)
 
         # Add the settings gear icon and the 'Settings' text in a separate layout, centered
         centered_layout = QHBoxLayout()
 
         # Add the settings gear icon
         settings_icon_label = QLabel()
-        cog_icon = icon_loader.load_settings_icon()
+        cog_icon = self.icon_loader.load_settings_icon()
         settings_icon_label.setPixmap(cog_icon.pixmap(24, 24))  # Set the icon size
 
         # Add the title 'Settings'
-        self.title_label = QLabel('Settings')
+        title_label = QLabel('Settings')
 
         # Set font size to be slightly bigger
-        settings_font = self.title_label.font()
+        settings_font = title_label.font()
         settings_font.setPointSize(settings_font.pointSize() + 2)  # Increase font size by 2 points
         settings_font.setBold(True)  # Make the font bold
-        self.title_label.setFont(settings_font)
+        title_label.setFont(settings_font)
 
         # Add the icon and text to the centered layout
         centered_layout.addWidget(settings_icon_label)
-        centered_layout.addWidget(self.title_label)
+        centered_layout.addWidget(title_label)
 
         # Add stretch to the title_bar_layout to center the text horizontally
         title_bar_layout.addStretch(8)  # Push the content to the center
@@ -66,11 +62,11 @@ class SettingsWidget(QWidget):
         title_bar_layout.addStretch(2)  # This stretches to fill space on the left
 
         # Load the MNT logo and position it at the far right
-        mnt_logo = icon_loader.load_mnt_logo()
+        mnt_logo = self.icon_loader.load_mnt_logo()
         mnt_logo.setFixedSize(120, 55)  # Set a fixed size for the logo
 
         # Load the TUM logo and set a fixed size for it
-        tum_logo = icon_loader.load_tum_logo()
+        tum_logo = self.icon_loader.load_tum_logo()
         tum_logo.setFixedSize(160, 55)  # Set fixed size for TUM logo
 
         # Create a layout for the logos
@@ -83,32 +79,45 @@ class SettingsWidget(QWidget):
 
         # Align the logo layout to the right
         title_bar_layout.addLayout(logo_layout)  # Add the logo layout to the right
-        # No need to add another stretch here
 
         # Set the layout on the title bar widget
         title_bar_widget.setLayout(title_bar_layout)
 
+        return title_bar_widget
+
+    def createHorizontalSeparator(self) -> QFrame:
+        """
+        Creates a horizontal line as a visual separator.
+
+        Returns:
+            QFrame: A QFrame object configured as a horizontal line.
+        """
+        separator = QFrame()
+        separator.setFrameShape(QFrame.Shape.HLine)
+        separator.setFrameShadow(QFrame.Shadow.Sunken)
+
+        return separator
+
+    def initUI(self):
+        self.icon_loader = IconLoader()
+
+        # Create a scrollable widget to hold the settings
+        self.scroll_widget = QWidget()
+        self.scroll_container_layout = QVBoxLayout(self.scroll_widget)
+
+        # Create the main settings widget and layout
+        self.settings_widget = QWidget()
+        self.settings_layout = QVBoxLayout()
+        self.settings_widget.setLayout(self.settings_layout)
+
         # Add the title bar widget to the settings layout
-        self.settings_layout.addWidget(title_bar_widget)
-
-        # Set the main layout for settings_widget only once
-        settings_widget.setLayout(self.settings_layout)
-
-        # Create a container widget for the title bar and add it to the settings layout
-        container = QWidget()
-        container.setLayout(title_bar_layout)
-        self.settings_layout.addWidget(container)
-
-        # Add a horizontal line as a visual separator
-        hline = QFrame()
-        hline.setFrameShape(QFrame.Shape.HLine)
-        hline.setFrameShadow(QFrame.Shadow.Sunken)
-        self.settings_layout.addWidget(hline)
-
+        self.settings_layout.addWidget(self.createTitleBar())
+        # Horizontal separator
+        self.settings_layout.addWidget(self.createHorizontalSeparator())
         # Add some spacing below the line
         self.settings_layout.addSpacing(15)
 
-        self.physical_simulation_group = IconGroupBox('Physical Simulation', icon_loader.load_atom_icon())
+        self.physical_simulation_group = IconGroupBox('Physical Simulation', self.icon_loader.load_atom_icon())
 
         # engine drop-down
         engine_layout = QHBoxLayout()
@@ -172,7 +181,7 @@ class SettingsWidget(QWidget):
         self.scroll_container_layout.addWidget(self.physical_simulation_group)
 
         # Gate Function settings
-        self.gate_function_group = IconGroupBox('Gate Function', icon_loader.load_function_icon())
+        self.gate_function_group = IconGroupBox('Gate Function', self.icon_loader.load_function_icon())
 
         # Get the extracted Boolean function name
         extracted_function_name = self.extract_boolean_function_from_file_name()
@@ -203,7 +212,7 @@ class SettingsWidget(QWidget):
         self.scroll_container_layout.addWidget(self.gate_function_group)
 
         # Operational Domain settings
-        self.operational_domain_group = IconGroupBox('Operational Domain', icon_loader.load_chart_icon())
+        self.operational_domain_group = IconGroupBox('Operational Domain', self.icon_loader.load_chart_icon())
 
         # Algorithm drop-down
         algorithm_layout = QHBoxLayout()
@@ -375,13 +384,13 @@ class SettingsWidget(QWidget):
         self.run_button = QPushButton('Run Simulation')
         self.settings_layout.addWidget(self.run_button)
         # Get the play icon
-        play_icon = icon_loader.load_play_icon()
+        play_icon = self.icon_loader.load_play_icon()
         # Set the icon on the 'Run' button
         self.run_button.setIcon(play_icon)
 
         # Layout for the whole widget
         layout = QVBoxLayout(self)
-        layout.addWidget(settings_widget)
+        layout.addWidget(self.settings_widget)
         self.setLayout(layout)
 
     def extract_boolean_function_from_file_name(self):
