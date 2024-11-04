@@ -184,10 +184,36 @@ class SettingsWidget(QWidget):
 
         return lambda_tf_layout
 
+    def createBooleanFunctionDropDown(self) -> QHBoxLayout:
+        boolean_function_layout = QHBoxLayout()
+        boolean_function_label = QLabel('Boolean Function')
+        self.boolean_function_dropdown = QComboBox()
+        self.boolean_function_dropdown.addItems(['AND', 'OR', 'NAND', 'NOR', 'XOR', 'XNOR'])
+
+        boolean_function_layout.addWidget(boolean_function_label, 30)  # 30% of the space goes to the label
+        boolean_function_layout.addWidget(self.boolean_function_dropdown, 69)  # 69% of the space goes to the dropdown
+        boolean_function_info_tag = InfoTag(
+            'The Boolean function that the SiDB layout is expected to implement. '
+            'The operational domain plot will be generated based on this function.')
+        boolean_function_layout.addWidget(boolean_function_info_tag, 1)  # 1% of the space goes to the info tag
+
+        # Get the extracted Boolean function name
+        extracted_function_name = self.extract_boolean_function_from_file_name()
+
+        # Set the default value based on the extracted name
+        if extracted_function_name:
+            index = self.boolean_function_dropdown.findText(
+                extracted_function_name)  # Get the index of the extracted function
+            self.boolean_function_dropdown.setCurrentIndex(index)  # Set the extracted function as default
+        else:
+            self.boolean_function_dropdown.setCurrentIndex(0)  # Set 'AND' as default if extraction fails
+
+        return boolean_function_layout
+
     def createPhysicalSimulationGroup(self) -> IconGroupBox:
         """
-        Creates the physical simulation group containing the physical simulation engine, µ_ value selector, epsilon_r
-        value selector, and lambda_TF value selector.
+        Creates the physical simulation group containing settings for the physical simulation engine as well as µ_,
+        epsilon_r, and lambda_TF values.
 
         Returns:
             IconGroupBox: The group box containing all physical simulation settings.
@@ -203,6 +229,19 @@ class SettingsWidget(QWidget):
         physical_simulation_group.addLayout(self.createLambdaTFValueSelector())
 
         return physical_simulation_group
+
+    def createGateFunctionGroup(self) -> IconGroupBox:
+        """
+        Creates the gate function group containing the Boolean function drop-down.
+
+        Returns:
+            IconGroupBox: The group box containing the gate function settings.
+        """
+        gate_function_group = IconGroupBox('Gate Function', self.icon_loader.load_function_icon())
+
+        gate_function_group.addLayout(self.createBooleanFunctionDropDown())
+
+        return gate_function_group
 
     def initUI(self):
         self.icon_loader = IconLoader()
@@ -226,36 +265,8 @@ class SettingsWidget(QWidget):
         # Physical Simulation settings group
         self.scroll_container_layout.addWidget(self.createPhysicalSimulationGroup())
 
-        # Gate Function settings
-        self.gate_function_group = IconGroupBox('Gate Function', self.icon_loader.load_function_icon())
-
-        # Get the extracted Boolean function name
-        extracted_function_name = self.extract_boolean_function_from_file_name()
-
-        # Boolean Function drop-down
-        boolean_function_layout = QHBoxLayout()
-        boolean_function_label = QLabel('Boolean Function')
-        self.boolean_function_dropdown = QComboBox()
-        self.boolean_function_dropdown.addItems(['AND', 'OR', 'NAND', 'NOR', 'XOR', 'XNOR'])
-
-        # Set the default value based on the extracted name
-        if extracted_function_name:
-            index = self.boolean_function_dropdown.findText(
-                extracted_function_name)  # Get the index of the extracted function
-            self.boolean_function_dropdown.setCurrentIndex(index)  # Set the extracted function as default
-        else:
-            self.boolean_function_dropdown.setCurrentIndex(0)  # Set 'AND' as default if extraction fails
-
-        boolean_function_layout.addWidget(boolean_function_label, 30)  # 30% of the space goes to the label
-        boolean_function_layout.addWidget(self.boolean_function_dropdown, 69)  # 69% of the space goes to the dropdown
-        boolean_function_info_tag = InfoTag(
-            'The Boolean function that the SiDB layout is expected to implement. '
-            'The operational domain plot will be generated based on this function.')
-        boolean_function_layout.addWidget(boolean_function_info_tag, 1)  # 1% of the space goes to the info tag
-        self.gate_function_group.addLayout(boolean_function_layout)
-
-        # Add the group box to the settings layout
-        self.scroll_container_layout.addWidget(self.gate_function_group)
+        # Gate Function settings group
+        self.scroll_container_layout.addWidget(self.createGateFunctionGroup())
 
         # Operational Domain settings
         self.operational_domain_group = IconGroupBox('Operational Domain', self.icon_loader.load_chart_icon())
