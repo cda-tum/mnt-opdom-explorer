@@ -100,3 +100,31 @@ class IconLoader:
     def load_help_icon(self, color: QColor = None) -> QIcon:
         """Loads the help icon."""
         return self.load_icon('mdi6.help-circle-outline', color=color)
+
+    def load_and_gate_icon(self, color: QColor = None) -> QIcon:
+        """Loads the AND gate icon."""
+        return self.load_icon('mdi6.gate-and', color=color)
+
+    def load_or_gate_icon(self, color: QColor = None) -> QIcon:
+        """Loads the OR gate icon."""
+        return self.load_icon('mdi6.gate-or', color=color)
+
+    def load_nand_gate_icon(self, color: QColor = None) -> QIcon:
+        """Loads the NAND gate icon."""
+        return self.load_icon('mdi6.gate-nand', color=color)
+
+    def load_nor_gate_icon(self, color: QColor = None) -> QIcon:
+        """Loads the NOR gate icon."""
+        return self.load_icon('mdi6.gate-nor', color=color)
+
+    def load_xor_gate_icon(self, color: QColor = None) -> QIcon:
+        """Loads the XOR gate icon."""
+        return self.load_icon('mdi6.gate-xor', color=color)
+
+    def load_xnor_gate_icon(self, color: QColor = None) -> QIcon:
+        """Loads the XNOR gate icon."""
+        return self.load_icon('mdi6.gate-xnor', color=color)
+
+    def load_not_gate_icon(self, color: QColor = None) -> QIcon:
+        """Loads the NOT gate icon."""
+        return self.load_icon('mdi6.gate-not', color=color)

@@ -185,10 +185,28 @@ class SettingsWidget(QWidget):
         return lambda_tf_layout
 
     def createBooleanFunctionDropDown(self) -> QHBoxLayout:
+        """
+        Creates a drop-down widget for selecting the Boolean function.
+
+        Returns:
+            QHBoxLayout: The layout containing the Boolean function drop-down.
+        """
         boolean_function_layout = QHBoxLayout()
         boolean_function_label = QLabel('Boolean Function')
         self.boolean_function_dropdown = QComboBox()
-        self.boolean_function_dropdown.addItems(['AND', 'OR', 'NAND', 'NOR', 'XOR', 'XNOR'])
+
+        # supported Boolean functions and their respective icons
+        boolean_functions = {
+            'AND': self.icon_loader.load_and_gate_icon(),
+            'OR': self.icon_loader.load_or_gate_icon(),
+            'NAND': self.icon_loader.load_nand_gate_icon(),
+            'NOR': self.icon_loader.load_nor_gate_icon(),
+            'XOR': self.icon_loader.load_xor_gate_icon(),
+            'XNOR': self.icon_loader.load_xnor_gate_icon()
+        }
+
+        for name, icon in boolean_functions.items():
+            self.boolean_function_dropdown.addItem(icon, name)
 
         boolean_function_layout.addWidget(boolean_function_label, 30)  # 30% of the space goes to the label
         boolean_function_layout.addWidget(self.boolean_function_dropdown, 69)  # 69% of the space goes to the dropdown
