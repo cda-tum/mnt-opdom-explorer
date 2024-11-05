@@ -34,7 +34,10 @@ test = [
 ]
 
 [project.urls]
-repository = "https://github.com/cda-tum/mnt-opdom-explorer"
+Repository = "https://github.com/cda-tum/mnt-opdom-explorer"
+Homepage = "https://www.cda.cit.tum.de/research/nanotech/"
+Issues = "https://github.com/cda-tum/mnt-opdom-explorer/issues"
+Discussions = "https://github.com/cda-tum/mnt-opdom-explorer/discussions"
 
 [tool.setuptools.packages.find]
 include = ["core", "gui", "widgets"]
