@@ -8,6 +8,7 @@ from gui.widgets.IconGroupBox import IconGroupBox
 from gui.widgets import InfoTag
 
 import os
+from typing import List, Tuple
 
 
 class SettingsWidget(QWidget):
@@ -527,7 +528,10 @@ class SettingsWidget(QWidget):
 
         return operational_domain_group
 
-    def initUI(self):
+    def initUI(self) -> None:
+        """
+        Initializes the user interface by creating the settings widget.
+        """
         self.icon_loader = IconLoader()
 
         # Create a scrollable widget to hold the settings
@@ -580,8 +584,14 @@ class SettingsWidget(QWidget):
         layout.addWidget(self.settings_widget)
         self.setLayout(layout)
 
-    def extract_boolean_function_from_file_name(self):
-        """Extracts the Boolean function name from the file name."""
+    def extract_boolean_function_from_file_name(self) -> str | None:
+        """
+        Tries to extract the Boolean function from the file name. The function name is expected to be separated by an
+        underscore from the rest of the file name.
+
+        Returns:
+            str | None: The extracted Boolean function name. Or None if no recognized gate name is found.
+        """
         # Get the file name without the extension
         base_name = os.path.basename(self.file_path).split('.')[0]
         # Define recognized gate names
@@ -595,13 +605,18 @@ class SettingsWidget(QWidget):
             # Convert to uppercase and check if it's a recognized gate
             gate_name = part.upper()
             if gate_name in recognized_gates:
-                # print(f"Extracted function: {gate_name}")  # For debugging
                 return gate_name  # Return the first recognized gate name
 
         return None  # Return None if no recognized gate is found
 
-    # New slot method to enable or disable the random_samples_spinbox based on the selected algorithm
-    def set_algorithm_specific_random_sample_count(self, selected_algorithm):
+    def set_algorithm_specific_random_sample_count(self, selected_algorithm: str) -> None:
+        """
+        Sets the range and step size of the random samples spinbox based on the selected operational domain algorithm.
+        The default value is set to 1000 for 'Random Sampling' and 100 for all other algorithms.
+
+        Args:
+            selected_algorithm (str): The selected algorithm name from the algorithm dropdown.
+        """
         if selected_algorithm == 'Grid Search':
             self.random_samples_spinbox.setDisabled(True)
         else:
@@ -615,10 +630,14 @@ class SettingsWidget(QWidget):
             self.random_samples_spinbox.setValue(100)
             self.random_samples_spinbox.setSingleStep(10)
 
-    def set_dimension_specific_algorithm_selector(self, selected_sweep_parameter):
-        # disable contour tracing if 3D sweeps are selected
+    def set_dimension_specific_algorithm_selector(self, selected_sweep_parameter: str) -> None:
+        """
+        Disables the 'Contour Tracing' operational domain algorithm option if 3D sweeps are selected.
 
-        # Access the internal model of the QComboBox
+        Args:
+            selected_sweep_parameter (str): The selected sweep parameter from the Z dimension dropdown.
+        """
+        # Access the internal model of the algorithm dropdown
         model = self.algorithm_dropdown.model()
         # Retrieve 'Contour Tracing' from the model
         contour_tracing = model.item(3)
@@ -638,7 +657,17 @@ class SettingsWidget(QWidget):
             if self.algorithm_dropdown.currentText() == 'Contour Tracing':
                 self.algorithm_dropdown.setCurrentIndex(0)
 
-    def set_dimension_specific_parameter_range(self, selected_sweep_parameter, range_selector):
+    def set_dimension_specific_parameter_range(self, selected_sweep_parameter: str,
+                                               range_selector: RangeSelector) -> None:
+        """
+        Sets the range and step size of the given range selector based on the selected sweep parameter.
+        For 'µ_ [eV]', the range is set to (-0.5, -0.1) with a step size of 0.01. For all other parameters, the range
+        is set to (0.0, 10.0) with a step size of 0.5. If 'NONE' is selected, the range selector is disabled.
+
+        Args:
+            selected_sweep_parameter (str): The selected sweep parameter from the dimension dropdown.
+            range_selector (RangeSelector): The range selector to set the range for.
+        """
         if selected_sweep_parameter == 'µ_ [eV]':
             range_selector.set_range(-0.5, -0.1, 0.0001, 0.1, 0.005)
             range_selector.set_single_steps(0.01, 0.01, 0.001)
@@ -653,8 +682,13 @@ class SettingsWidget(QWidget):
         else:
             range_selector.setEnabled(True)
 
-    def set_parameter_range_specific_log_scale_checkbox_status(self, range_selector):
-        """Disables the log scale checkbox of the given range_selector if the range min/max is not fully positive."""
+    def set_parameter_range_specific_log_scale_checkbox_status(self, range_selector: RangeSelector) -> None:
+        """
+        Disables the log scale checkbox of the given range_selector if the range min/max is not fully positive.
+
+        Args:
+            range_selector (RangeSelector): The range selector to check the log scale checkbox for.
+        """
         if not self.three_dimensional_sweep:
             min_value = range_selector.min_spinbox.value()
             max_value = range_selector.max_spinbox.value()
@@ -664,73 +698,187 @@ class SettingsWidget(QWidget):
             else:
                 range_selector.enable_log_scale_checkbox()
 
-    def set_algorithm_specific_log_scale_checkbox_status(self, selected_sweep_parameter, range_selectors):
-        """Disables the log scale checkboxes of the given range_selectors if 3D sweeps are selected."""
+    def set_algorithm_specific_log_scale_checkbox_status(self, selected_sweep_parameter: str,
+                                                         range_selectors: List[RangeSelector]) -> None:
+        """
+        Disables the log scale checkboxes of the given range_selectors if 3D sweeps are selected.
+
+        Args:
+            selected_sweep_parameter (str): The selected sweep parameter from the Z dimension dropdown.
+            range_selectors (List[RangeSelector]): The range selectors to check the log scale checkboxes for.
+        """
         for range_selector in range_selectors:
             if selected_sweep_parameter != 'NONE':
                 range_selector.disable_log_scale_checkbox()
             else:
                 self.set_parameter_range_specific_log_scale_checkbox_status(range_selector)
 
-    def disable_run_button(self):
+    def disable_run_button(self) -> None:
+        """
+        Disables the 'Run Simulation' button.
+        """
         self.run_button.setDisabled(True)
         QApplication.processEvents()  # Force GUI update
 
-    def enable_run_button(self):
+    def enable_run_button(self) -> None:
+        """
+        Enables the 'Run Simulation' button.
+        """
         self.run_button.setEnabled(True)
         QApplication.processEvents()  # Force GUI update
 
-    # Getter methods to retrieve the settings
-    def get_simulation_engine(self):
+    def get_simulation_engine(self) -> str:
+        """
+        Retrieves the selected physical simulation engine.
+
+        Returns:
+             str: The selected physical simulation engine.
+        """
         return self.engine_dropdown.currentText()
 
-    def get_mu_minus(self):
+    def get_mu_minus(self) -> float:
+        """
+        Retrieves the selected base µ_ value.
+
+        Returns:
+             float: The selected base µ_ value.
+        """
         return self.mu_minus_selector.value()
 
-    def get_epsilon_r(self):
+    def get_epsilon_r(self) -> float:
+        """
+        Retrieves the selected base epsilon_r value.
+
+        Returns:
+             float: The selected base epsilon_r value.
+        """
         return self.epsilon_r_selector.value()
 
-    def get_lambda_tf(self):
+    def get_lambda_tf(self) -> float:
+        """
+        Retrieves the selected base lambda_TF value.
+
+        Returns:
+             float: The selected base lambda_TF value.
+        """
         return self.lambda_tf_selector.value()
 
-    def get_boolean_function(self):
+    def get_boolean_function(self) -> str:
+        """
+        Retrieves the selected Boolean function.
+
+        Returns:
+            str: The selected Boolean function.
+        """
         return self.boolean_function_dropdown.currentText()
 
-    def get_algorithm(self):
+    def get_algorithm(self) -> str:
+        """
+        Retrieves the selected operational domain algorithm.
+
+        Returns:
+            str: The selected operational domain algorithm.
+        """
         return self.algorithm_dropdown.currentText()
 
-    def get_random_samples(self):
+    def get_random_samples(self) -> int:
+        """
+        Retrieves the selected number of random samples.
+
+        Returns:
+            int: The selected number of random samples.
+        """
         return self.random_samples_spinbox.value()
 
-    def get_operational_condition(self):
+    def get_operational_condition(self) -> str | None:
+        """
+        Retrieves the selected operational condition.
+
+        Returns:
+            str | None: The selected operational condition.
+        """
         for button in self.operational_condition_group.buttons():
             if button.isChecked():  # Check if the button is selected
                 return button.text()
         return None  # Return None if no button is selected (edge case)
 
-    def get_x_dimension(self):
+    def get_x_dimension(self) -> str:
+        """
+        Retrieves the selected sweep dimension in X direction.
+
+        Returns:
+            str: The selected sweep dimension in X direction.
+        """
         return self.DISPLAY_TO_INTERNAL.get(self.x_dimension_dropdown.currentText())
 
-    def get_x_parameter_range(self):
+    def get_x_parameter_range(self) -> Tuple[float, float, float]:
+        """
+        Retrieves the selected X parameter range as a tuple of (min, max, step).
+
+        Returns:
+            Tuple[float, float, float]: The selected X parameter range.
+        """
         return self.x_parameter_range_selector.get_range()
 
-    def get_x_log_scale(self):
+    def get_x_log_scale(self) -> bool:
+        """
+        Retrieves the selected X log scale status.
+
+        Returns:
+            bool: True if the X dimension log scale is enabled, False otherwise.
+        """
         return self.x_parameter_range_selector.get_log_scale()
 
-    def get_y_dimension(self):
+    def get_y_dimension(self) -> str:
+        """
+        Retrieves the selected sweep dimension in Y direction.
+
+        Returns:
+            str: The selected sweep dimension in Y direction.
+        """
         return self.DISPLAY_TO_INTERNAL.get(self.y_dimension_dropdown.currentText())
 
-    def get_y_parameter_range(self):
+    def get_y_parameter_range(self) -> Tuple[float, float, float]:
+        """
+        Retrieves the selected Y parameter range as a tuple of (min, max, step).
+
+        Returns:
+            Tuple[float, float, float]: The selected Y parameter range.
+        """
         return self.y_parameter_range_selector.get_range()
 
-    def get_y_log_scale(self):
+    def get_y_log_scale(self) -> bool:
+        """
+        Retrieves the selected Y log scale status.
+
+        Returns:
+            bool: True if the Y dimension log scale is enabled, False otherwise.
+        """
         return self.y_parameter_range_selector.get_log_scale()
 
-    def get_z_dimension(self):
+    def get_z_dimension(self) -> str:
+        """
+        Retrieves the selected sweep dimension in Z direction.
+
+        Returns:
+            str: The selected sweep dimension in Z direction.
+        """
         return self.DISPLAY_TO_INTERNAL.get(self.z_dimension_dropdown.currentText())
 
-    def get_z_parameter_range(self):
+    def get_z_parameter_range(self) -> Tuple[float, float, float]:
+        """
+        Retrieves the selected Z parameter range as a tuple of (min, max, step).
+
+        Returns:
+            Tuple[float, float, float]: The selected Z parameter range.
+        """
         return self.z_parameter_range_selector.get_range()
 
-    def get_z_log_scale(self):
+    def get_z_log_scale(self) -> bool:
+        """
+        Retrieves the selected Z log scale status.
+
+        Returns:
+            bool: True if the Z dimension log scale is enabled, False otherwise.
+        """
         return self.z_parameter_range_selector.get_log_scale()
