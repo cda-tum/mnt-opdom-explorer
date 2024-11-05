@@ -23,6 +23,7 @@ class SettingsWidget(QWidget):
         super().__init__()
         self.file_path = file_path  # Store the file_path as an instance variable
         self.three_dimensional_sweep = False  # flag for 3D sweeps
+
         self.initUI()
 
     def createTitleBar(self) -> QWidget:
@@ -121,6 +122,50 @@ class SettingsWidget(QWidget):
 
         return engine_layout
 
+    def createEpsilonRValueSelector(self) -> QHBoxLayout:
+        """
+        Creates a double spinbox widget for selecting the epsilon_r value.
+
+        Returns:
+            QHBoxLayout: The layout containing the epsilon_r value selector.
+        """
+        epsilon_r_layout = QHBoxLayout()
+        epsilon_r_label = QLabel('epsilon_r')
+        self.epsilon_r_selector = QDoubleSpinBox()
+        self.epsilon_r_selector.setRange(1.0, 10.0)
+        self.epsilon_r_selector.setDecimals(2)
+        self.epsilon_r_selector.setSingleStep(0.1)
+        self.epsilon_r_selector.setValue(5.6)
+        self.epsilon_r_selector.setDisabled(True)  # Disable by default
+        epsilon_r_layout.addWidget(epsilon_r_label, 30)  # 30% of the space goes to the label
+        epsilon_r_layout.addWidget(self.epsilon_r_selector, 69)  # 69% of the space goes to the selector
+        epsilon_r_info_tag = InfoTag('epsilon_r is the dielectric constant.')
+        epsilon_r_layout.addWidget(epsilon_r_info_tag, 1)  # 1% of the space goes to the info tag
+
+        return epsilon_r_layout
+
+    def createLambdaTFValueSelector(self) -> QHBoxLayout:
+        """
+        Creates a double spinbox widget for selecting the lambda_TF value.
+
+        Returns:
+            QHBoxLayout: The layout containing the lambda_TF value selector.
+        """
+        lambda_tf_layout = QHBoxLayout()
+        lambda_tf_label = QLabel('lambda_TF [nm]')
+        self.lambda_tf_selector = QDoubleSpinBox()
+        self.lambda_tf_selector.setRange(1.0, 10.0)
+        self.lambda_tf_selector.setDecimals(2)
+        self.lambda_tf_selector.setSingleStep(0.1)
+        self.lambda_tf_selector.setValue(5.0)
+        self.lambda_tf_selector.setDisabled(True)  # Disable by default
+        lambda_tf_layout.addWidget(lambda_tf_label, 30)  # 30% of the space goes to the label
+        lambda_tf_layout.addWidget(self.lambda_tf_selector, 69)  # 69% of the space goes to the selector
+        lambda_tf_info_tag = InfoTag('lambda_TF is the Thomas-Fermi screening length in nm.')
+        lambda_tf_layout.addWidget(lambda_tf_info_tag, 1)  # 1% of the space goes to the info tag
+
+        return lambda_tf_layout
+
     def createMuMinusValueSelector(self) -> QHBoxLayout:
         """
         Creates a double spinbox widget for selecting the µ_ value.
@@ -143,48 +188,6 @@ class SettingsWidget(QWidget):
 
         return mu_layout
 
-    def createEpsilonRValueSelector(self) -> QHBoxLayout:
-        """
-        Creates a double spinbox widget for selecting the epsilon_r value.
-
-        Returns:
-            QHBoxLayout: The layout containing the epsilon_r value selector.
-        """
-        epsilon_r_layout = QHBoxLayout()
-        epsilon_r_label = QLabel('epsilon_r')
-        self.epsilon_r_selector = QDoubleSpinBox()
-        self.epsilon_r_selector.setRange(1.0, 10.0)
-        self.epsilon_r_selector.setDecimals(2)
-        self.epsilon_r_selector.setSingleStep(0.1)
-        self.epsilon_r_selector.setValue(5.6)
-        epsilon_r_layout.addWidget(epsilon_r_label, 30)  # 30% of the space goes to the label
-        epsilon_r_layout.addWidget(self.epsilon_r_selector, 69)  # 69% of the space goes to the selector
-        epsilon_r_info_tag = InfoTag('epsilon_r is the dielectric constant.')
-        epsilon_r_layout.addWidget(epsilon_r_info_tag, 1)  # 1% of the space goes to the info tag
-
-        return epsilon_r_layout
-
-    def createLambdaTFValueSelector(self) -> QHBoxLayout:
-        """
-        Creates a double spinbox widget for selecting the lambda_TF value.
-
-        Returns:
-            QHBoxLayout: The layout containing the lambda_TF value selector.
-        """
-        lambda_tf_layout = QHBoxLayout()
-        lambda_tf_label = QLabel('lambda_TF [nm]')
-        self.lambda_tf_selector = QDoubleSpinBox()
-        self.lambda_tf_selector.setRange(1.0, 10.0)
-        self.lambda_tf_selector.setDecimals(2)
-        self.lambda_tf_selector.setSingleStep(0.1)
-        self.lambda_tf_selector.setValue(5.0)
-        lambda_tf_layout.addWidget(lambda_tf_label, 30)  # 30% of the space goes to the label
-        lambda_tf_layout.addWidget(self.lambda_tf_selector, 69)  # 69% of the space goes to the selector
-        lambda_tf_info_tag = InfoTag('lambda_TF is the Thomas-Fermi screening length in nm.')
-        lambda_tf_layout.addWidget(lambda_tf_info_tag, 1)  # 1% of the space goes to the info tag
-
-        return lambda_tf_layout
-
     def createPhysicalSimulationGroup(self) -> IconGroupBox:
         """
         Creates the physical simulation group containing settings for the physical simulation engine as well as µ_,
@@ -196,12 +199,12 @@ class SettingsWidget(QWidget):
         physical_simulation_group = IconGroupBox('Physical Simulation', self.icon_loader.load_atom_icon())
         # Physical simulation engine
         physical_simulation_group.addLayout(self.createEngineDropDown())
-        # µ_ value selector
-        physical_simulation_group.addLayout(self.createMuMinusValueSelector())
         # epsilon_r value selector
         physical_simulation_group.addLayout(self.createEpsilonRValueSelector())
         # lambda_TF value selector
         physical_simulation_group.addLayout(self.createLambdaTFValueSelector())
+        # µ_ value selector
+        physical_simulation_group.addLayout(self.createMuMinusValueSelector())
 
         return physical_simulation_group
 
@@ -359,6 +362,7 @@ class SettingsWidget(QWidget):
         x_dimension_layout.addWidget(x_dimension_label, 30)
         x_dimension_layout.addWidget(self.x_dimension_dropdown, 70)
 
+        # Set the parameter range selector based on the selected sweep dimension
         self.x_dimension_dropdown.currentIndexChanged.connect(
             lambda: self.set_dimension_specific_parameter_range(self.x_dimension_dropdown.currentText(),
                                                                 self.x_parameter_range_selector)
@@ -400,6 +404,7 @@ class SettingsWidget(QWidget):
         y_dimension_layout.addWidget(y_dimension_label, 30)
         y_dimension_layout.addWidget(self.y_dimension_dropdown, 70)
 
+        # Set the parameter range selector based on the selected sweep dimension
         self.y_dimension_dropdown.currentIndexChanged.connect(
             lambda: self.set_dimension_specific_parameter_range(self.y_dimension_dropdown.currentText(),
                                                                 self.y_parameter_range_selector)
@@ -441,15 +446,16 @@ class SettingsWidget(QWidget):
         z_dimension_layout.addWidget(z_dimension_label, 30)
         z_dimension_layout.addWidget(self.z_dimension_dropdown, 70)
 
+        # Set the parameter range selector based on the selected sweep dimension
         self.z_dimension_dropdown.currentIndexChanged.connect(
             lambda: self.set_dimension_specific_parameter_range(self.z_dimension_dropdown.currentText(),
                                                                 self.z_parameter_range_selector)
         )
-        # disable contour tracing if 3D sweeps are selected
+        # Disable contour tracing if 3D sweeps are selected
         self.z_dimension_dropdown.currentIndexChanged.connect(
             lambda: self.set_dimension_specific_algorithm_selector(self.z_dimension_dropdown.currentText())
         )
-        # disable log scale if 3D sweeps are selected
+        # Disable log scale if 3D sweeps are selected
         self.z_dimension_dropdown.currentIndexChanged.connect(
             lambda: self.set_algorithm_specific_log_scale_checkbox_status(self.z_dimension_dropdown.currentText(),
                                                                           [self.x_parameter_range_selector,
@@ -502,6 +508,11 @@ class SettingsWidget(QWidget):
         # Z Dimension
         operational_domain_sweep_layout.addLayout(self.createZDimensionDropDown())
         operational_domain_sweep_layout.addWidget(self.createZDimensionRangeSelector())
+
+        # Connect the sweep dimension selectors to the set_sweep_specific_simulation_parameter_selectors method
+        self.x_dimension_dropdown.currentIndexChanged.connect(self.set_sweep_specific_simulation_parameter_selectors)
+        self.y_dimension_dropdown.currentIndexChanged.connect(self.set_sweep_specific_simulation_parameter_selectors)
+        self.z_dimension_dropdown.currentIndexChanged.connect(self.set_sweep_specific_simulation_parameter_selectors)
 
         # Set the layout for the 'Sweep Settings' sub-group
         self.operational_domain_sweep_group.setLayout(operational_domain_sweep_layout)
@@ -608,6 +619,33 @@ class SettingsWidget(QWidget):
                 return gate_name  # Return the first recognized gate name
 
         return None  # Return None if no recognized gate is found
+
+    def set_sweep_specific_simulation_parameter_selectors(self) -> None:
+        """
+        Disables the respective base simulation parameter selector based on the currently active sweep parameters. E.g.,
+        if 'epsilon_r' is selected, the epsilon_r selector is disabled. Also, if 'epsilon_r' is no longer selected at
+        any sweep dimension selector, it is re-enabled. Analogously for 'lambda_TF [nm]' and 'µ_ [eV]'.
+        """
+        # Get the internal values of all selected sweep dimensions
+        sweep_drop_down_values = [self.DISPLAY_TO_INTERNAL[self.x_dimension_dropdown.currentText()],
+                                  self.DISPLAY_TO_INTERNAL[self.y_dimension_dropdown.currentText()],
+                                  self.DISPLAY_TO_INTERNAL[self.z_dimension_dropdown.currentText()]]
+
+        # Disable the base simulation parameter selectors if they are selected in any sweep dimension
+        if 'epsilon_r' in sweep_drop_down_values:
+            self.epsilon_r_selector.setDisabled(True)
+        if 'lambda_TF' in sweep_drop_down_values:
+            self.lambda_tf_selector.setDisabled(True)
+        if 'µ_' in sweep_drop_down_values:
+            self.mu_minus_selector.setDisabled(True)
+
+        # Re-enable the base simulation parameter selectors if they are not selected in any sweep dimension
+        if 'epsilon_r' not in sweep_drop_down_values:
+            self.epsilon_r_selector.setEnabled(True)
+        if 'lambda_TF' not in sweep_drop_down_values:
+            self.lambda_tf_selector.setEnabled(True)
+        if 'µ_' not in sweep_drop_down_values:
+            self.mu_minus_selector.setEnabled(True)
 
     def set_algorithm_specific_random_sample_count(self, selected_algorithm: str) -> None:
         """
