@@ -6,14 +6,15 @@ requires = [
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "opdom-explore"
-description = "Explore Operational Domains of SiDB gates"
+name = "mnt-opdom-explorer"
+description = "Explore Operational Domains of SiDB logic gates"
 readme = "README.md"
 authors = [
     { name = "Marcel Walter", email = "marcel.walter@tum.de" },
+    { name = "Jan Drewniok", email = "jan.drewniok@tum.de" }
 ]
-keywords = ["MNT", "field-coupled nanocomputing", "GUI"]
-license = { file = "LICENSE" }
+keywords = ["MNT", "field-coupled nanocomputing", "silicon dangling-bonds", "logic", "physical simulation", "design automation", "operational domain", "GUI"]
+license = { file = "LICENSE.md" }
 requires-python = ">=3.9"
 version = "0.1.0"
 
@@ -29,11 +30,11 @@ dependencies = [
 
 [project.optional-dependencies]
 test = [
-    "coverage>=6.0",  # Ensure coverage is included for testing
+    "coverage>=6.0", # Ensure coverage is included for testing
 ]
 
 [project.urls]
-repository = "https://github.com/cda-tum/opdom-explore"
+repository = "https://github.com/cda-tum/mnt-opdom-explorer"
 
 [tool.setuptools.packages.find]
 include = ["core", "gui", "widgets"]

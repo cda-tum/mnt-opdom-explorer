@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QLabel, QFrame, QGroupBox, QHBoxLayout, QComboBox, QDoubleSpinBox,
                              QPushButton, QSpinBox, QApplication, QScrollArea, QSizePolicy, QRadioButton, QButtonGroup)
 from PyQt6.QtCore import Qt
