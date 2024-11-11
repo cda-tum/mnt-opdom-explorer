@@ -1,11 +1,10 @@
-[![Ubuntu CI](https://img.shields.io/github/actions/workflow/status/cda-tum/mnt-opdom-explorer/ci.yml?label=Ubuntu&logo=ubuntu&style=flat-square)](https://github.com/cda-tum/fiction/actions/workflows/ci.yml)
-[![macOS CI](https://img.shields.io/github/actions/workflow/status/cda-tum/mnt-opdom-explorer/ci.yml?label=macOS&logo=apple&style=flat-square)](https://github.com/cda-tum/fiction/actions/workflows/ci.yml)
-[![Windows CI](https://img.shields.io/github/actions/workflow/status/cda-tum/mnt-opdom-explorer/ci.yml?label=Windows&logo=windows&style=flat-square)](https://github.com/cda-tum/fiction/actions/workflows/ci.yml)
-[![License](https://img.shields.io/github/license/cda-tum/mnt-opdom-explorer?label=License&style=flat-square)](https://github.com/cda-tum/mnt-opdom-explorer/blob/main/LICENSE)
-[![codecov](https://img.shields.io/codecov/c/github/cda-tum/mnt-opdom-explorer?style=flat-square&logo=codecov)](https://codecov.io/gh/cda-tum/mnt-opdom-explorer)
-[![Release](https://img.shields.io/github/v/release/cda-tum/mnt-opdom-explorer?label=opdomain-explore&style=flat-square)](https://github.com/cda-tum/mnt-opdom-explorer/releases)
-[![IEEEXplore](https://img.shields.io/static/v1?label=ACM&message=OpDomain&color=informational&style=flat-square)](https://dl.acm.org/doi/10.1145/3611315.3633246)
+![OS](https://img.shields.io/badge/OS-Linux%20%7C%20macOS%20%7C%20Windows-blue?style=flat-square)
 [![Python](https://img.shields.io/badge/Python-%20%203.8%20|%203.9%20|%203.10%20|%203.11-blue?logo=python&style=flat-square)](https://github.com/cda-tum/mnt-opdom-explorer/actions)
+[![CI](https://img.shields.io/github/actions/workflow/status/cda-tum/mnt-opdom-explorer/ci.yml?style=flat-square&logo=github&label=CI)](https://github.com/cda-tum/mnt-opdom-explorer/actions/workflows/ci.yml)
+[![Coverage](https://img.shields.io/codecov/c/github/cda-tum/mnt-opdom-explorer?label=Coverage&logo=codecov&style=flat-square)](https://codecov.io/gh/cda-tum/mnt-opdom-explorer)
+[![License](https://img.shields.io/github/license/cda-tum/mnt-opdom-explorer?label=License&style=flat-square)](https://github.com/cda-tum/mnt-opdom-explorer/blob/main/LICENSE)
+[![Release](https://img.shields.io/github/v/release/cda-tum/mnt-opdom-explorer?label=Release&style=flat-square)](https://github.com/cda-tum/mnt-opdom-explorer/releases)
+[![IEEEXplore](https://img.shields.io/static/v1?label=ACM&message=Paper&color=informational&style=flat-square)](https://dl.acm.org/doi/10.1145/3611315.3633246)
 
 # Operational Domain Explorer
 
@@ -16,7 +15,7 @@
   </picture>
 </p>
 
-The _Operational Domain Explorer_ is a Qt6 application written in Python that enables insight into the robustness of
+The _Operational Domain Explorer_ is a PyQt6 application that enables insight into the robustness of
 _Silicon Dangling Bond_ (SiDB) gates against material imperfections at the atomic scale. To this end, it relies on
 physical simulation tools implemented in the [_fiction_ framework](https://github.com/cda-tum/fiction). The Operational
 Domain Explorer is developed as part of the _Munich Nanotech Toolkit_ (_MNT_) by
@@ -89,9 +88,7 @@ For more details, check the [repository](https://github.com/cda-tum/opdom-explor
 
 ## Reference
 
----
-
-Since the *Operational Domain Explorer* is an academic software, we would be thankful if you referred to it by citing the following publications:
+If you use the *Operational Domain Explorer* for academic purposes, we would be thankful if you referred to it by citing the following publication:
 
 ```bibtex
 @inproceedings{walter2023opdom,
@@ -101,9 +98,22 @@ Since the *Operational Domain Explorer* is an academic software, we would be tha
 }
 ```
 
-## Acknowledgements
+---
+
+## License
+
+This project is licensed under the [Prosperity Public License 3.0.0](https://prosperitylicense.com/versions/3.0.0).
+
+- **Permitted Use:** You are free to use this software for personal, academic, and other non-commercial purposes.
+- **Prohibited Use:** Commercial use of this software is not permitted under this license. Any form of direct or indirect commercial exploitation is strictly prohibited without obtaining a commercial license first.
+
+If you would like to obtain a commercial license to use this project in a business, product, or any profit-driven environment, please reach out directly for licensing terms.
+
+For further details, please refer to the [LICENSE.md](https://github.com/cda-tum/mnt-opdom-explorer/blob/main/LICENSE.md) file in this repository.
 
 ---
+
+## Acknowledgements
 
 The Munich Nanotech Toolkit has been supported by the Bavarian State Ministry for Science and Arts through the
 Distinguished Professorship Program.
