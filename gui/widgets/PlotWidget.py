@@ -258,8 +258,8 @@ class PlotWidget(QWidget):
                 nm_pos_x = (nm_pos_lower[0] + nm_pos_upper[0]) / 2
 
                 # Plot the binary value corresponding to the input cell
-                bin_digit = bin_value[
-                    len(input_cells) - 1 - idx]  # Get the corresponding binary digit for this input cell
+                bin_digit = bin_value[idx]  # Get the corresponding binary digit for this input cell
+
                 ax.text(nm_pos_x, -nm_pos_upper[1] + 1.0, bin_digit, color='gray', fontsize=40, fontweight='bold',
                         horizontalalignment='center', verticalalignment='center')
 
@@ -510,6 +510,7 @@ class PlotWidget(QWidget):
         if iteration in self.operational_patterns:
             status = pyfiction.operational_status.OPERATIONAL
 
+        print(bin(iteration)[2:].zfill(self.input_iterator.num_input_pairs()))
         # Plot the new layout and charge distribution
         _ = self.plot_layout(
             self.lyt, self.input_iterator_initial.get_layout(), iteration, gs, status,
@@ -519,6 +520,7 @@ class PlotWidget(QWidget):
 
         # Update the QLabel if this is the current slider value
         if iteration == self.get_slider_value():
+            print(iteration)
             plot_image_path = self.plot_layout(
                 self.lyt, self.input_iterator_initial.get_layout(), self.get_slider_value(), gs, status,
                 parameter_point=(self.x, self.y),
