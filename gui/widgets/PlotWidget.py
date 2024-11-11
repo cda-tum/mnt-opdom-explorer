@@ -510,7 +510,6 @@ class PlotWidget(QWidget):
         if iteration in self.operational_patterns:
             status = pyfiction.operational_status.OPERATIONAL
 
-        print(bin(iteration)[2:].zfill(self.input_iterator.num_input_pairs()))
         # Plot the new layout and charge distribution
         _ = self.plot_layout(
             self.lyt, self.input_iterator_initial.get_layout(), iteration, gs, status,
@@ -520,7 +519,6 @@ class PlotWidget(QWidget):
 
         # Update the QLabel if this is the current slider value
         if iteration == self.get_slider_value():
-            print(iteration)
             plot_image_path = self.plot_layout(
                 self.lyt, self.input_iterator_initial.get_layout(), self.get_slider_value(), gs, status,
                 parameter_point=(self.x, self.y),
