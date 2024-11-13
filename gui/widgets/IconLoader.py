@@ -25,7 +25,7 @@ class IconLoader:
         Initializes the icon loader by detecting the current dark/light mode setting of the application and setting the
         default colors for icons in light and dark mode.
         """
-        self.is_dark_mode = self._detect_dark_mode() # Automatically determine if dark mode is active
+        self.is_dark_mode = self._detect_dark_mode()  # Automatically determine if dark mode is active
         self._color_light_mode = QColor("#000000")  # Black for light mode
         self._color_dark_mode = QColor("#ffffff")  # White for dark mode
 
