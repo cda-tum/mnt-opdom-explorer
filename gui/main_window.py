@@ -1,7 +1,7 @@
 from pathlib import Path
 import shutil
 
-from PyQt6.QtCore import QSize, QUrl
+from PyQt6.QtCore import QUrl
 from PyQt6.QtGui import QPixmap, QDesktopServices, QColor
 from PyQt6.QtWidgets import (
     QFileDialog,
@@ -25,14 +25,15 @@ from PyQt6.QtWidgets import QSlider
 from PyQt6.QtGui import QPainter, QPen
 from PyQt6.QtCore import Qt
 
+
 # TODO: This is WIP code and we should probably put it in a separate file.
 class customized_slider(QSlider):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.checkmark_positions = []  # List to hold positions for checkmarks
-        self.crossmark_positions = []   # List to hold positions for crossmarks
+        self.crossmark_positions = []  # List to hold positions for crossmarks
         self.checkmark_color = QColor("green")  # Default color for checkmarks
-        self.crossmark_color = QColor("red")    # Default color for crossmarks
+        self.crossmark_color = QColor("red")  # Default color for crossmarks
 
     def set_checkmark_color(self, color):
         """Set the color for checkmarks."""
@@ -71,7 +72,7 @@ class customized_slider(QSlider):
     def remove_all_marks(self):
         """Remove all checkmarks and crossmarks."""
         self.checkmark_positions.clear()  # Clear all checkmark positions
-        self.crossmark_positions.clear()   # Clear all crossmark positions
+        self.crossmark_positions.clear()  # Clear all crossmark positions
         self.update()  # Request a repaint to show the changes
 
     def paintEvent(self, event):
@@ -111,7 +112,6 @@ class customized_slider(QSlider):
         """Calculate the x position of the tick based on the slider's range."""
         width = self.width()
         return int((tick_value - self.minimum()) / (self.maximum() - self.minimum()) * (width - 20)) + 10
-
 
 
 class MainWindow(QMainWindow):
@@ -335,23 +335,22 @@ class MainWindow(QMainWindow):
 
                 self.pixmap = QPixmap(str(plot_image_path))
             else:
-                [x,y] = self.plot.picked_x_y()
+                [x, y] = self.plot.picked_x_y()
                 # Construct the full path to the file
-                plot_image_path =  script_dir / 'widgets' / 'caching' / f'lyt_plot_{self.slider.value()}_x_{x}_y_{y}.svg'
+                plot_image_path = script_dir / 'widgets' / 'caching' / f'lyt_plot_{self.slider.value()}_x_{x}_y_{y}.svg'
 
                 # Load the image using QPixmap
                 self.pixmap = QPixmap(str(plot_image_path))
 
-            self.pixmap = self.pixmap.scaled(self.desired_width, self.desired_height, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            self.pixmap = self.pixmap.scaled(self.desired_width, self.desired_height, Qt.KeepAspectRatio,
+                                             Qt.SmoothTransformation)
             self.plot_label.setPixmap(self.pixmap)
-
-
-
 
     def plot_operational_domain(self):
         self.is_plot_view_active = False
         # Create the plot view
-        self.plot = PlotWidget(self.settings, self.lyt, self.bdl_input_iterator, self.max_pos, self.min_pos, self.plot_label, self.slider.value())
+        self.plot = PlotWidget(self.settings, self.lyt, self.bdl_input_iterator, self.max_pos, self.min_pos,
+                               self.plot_label, self.slider.value())
         self.plot.initUI()
 
         # Store the QSplitter widget in a class variable
@@ -387,10 +386,9 @@ class MainWindow(QMainWindow):
         # Load the image using QPixmap
         self.pixmap = QPixmap(str(plot_image_path))
 
-        self.pixmap = self.pixmap.scaled(self.desired_width, self.desired_height, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        self.pixmap = self.pixmap.scaled(self.desired_width, self.desired_height, Qt.KeepAspectRatio,
+                                         Qt.SmoothTransformation)
         self.plot_label.setPixmap(self.pixmap)
 
         # Update the slider label
         self.bin_value = bin(self.slider.value())[2:].zfill(self.bdl_input_iterator.num_input_pairs())
-
-
