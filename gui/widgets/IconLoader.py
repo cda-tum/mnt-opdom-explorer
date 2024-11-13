@@ -1,5 +1,7 @@
 import qtawesome as qta
-from PyQt6.QtGui import QColor, QIcon
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QColor, QIcon, QPixmap, QPainter
+from PyQt6.QtSvg import QSvgRenderer
 from PyQt6.QtSvgWidgets import QSvgWidget
 from PyQt6.QtWidgets import QApplication
 
@@ -36,6 +38,23 @@ class IconLoader:
         """
         color = color if color else self.get_icon_color()
         return qta.icon(icon_name, color=color, **kwargs)
+
+    def svg_to_icon(self, svg_path, size=(64, 64)):
+        """Converts an SVG file to a QIcon."""
+        renderer = QSvgRenderer(svg_path)
+        pixmap = QPixmap(size[0], size[1])
+        pixmap.fill(Qt.GlobalColor.transparent)  # Transparent background
+        painter = QPainter(pixmap)
+        renderer.render(painter)
+        painter.end()
+
+        return QIcon(pixmap)
+
+    def load_mnt_app_icon(self, size=(128, 128)) -> QIcon:
+        """Loads the MNT application icon from the resources folder."""
+        logo_path = "resources/logos/icons/mnt-app-icon.svg"
+
+        return self.svg_to_icon(logo_path, size)
 
     def load_mnt_logo(self) -> QSvgWidget:
         """Loads the MNT logo from the resources folder."""
