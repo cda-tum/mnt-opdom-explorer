@@ -1,6 +1,4 @@
 """
-Settings Widget
-
 This module contains the SettingsWidget class, with which users configure all parameters of the operational domain
 computations. This includes the physical simulation engine, base simulation parameters, expected Boolean function,
 operational domain algorithm, number of random samples, operational condition, and sweep settings for the X, Y, and
