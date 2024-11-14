@@ -42,6 +42,16 @@ repos:
       - id: rst-directive-colons
       - id: rst-inline-touching-normal
 
+  # Python linting using ruff
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.7.3
+    hooks:
+      - id: ruff
+        args: ["--fix", "--show-fixes"]
+        types_or: [python, pyi, jupyter]
+      - id: ruff-format
+        types_or: [python, pyi, jupyter]
+
   # Clean jupyter notebooks
   - repo: https://github.com/srstevenson/nb-clean
     rev: 4.0.1

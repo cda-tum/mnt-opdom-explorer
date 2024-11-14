@@ -41,3 +41,11 @@ Discussions = "https://github.com/cda-tum/mnt-opdom-explorer/discussions"
 
 [tool.setuptools.packages.find]
 include = ["core", "gui", "widgets"]
+
+[tool.ruff]
+line-length = 120
+preview = true
+unsafe-fixes = true
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
