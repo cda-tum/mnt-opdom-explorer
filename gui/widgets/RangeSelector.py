@@ -1,5 +1,4 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QDoubleSpinBox, QSizePolicy, QHBoxLayout, QCheckBox, \
-    QToolButton
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QDoubleSpinBox, QSizePolicy, QHBoxLayout, QCheckBox
 
 from gui.widgets import InfoTag
 
@@ -21,7 +20,7 @@ class RangeSelector(QWidget):
         spinbox_layout = QHBoxLayout()  # Use QHBoxLayout for horizontal alignment
 
         # Min label and spinbox
-        self.min_label = QLabel('Min:')
+        self.min_label = QLabel("Min:")
         self.min_spinbox = QDoubleSpinBox()
         self.min_spinbox.setRange(0.0, 10.0)
         self.min_spinbox.setDecimals(2)
@@ -33,7 +32,7 @@ class RangeSelector(QWidget):
         spinbox_layout.addWidget(self.min_spinbox)  # Add spinbox to the horizontal layout
 
         # Max label and spinbox
-        self.max_label = QLabel('Max:')
+        self.max_label = QLabel("Max:")
         self.max_spinbox = QDoubleSpinBox()
         self.max_spinbox.setRange(0.0, 10.0)
         self.max_spinbox.setDecimals(2)
@@ -45,7 +44,7 @@ class RangeSelector(QWidget):
         spinbox_layout.addWidget(self.max_spinbox)  # Add spinbox to the horizontal layout
 
         # Step label and spinbox
-        self.step_label = QLabel('Step:')
+        self.step_label = QLabel("Step:")
         self.step_spinbox = QDoubleSpinBox()
         self.step_spinbox.setRange(0.01, 5.0)
         self.step_spinbox.setDecimals(2)
@@ -66,7 +65,8 @@ class RangeSelector(QWidget):
 
         # Add help icon with tooltip
         help_icon = InfoTag(
-            "Use logarithmic axis scale instead of linear one. Logarithmic axes are not supported for 3D operational domain plots.")
+            "Use logarithmic axis scale instead of linear one. Logarithmic axes are not supported for 3D operational domain plots."
+        )
         spinbox_layout.addWidget(help_icon)
 
         # Set the overall layout for the widget

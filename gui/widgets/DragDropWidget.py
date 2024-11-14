@@ -1,7 +1,15 @@
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
 from PyQt6.QtGui import QColor, QFont, QPalette, QCursor
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QPushButton, QFileDialog, QProgressBar, QMessageBox, \
-    QApplication
+from PyQt6.QtWidgets import (
+    QWidget,
+    QVBoxLayout,
+    QLabel,
+    QPushButton,
+    QFileDialog,
+    QProgressBar,
+    QMessageBox,
+    QApplication,
+)
 
 from gui.widgets.IconLoader import IconLoader
 
@@ -56,12 +64,12 @@ class DragDropWidget(QWidget):
         # Create a large drop file icon in the center
         icon_label = QLabel()
         icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        icon_label.setPixmap(icon_loader.load_file_upload_icon(color=QColor('grey')).pixmap(128, 128))
+        icon_label.setPixmap(icon_loader.load_file_upload_icon(color=QColor("grey")).pixmap(128, 128))
 
         # Create a label under the icon with a larger font
-        label = QLabel('Drag & Drop an SQD File', self)
+        label = QLabel("Drag & Drop an SQD File", self)
         label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        label.setFont(QFont('Arial', 14, QFont.Weight.Bold))  # Bold, larger font
+        label.setFont(QFont("Arial", 14, QFont.Weight.Bold))  # Bold, larger font
         label.setStyleSheet(f"color: {self.text_color.name()};")  # Set label color
 
         # Add the icon and label to a layout with minimal spacing
@@ -96,7 +104,7 @@ class DragDropWidget(QWidget):
         # Create a loading text label (hidden by default)
         self.loading_label = QLabel("Loading...", self)
         self.loading_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.loading_label.setFont(QFont('Arial', 12))
+        self.loading_label.setFont(QFont("Arial", 12))
         self.loading_label.setStyleSheet(f"color: {self.loading_text_color.name()};")
         self.loading_label.setVisible(False)  # Hidden initially
         layout.addWidget(self.loading_label)
@@ -106,7 +114,7 @@ class DragDropWidget(QWidget):
 
         # Create a browse button
         browse_icon = icon_loader.load_folder_open_icon()
-        self.browse_button = QPushButton(browse_icon, 'Browse', self)  # Make it an instance variable
+        self.browse_button = QPushButton(browse_icon, "Browse", self)  # Make it an instance variable
         self.browse_button.clicked.connect(self.openFileDialog)
 
         # Add the button at the bottom of the layout
@@ -120,7 +128,7 @@ class DragDropWidget(QWidget):
             QMessageBox.information(self, "Loading in Progress", "Please wait until the current file is loaded.")
             return
 
-        fileName, _ = QFileDialog.getOpenFileName(self, 'Open file', '', 'All Files (*);;SiQAD files (*.sqd)')
+        fileName, _ = QFileDialog.getOpenFileName(self, "Open file", "", "All Files (*);;SiQAD files (*.sqd)")
         if fileName:
             self.startLoading(fileName)
 

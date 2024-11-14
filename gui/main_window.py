@@ -14,7 +14,7 @@ from PyQt6.QtWidgets import (
     QSizePolicy,
     QWidget,
     QSpacerItem,
-    QHBoxLayout
+    QHBoxLayout,
 )
 
 from gui.widgets import DragDropWidget, PlotWidget, SettingsWidget
@@ -128,7 +128,7 @@ class MainWindow(QMainWindow):
 
     def initUI(self):
         self.is_plot_view_active = True
-        self.setWindowTitle('Operational Domain Explorer')
+        self.setWindowTitle("Operational Domain Explorer")
         self.setGeometry(100, 100, 600, 400)
 
         # Initialize the QStackedWidget
@@ -154,7 +154,7 @@ class MainWindow(QMainWindow):
 
         # Get the current script directory
         script_dir = Path(__file__).resolve().parent
-        caching_dir = script_dir / 'widgets' / 'caching'
+        caching_dir = script_dir / "widgets" / "caching"
 
         # Remove the caching directory if it exists
         if caching_dir.exists() and caching_dir.is_dir():
@@ -266,8 +266,14 @@ class MainWindow(QMainWindow):
 
         # Set up the plot and load the image into the QLabel
         self.plot = PlotWidget(
-            self.settings, self.lyt, self.bdl_input_iterator, self.max_pos, self.min_pos,
-            self.plot_label, self.slider.value())
+            self.settings,
+            self.lyt,
+            self.bdl_input_iterator,
+            self.max_pos,
+            self.min_pos,
+            self.plot_label,
+            self.slider.value(),
+        )
 
         # Generate plots for each slider value
         for i in range(2 ** self.bdl_input_iterator.num_input_pairs()):
@@ -275,7 +281,8 @@ class MainWindow(QMainWindow):
                 self.lyt,
                 self.bdl_input_iterator.get_layout(),
                 slider_value=i,
-                bin_value=bin(i)[2:].zfill(self.bdl_input_iterator.num_input_pairs()))
+                bin_value=bin(i)[2:].zfill(self.bdl_input_iterator.num_input_pairs()),
+            )
             self.bdl_input_iterator += 1
 
         self.bdl_input_iterator = pyfiction.bdl_input_iterator_100(self.lyt)  # Reset the iterator
@@ -284,7 +291,7 @@ class MainWindow(QMainWindow):
         script_dir = Path(__file__).resolve().parent
 
         # Construct the full path to the file
-        plot_image_path = script_dir / 'widgets' / 'caching' / f'lyt_plot_{self.slider.value()}.svg'
+        plot_image_path = script_dir / "widgets" / "caching" / f"lyt_plot_{self.slider.value()}.svg"
 
         # Load the image using QPixmap
         pixmap = QPixmap(str(plot_image_path))  # Convert Path object to string
@@ -310,7 +317,7 @@ class MainWindow(QMainWindow):
 
     def load_new_file(self):
         # Open file dialog to select a new file
-        file_path, _ = QFileDialog.getOpenFileName(self, 'Open Layout File', '', 'Layout Files (*.sqd *.json)')
+        file_path, _ = QFileDialog.getOpenFileName(self, "Open Layout File", "", "Layout Files (*.sqd *.json)")
         if file_path:
             self.file_parsed(file_path)
 
@@ -331,26 +338,34 @@ class MainWindow(QMainWindow):
             if self.is_plot_view_active:
                 print(script_dir)
                 # Construct the full path to the file
-                plot_image_path = script_dir / 'widgets' / 'caching' / f'lyt_plot_{self.slider.value()}.svg'
+                plot_image_path = script_dir / "widgets" / "caching" / f"lyt_plot_{self.slider.value()}.svg"
 
                 self.pixmap = QPixmap(str(plot_image_path))
             else:
                 [x, y] = self.plot.picked_x_y()
                 # Construct the full path to the file
-                plot_image_path = script_dir / 'widgets' / 'caching' / f'lyt_plot_{self.slider.value()}_x_{x}_y_{y}.svg'
+                plot_image_path = script_dir / "widgets" / "caching" / f"lyt_plot_{self.slider.value()}_x_{x}_y_{y}.svg"
 
                 # Load the image using QPixmap
                 self.pixmap = QPixmap(str(plot_image_path))
 
-            self.pixmap = self.pixmap.scaled(self.desired_width, self.desired_height, Qt.KeepAspectRatio,
-                                             Qt.SmoothTransformation)
+            self.pixmap = self.pixmap.scaled(
+                self.desired_width, self.desired_height, Qt.KeepAspectRatio, Qt.SmoothTransformation
+            )
             self.plot_label.setPixmap(self.pixmap)
 
     def plot_operational_domain(self):
         self.is_plot_view_active = False
         # Create the plot view
-        self.plot = PlotWidget(self.settings, self.lyt, self.bdl_input_iterator, self.max_pos, self.min_pos,
-                               self.plot_label, self.slider.value())
+        self.plot = PlotWidget(
+            self.settings,
+            self.lyt,
+            self.bdl_input_iterator,
+            self.max_pos,
+            self.min_pos,
+            self.plot_label,
+            self.slider.value(),
+        )
         self.plot.initUI()
 
         # Store the QSplitter widget in a class variable
@@ -381,13 +396,14 @@ class MainWindow(QMainWindow):
         script_dir = Path(__file__).resolve().parent
 
         # Construct the full path to the plot image file based on the slider value
-        plot_image_path = script_dir / 'widgets' / 'caching' / f'lyt_plot_{self.slider.value()}.svg'
+        plot_image_path = script_dir / "widgets" / "caching" / f"lyt_plot_{self.slider.value()}.svg"
 
         # Load the image using QPixmap
         self.pixmap = QPixmap(str(plot_image_path))
 
-        self.pixmap = self.pixmap.scaled(self.desired_width, self.desired_height, Qt.KeepAspectRatio,
-                                         Qt.SmoothTransformation)
+        self.pixmap = self.pixmap.scaled(
+            self.desired_width, self.desired_height, Qt.KeepAspectRatio, Qt.SmoothTransformation
+        )
         self.plot_label.setPixmap(self.pixmap)
 
         # Update the slider label

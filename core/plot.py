@@ -34,10 +34,9 @@ def load_data(csv_files: List[str]) -> Tuple[List[pd.DataFrame], List[pd.DataFra
     return operational_data, non_operational_data
 
 
-def extract_parameters(data: List[pd.DataFrame],
-                       x_param: str,
-                       y_param: str,
-                       z_param: str = None) -> Tuple[List[pd.Series], List[pd.Series], List[pd.Series]]:
+def extract_parameters(
+    data: List[pd.DataFrame], x_param: str, y_param: str, z_param: str = None
+) -> Tuple[List[pd.Series], List[pd.Series], List[pd.Series]]:
     """
     Extract specific parameters from the dataset based on given names.
 
@@ -77,15 +76,17 @@ def calculate_colors(y_values: np.ndarray, z_values: np.ndarray) -> np.ndarray:
     return np.clip(colors, 0, 1)
 
 
-def plot_data(ax: plt.Axes,
-              x_data: List[pd.Series],
-              y_data: List[pd.Series],
-              z_data: List[pd.Series] = None,
-              log_scale: Tuple[bool, bool, bool] = (False, False, False),
-              label: str = None,
-              color: np.ndarray = BASE_PURPLE,
-              marker_size: int = 4,
-              alpha: float = 1.0) -> None:
+def plot_data(
+    ax: plt.Axes,
+    x_data: List[pd.Series],
+    y_data: List[pd.Series],
+    z_data: List[pd.Series] = None,
+    log_scale: Tuple[bool, bool, bool] = (False, False, False),
+    label: str = None,
+    color: np.ndarray = BASE_PURPLE,
+    marker_size: int = 4,
+    alpha: float = 1.0,
+) -> None:
     """
     Plot data on a given matplotlib axis with support for 2D and 3D plotting, optional log scaling, and custom styling.
 
@@ -151,17 +152,21 @@ def plot_data(ax: plt.Axes,
         plot_func(x_plot_data, y_plot_data, "o", color=color, markersize=marker_size, label=label, alpha=alpha)
 
 
-def generate_plot(csv_files: List[str],
-                  x_param: str,
-                  y_param: str,
-                  z_param: str = None,
-                  title: str = "Operational Domain",
-                  xlog: bool = False,
-                  ylog: bool = False,
-                  zlog: bool = False, include_non_operational: bool = True, show_legend: bool = True,
-                  x_range: Tuple[float, float] = (0.5, 10.5),
-                  y_range: Tuple[float, float] = (0.5, 10.5),
-                  z_range: Tuple[float, float] = (-0.55, -0.05)) -> Tuple[plt.Figure, plt.Axes]:
+def generate_plot(
+    csv_files: List[str],
+    x_param: str,
+    y_param: str,
+    z_param: str = None,
+    title: str = "Operational Domain",
+    xlog: bool = False,
+    ylog: bool = False,
+    zlog: bool = False,
+    include_non_operational: bool = True,
+    show_legend: bool = True,
+    x_range: Tuple[float, float] = (0.5, 10.5),
+    y_range: Tuple[float, float] = (0.5, 10.5),
+    z_range: Tuple[float, float] = (-0.55, -0.05),
+) -> Tuple[plt.Figure, plt.Axes]:
     """
     Generate a 2D or 3D scatter plot from operational domain data stored in CSV files.
 
@@ -227,14 +232,14 @@ def generate_plot(csv_files: List[str],
 
     # A dictionary to map parameter names to LaTeX labels
     _LATEX_LABELS = {
-        'epsilon_r': r'$\epsilon_r$',
-        'lambda_tf': r'$\lambda_{\text{TF}}$ [nm]',
-        'mu_minus': r'$\mu_{-}$ [eV]'
+        "epsilon_r": r"$\epsilon_r$",
+        "lambda_tf": r"$\lambda_{\text{TF}}$ [nm]",
+        "mu_minus": r"$\mu_{-}$ [eV]",
     }
 
     if z_param:
         # 3D plot
-        ax = fig.add_subplot(111, projection='3d')
+        ax = fig.add_subplot(111, projection="3d")
         ax.set_xlim(x_range[0], x_range[1])
         ax.set_ylim(y_range[0], y_range[1])
         ax.set_zlim(z_range[0], z_range[1])
@@ -249,10 +254,19 @@ def generate_plot(csv_files: List[str],
         ax.zaxis.set_rotate_label(False)  # Disable automatic rotation
 
         # Plot the data
-        plot_data(ax, x_op, y_op, z_data=z_op, label='Operational', marker_size=4, log_scale=(xlog, ylog, zlog))
+        plot_data(ax, x_op, y_op, z_data=z_op, label="Operational", marker_size=4, log_scale=(xlog, ylog, zlog))
         if include_non_operational:
-            plot_data(ax, x_non_op, y_non_op, z_data=z_non_op, label='Non-Operational', color=GRAY, marker_size=2,
-                      alpha=0.1, log_scale=(xlog, ylog, zlog))
+            plot_data(
+                ax,
+                x_non_op,
+                y_non_op,
+                z_data=z_non_op,
+                label="Non-Operational",
+                color=GRAY,
+                marker_size=2,
+                alpha=0.1,
+                log_scale=(xlog, ylog, zlog),
+            )
 
         ax.view_init(elev=30, azim=45)  # Fixed angle for 3D view
     else:
@@ -268,12 +282,13 @@ def generate_plot(csv_files: List[str],
         ax.set_ylabel(_LATEX_LABELS.get(y_param, f"{y_param}"))
 
         # Plot the data
-        plot_data(ax, x_op, y_op, label='Operational', marker_size=4, log_scale=(xlog, ylog, zlog))
+        plot_data(ax, x_op, y_op, label="Operational", marker_size=4, log_scale=(xlog, ylog, zlog))
         if include_non_operational:
-            plot_data(ax, x_non_op, y_non_op, label='Non-Operational', color=GRAY, marker_size=2,
-                      log_scale=(xlog, ylog, zlog))
+            plot_data(
+                ax, x_non_op, y_non_op, label="Non-Operational", color=GRAY, marker_size=2, log_scale=(xlog, ylog, zlog)
+            )
 
     if show_legend:
-        ax.legend(loc='upper left')  # Moves legend to the upper-left
+        ax.legend(loc="upper left")  # Moves legend to the upper-left
 
     return fig, ax

@@ -9,11 +9,12 @@ from PIL import Image
 from core.plot import load_data, extract_parameters, calculate_colors, plot_data, generate_plot
 
 # Directly manipulate sys.path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
 
 
 # Define the directory path for accessing files
 dir_path = os.path.dirname(os.path.realpath(__file__))
+
 
 def compare_images(fig, img2_path):
     """
@@ -28,7 +29,7 @@ def compare_images(fig, img2_path):
     """
     # Convert the Matplotlib figure to a NumPy array
     buf = io.BytesIO()
-    fig.savefig(buf, format='png')  # Save the figure as a PNG in memory
+    fig.savefig(buf, format="png")  # Save the figure as a PNG in memory
     buf.seek(0)
     img1_np = np.array(Image.open(buf))  # Read the PNG image and convert to NumPy array
 
@@ -45,13 +46,12 @@ def compare_images(fig, img2_path):
 
 
 class TestPlotFunctions(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls):
         """
         Set up the class-level resources, such as file paths.
         """
-        cls.csv_file_path = os.path.join(dir_path, '../resources/op_domain.csv')
+        cls.csv_file_path = os.path.join(dir_path, "../resources/op_domain.csv")
 
     def setUp(self):
         """
@@ -76,7 +76,7 @@ class TestPlotFunctions(unittest.TestCase):
         """
         Test the extract_parameters function for correct extraction of parameters.
         """
-        x_data, y_data, z_data = extract_parameters([self.df], 'epsilon_r', 'lambda_tf', 'mu_minus')
+        x_data, y_data, z_data = extract_parameters([self.df], "epsilon_r", "lambda_tf", "mu_minus")
 
         self.assertEqual(len(x_data), 1)
         self.assertEqual(len(y_data), 1)
@@ -100,7 +100,7 @@ class TestPlotFunctions(unittest.TestCase):
         """
         Test the plot_data function for 2D plotting.
         """
-        fig, ax = plt.subplots()
+        _fig, ax = plt.subplots()
         x_data = [np.array([1.0, 2.0])]
         y_data = [np.array([3.0, 4.0])]
 
@@ -113,7 +113,7 @@ class TestPlotFunctions(unittest.TestCase):
         Test the plot_data function for 3D plotting.
         """
         fig = plt.figure()
-        ax = fig.add_subplot(111, projection='3d')
+        ax = fig.add_subplot(111, projection="3d")
         x_data = [np.array([1.0, 2.0])]
         y_data = [np.array([3.0, 4.0])]
         z_data = [np.array([5.0, 6.0])]
@@ -126,59 +126,62 @@ class TestPlotFunctions(unittest.TestCase):
         """
         Test the plot_data function with logarithmic scale on both axes.
         """
-        fig, ax = plt.subplots()
+        _fig, ax = plt.subplots()
         x_data = [np.array([1.0, 10.0])]
         y_data = [np.array([0.1, 100.0])]
 
         plot_data(ax, x_data, y_data, log_scale=(True, True))
 
-        self.assertEqual(ax.get_xscale(), 'log')
-        self.assertEqual(ax.get_yscale(), 'log')
+        self.assertEqual(ax.get_xscale(), "log")
+        self.assertEqual(ax.get_yscale(), "log")
 
     def test_generate_plot_2d(self):
         """
         Test generate_plot function for 2D plots.
         """
         csv_files = [self.csv_file_path]
-        fig, ax = generate_plot(csv_files, 'epsilon_r', 'lambda_tf', title='2d_plot_test', xlog=False, ylog=False)
+        fig, ax = generate_plot(csv_files, "epsilon_r", "lambda_tf", title="2d_plot_test", xlog=False, ylog=False)
 
         self.assertIsInstance(fig, plt.Figure)
         self.assertIsInstance(ax, plt.Axes)
 
-        self.assertTrue(compare_images(fig, dir_path + '/../resources/2d_plot_test.png'))
-
+        self.assertTrue(compare_images(fig, dir_path + "/../resources/2d_plot_test.png"))
 
     def test_generate_plot_3d(self):
         """
         Test generate_plot function for 3D plots.
         """
         csv_files = [self.csv_file_path]
-        fig, ax = generate_plot(csv_files, 'epsilon_r', 'lambda_tf', z_param='mu_minus', title='3d_plot_test')
+        fig, ax = generate_plot(csv_files, "epsilon_r", "lambda_tf", z_param="mu_minus", title="3d_plot_test")
 
         self.assertIsInstance(fig, plt.Figure)
-        self.assertTrue(hasattr(ax, 'get_proj'))
+        self.assertTrue(hasattr(ax, "get_proj"))
 
-        self.assertTrue(compare_images(fig, dir_path + '/../resources/3d_plot_test.png'))
-
+        self.assertTrue(compare_images(fig, dir_path + "/../resources/3d_plot_test.png"))
 
     def test_generate_plot_operational_and_non(self):
         """
         Test generate_plot function including both operational and non-operational data.
         """
         csv_files = [self.csv_file_path]
-        fig, ax = generate_plot(csv_files, 'epsilon_r', 'lambda_tf', title='op_and_non_op_plot', include_non_operational=True)
+        fig, _ax = generate_plot(
+            csv_files, "epsilon_r", "lambda_tf", title="op_and_non_op_plot", include_non_operational=True
+        )
 
-        self.assertTrue(compare_images(fig, dir_path + '/../resources/op_and_non_op_plot.png'))
+        self.assertTrue(compare_images(fig, dir_path + "/../resources/op_and_non_op_plot.png"))
 
     def test_generate_plot_only_operational(self):
         """
         Test generate_plot function including only operational data.
         """
         csv_files = [self.csv_file_path]
-        fig, ax = generate_plot(csv_files, 'epsilon_r', 'lambda_tf', title='only_op_plot', include_non_operational=False)
+        fig, ax = generate_plot(
+            csv_files, "epsilon_r", "lambda_tf", title="only_op_plot", include_non_operational=False
+        )
 
         self.assertTrue(all([coll.get_alpha() == 1 for coll in ax.collections]))
-        self.assertTrue(fig, dir_path + '/../resources/only_op_plot.png')
+        self.assertTrue(fig, dir_path + "/../resources/only_op_plot.png")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

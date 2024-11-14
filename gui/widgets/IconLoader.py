@@ -103,7 +103,7 @@ class IconLoader:
         Args:
             color (QColor, optional): A QColor to override the default light/dark mode color.
         """
-        return self.load_icon('mdi6.cog', color=color)
+        return self.load_icon("mdi6.cog", color=color)
 
     def load_play_icon(self, color: QColor = None) -> QIcon:
         """
@@ -112,7 +112,7 @@ class IconLoader:
         Args:
             color (QColor, optional): A QColor to override the default light/dark mode color.
         """
-        return self.load_icon('mdi6.play', color=color)
+        return self.load_icon("mdi6.play", color=color)
 
     def load_refresh_icon(self, color: QColor = None) -> QIcon:
         """
@@ -121,7 +121,7 @@ class IconLoader:
         Args:
             color (QColor, optional): A QColor to override the default light/dark mode color.
         """
-        return self.load_icon('mdi6.refresh', color=color)
+        return self.load_icon("mdi6.refresh", color=color)
 
     def load_file_upload_icon(self, color: QColor = None) -> QIcon:
         """
@@ -130,7 +130,7 @@ class IconLoader:
         Args:
             color (QColor, optional): A QColor to override the default light/dark mode color.
         """
-        return self.load_icon('mdi6.file-upload', color=color)
+        return self.load_icon("mdi6.file-upload", color=color)
 
     def load_back_arrow_icon(self, color: QColor = None) -> QIcon:
         """
@@ -139,7 +139,7 @@ class IconLoader:
         Args:
             color (QColor, optional): A QColor to override the default light/dark mode color.
         """
-        return self.load_icon('mdi6.arrow-left', color=color)
+        return self.load_icon("mdi6.arrow-left", color=color)
 
     def load_email_icon(self, color: QColor = None) -> QIcon:
         """
@@ -148,7 +148,7 @@ class IconLoader:
         Args:
             color (QColor, optional): A QColor to override the default light/dark mode color.
         """
-        return self.load_icon('mdi6.email', color=color)
+        return self.load_icon("mdi6.email", color=color)
 
     def load_bug_icon(self, color: QColor = None) -> QIcon:
         """
@@ -157,7 +157,7 @@ class IconLoader:
         Args:
             color (QColor, optional): A QColor to override the default light/dark mode color.
         """
-        return self.load_icon('mdi6.bug', color=color)
+        return self.load_icon("mdi6.bug", color=color)
 
     def load_folder_open_icon(self, color: QColor = None) -> QIcon:
         """
@@ -166,7 +166,7 @@ class IconLoader:
         Args:
             color (QColor, optional): A QColor to override the default light/dark mode color.
         """
-        return self.load_icon('mdi6.folder-open', color=color)
+        return self.load_icon("mdi6.folder-open", color=color)
 
     def load_atom_icon(self, color: QColor = None) -> QIcon:
         """
@@ -175,7 +175,7 @@ class IconLoader:
         Args:
             color (QColor, optional): A QColor to override the default light/dark mode color.
         """
-        return self.load_icon('mdi6.atom', color=color)
+        return self.load_icon("mdi6.atom", color=color)
 
     def load_function_icon(self, color: QColor = None) -> QIcon:
         """
@@ -184,7 +184,7 @@ class IconLoader:
         Args:
             color (QColor, optional): A QColor to override the default light/dark mode color.
         """
-        return self.load_icon('mdi6.function', color=color)
+        return self.load_icon("mdi6.function", color=color)
 
     def load_chart_icon(self, color: QColor = None) -> QIcon:
         """
@@ -193,7 +193,7 @@ class IconLoader:
         Args:
             color (QColor, optional): A QColor to override the default light/dark mode color.
         """
-        return self.load_icon('mdi6.chart-scatter-plot', color=color)
+        return self.load_icon("mdi6.chart-scatter-plot", color=color)
 
     def load_help_icon(self, color: QColor = None) -> QIcon:
         """
@@ -202,7 +202,7 @@ class IconLoader:
         Args:
             color (QColor, optional): A QColor to override the default light/dark mode color.
         """
-        return self.load_icon('mdi6.help-circle-outline', color=color)
+        return self.load_icon("mdi6.help-circle-outline", color=color)
 
     def load_and_gate_icon(self, color: QColor = None) -> QIcon:
         """
@@ -211,7 +211,7 @@ class IconLoader:
         Args:
             color (QColor, optional): A QColor to override the default light/dark mode color.
         """
-        return self.load_icon('mdi6.gate-and', color=color)
+        return self.load_icon("mdi6.gate-and", color=color)
 
     def load_or_gate_icon(self, color: QColor = None) -> QIcon:
         """
@@ -220,7 +220,7 @@ class IconLoader:
         Args:
             color (QColor, optional): A QColor to override the default light/dark mode color.
         """
-        return self.load_icon('mdi6.gate-or', color=color)
+        return self.load_icon("mdi6.gate-or", color=color)
 
     def load_nand_gate_icon(self, color: QColor = None) -> QIcon:
         """
@@ -229,7 +229,7 @@ class IconLoader:
         Args:
             color (QColor, optional): A QColor to override the default light/dark mode color.
         """
-        return self.load_icon('mdi6.gate-nand', color=color)
+        return self.load_icon("mdi6.gate-nand", color=color)
 
     def load_nor_gate_icon(self, color: QColor = None) -> QIcon:
         """
@@ -238,7 +238,7 @@ class IconLoader:
         Args:
             color (QColor, optional): A QColor to override the default light/dark mode color.
         """
-        return self.load_icon('mdi6.gate-nor', color=color)
+        return self.load_icon("mdi6.gate-nor", color=color)
 
     def load_xor_gate_icon(self, color: QColor = None) -> QIcon:
         """
@@ -247,7 +247,7 @@ class IconLoader:
         Args:
             color (QColor, optional): A QColor to override the default light/dark mode color.
         """
-        return self.load_icon('mdi6.gate-xor', color=color)
+        return self.load_icon("mdi6.gate-xor", color=color)
 
     def load_xnor_gate_icon(self, color: QColor = None) -> QIcon:
         """
@@ -256,7 +256,7 @@ class IconLoader:
         Args:
             color (QColor, optional): A QColor to override the default light/dark mode color.
         """
-        return self.load_icon('mdi6.gate-xnor', color=color)
+        return self.load_icon("mdi6.gate-xnor", color=color)
 
     def load_not_gate_icon(self, color: QColor = None) -> QIcon:
         """
@@ -265,4 +265,4 @@ class IconLoader:
         Args:
             color (QColor, optional): A QColor to override the default light/dark mode color.
         """
-        return self.load_icon('mdi6.gate-not', color=color)
+        return self.load_icon("mdi6.gate-not", color=color)

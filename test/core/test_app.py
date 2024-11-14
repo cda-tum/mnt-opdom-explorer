@@ -2,8 +2,8 @@ import unittest
 from PyQt6.QtWidgets import QApplication
 from core.app import Application
 
-class TestApplication(unittest.TestCase):
 
+class TestApplication(unittest.TestCase):
     def setUp(self):
         """Set up a QApplication instance before each test."""
         self.app = Application([])  # Initialize with an empty argument list
@@ -17,5 +17,6 @@ class TestApplication(unittest.TestCase):
         """Clean up after each test."""
         self.app.quit()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

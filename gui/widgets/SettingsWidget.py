@@ -9,8 +9,23 @@ It provides getter functions to obtain the values of all settings selected by th
 
 from __future__ import annotations
 
-from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QLabel, QFrame, QGroupBox, QHBoxLayout, QComboBox, QDoubleSpinBox,
-                             QPushButton, QSpinBox, QApplication, QScrollArea, QSizePolicy, QRadioButton, QButtonGroup)
+from PyQt6.QtWidgets import (
+    QWidget,
+    QVBoxLayout,
+    QLabel,
+    QFrame,
+    QGroupBox,
+    QHBoxLayout,
+    QComboBox,
+    QDoubleSpinBox,
+    QPushButton,
+    QSpinBox,
+    QApplication,
+    QScrollArea,
+    QSizePolicy,
+    QRadioButton,
+    QButtonGroup,
+)
 from PyQt6.QtCore import Qt
 
 from gui.widgets import RangeSelector
@@ -29,12 +44,8 @@ class SettingsWidget(QWidget):
     operational domain algorithm, number of random samples, operational condition, and sweep settings for the X, Y, and
     Z dimensions.
     """
-    DISPLAY_TO_INTERNAL = {
-        'epsilon_r': 'epsilon_r',
-        'lambda_TF [nm]': 'lambda_TF',
-        'µ_ [eV]': 'µ_',
-        'NONE': 'NONE'
-    }
+
+    DISPLAY_TO_INTERNAL = {"epsilon_r": "epsilon_r", "lambda_TF [nm]": "lambda_TF", "µ_ [eV]": "µ_", "NONE": "NONE"}
 
     def __init__(self, file_path: str):
         """
@@ -70,7 +81,7 @@ class SettingsWidget(QWidget):
         settings_icon_label.setPixmap(cog_icon.pixmap(24, 24))  # Set the icon size
 
         # Add the title 'Settings'
-        title_label = QLabel('Settings')
+        title_label = QLabel("Settings")
 
         # Set font size to be slightly bigger
         settings_font = title_label.font()
@@ -132,16 +143,17 @@ class SettingsWidget(QWidget):
             QComboBox: The drop-down widget for selecting the engine.
         """
         engine_layout = QHBoxLayout()
-        engine_label = QLabel('Engine')
+        engine_label = QLabel("Engine")
         self.engine_dropdown = QComboBox()
-        self.engine_dropdown.addItems(['ExGS', 'QuickExact', 'QuickSim'])
+        self.engine_dropdown.addItems(["ExGS", "QuickExact", "QuickSim"])
         self.engine_dropdown.setCurrentIndex(1)  # Set QuickExact as default
         engine_layout.addWidget(engine_label, 30)  # 30% of the space goes to the label
         engine_layout.addWidget(self.engine_dropdown, 69)  # 69% of the space goes to the dropdown
         engine_info_tag = InfoTag(
-            'Exhaustive Ground State Search (ExGS) is an exact but slow engine.\n'
-            'QuickExact offers the same optimality guarantee as ExGS but has a runtime advantage of several orders of magnitude.\n'
-            'QuickSim is a fast but approximate engine that is best suited for small gates.')
+            "Exhaustive Ground State Search (ExGS) is an exact but slow engine.\n"
+            "QuickExact offers the same optimality guarantee as ExGS but has a runtime advantage of several orders of magnitude.\n"
+            "QuickSim is a fast but approximate engine that is best suited for small gates."
+        )
         engine_layout.addWidget(engine_info_tag, 1)  # 1% of the space goes to the info tag
 
         return engine_layout
@@ -154,7 +166,7 @@ class SettingsWidget(QWidget):
             QHBoxLayout: The layout containing the epsilon_r value selector.
         """
         epsilon_r_layout = QHBoxLayout()
-        epsilon_r_label = QLabel('epsilon_r')
+        epsilon_r_label = QLabel("epsilon_r")
         self.epsilon_r_selector = QDoubleSpinBox()
         self.epsilon_r_selector.setRange(1.0, 10.0)
         self.epsilon_r_selector.setDecimals(2)
@@ -163,7 +175,7 @@ class SettingsWidget(QWidget):
         self.epsilon_r_selector.setDisabled(True)  # Disable by default
         epsilon_r_layout.addWidget(epsilon_r_label, 30)  # 30% of the space goes to the label
         epsilon_r_layout.addWidget(self.epsilon_r_selector, 69)  # 69% of the space goes to the selector
-        epsilon_r_info_tag = InfoTag('epsilon_r is the dielectric constant.')
+        epsilon_r_info_tag = InfoTag("epsilon_r is the dielectric constant.")
         epsilon_r_layout.addWidget(epsilon_r_info_tag, 1)  # 1% of the space goes to the info tag
 
         return epsilon_r_layout
@@ -176,7 +188,7 @@ class SettingsWidget(QWidget):
             QHBoxLayout: The layout containing the lambda_TF value selector.
         """
         lambda_tf_layout = QHBoxLayout()
-        lambda_tf_label = QLabel('lambda_TF [nm]')
+        lambda_tf_label = QLabel("lambda_TF [nm]")
         self.lambda_tf_selector = QDoubleSpinBox()
         self.lambda_tf_selector.setRange(1.0, 10.0)
         self.lambda_tf_selector.setDecimals(2)
@@ -185,7 +197,7 @@ class SettingsWidget(QWidget):
         self.lambda_tf_selector.setDisabled(True)  # Disable by default
         lambda_tf_layout.addWidget(lambda_tf_label, 30)  # 30% of the space goes to the label
         lambda_tf_layout.addWidget(self.lambda_tf_selector, 69)  # 69% of the space goes to the selector
-        lambda_tf_info_tag = InfoTag('lambda_TF is the Thomas-Fermi screening length in nm.')
+        lambda_tf_info_tag = InfoTag("lambda_TF is the Thomas-Fermi screening length in nm.")
         lambda_tf_layout.addWidget(lambda_tf_info_tag, 1)  # 1% of the space goes to the info tag
 
         return lambda_tf_layout
@@ -198,7 +210,7 @@ class SettingsWidget(QWidget):
             QHBoxLayout: The layout containing the µ_ value selector.
         """
         mu_layout = QHBoxLayout()
-        mu_label = QLabel('µ_ [eV]')
+        mu_label = QLabel("µ_ [eV]")
         self.mu_minus_selector = QDoubleSpinBox()
         self.mu_minus_selector.setRange(-1.0, 1.0)
         self.mu_minus_selector.setDecimals(2)
@@ -207,7 +219,8 @@ class SettingsWidget(QWidget):
         mu_layout.addWidget(mu_label, 30)  # 30% of the space goes to the label
         mu_layout.addWidget(self.mu_minus_selector, 69)  # 69% of the space goes to the selector
         mu_info_tag = InfoTag(
-            'µ_ is the energy difference between the Fermi Energy and the charge transition level (0/−) in eV.')
+            "µ_ is the energy difference between the Fermi Energy and the charge transition level (0/−) in eV."
+        )
         mu_layout.addWidget(mu_info_tag, 1)  # 1% of the space goes to the info tag
 
         return mu_layout
@@ -220,7 +233,7 @@ class SettingsWidget(QWidget):
         Returns:
             IconGroupBox: The group box containing all physical simulation settings.
         """
-        physical_simulation_group = IconGroupBox('Physical Simulation', self.icon_loader.load_atom_icon())
+        physical_simulation_group = IconGroupBox("Physical Simulation", self.icon_loader.load_atom_icon())
         # Physical simulation engine
         physical_simulation_group.addLayout(self._create_engine_dropdown())
         # epsilon_r value selector
@@ -240,17 +253,17 @@ class SettingsWidget(QWidget):
             QHBoxLayout: The layout containing the Boolean function drop-down.
         """
         boolean_function_layout = QHBoxLayout()
-        boolean_function_label = QLabel('Boolean Function')
+        boolean_function_label = QLabel("Boolean Function")
         self.boolean_function_dropdown = QComboBox()
 
         # supported Boolean functions and their respective icons
         boolean_functions = {
-            'AND': self.icon_loader.load_and_gate_icon(),
-            'OR': self.icon_loader.load_or_gate_icon(),
-            'NAND': self.icon_loader.load_nand_gate_icon(),
-            'NOR': self.icon_loader.load_nor_gate_icon(),
-            'XOR': self.icon_loader.load_xor_gate_icon(),
-            'XNOR': self.icon_loader.load_xnor_gate_icon()
+            "AND": self.icon_loader.load_and_gate_icon(),
+            "OR": self.icon_loader.load_or_gate_icon(),
+            "NAND": self.icon_loader.load_nand_gate_icon(),
+            "NOR": self.icon_loader.load_nor_gate_icon(),
+            "XOR": self.icon_loader.load_xor_gate_icon(),
+            "XNOR": self.icon_loader.load_xnor_gate_icon(),
         }
 
         for name, icon in boolean_functions.items():
@@ -259,8 +272,9 @@ class SettingsWidget(QWidget):
         boolean_function_layout.addWidget(boolean_function_label, 30)  # 30% of the space goes to the label
         boolean_function_layout.addWidget(self.boolean_function_dropdown, 69)  # 69% of the space goes to the dropdown
         boolean_function_info_tag = InfoTag(
-            'The Boolean function that the SiDB layout is expected to implement. '
-            'The operational domain plot will be generated based on this function.')
+            "The Boolean function that the SiDB layout is expected to implement. "
+            "The operational domain plot will be generated based on this function."
+        )
         boolean_function_layout.addWidget(boolean_function_info_tag, 1)  # 1% of the space goes to the info tag
 
         # Get the extracted Boolean function name
@@ -269,7 +283,8 @@ class SettingsWidget(QWidget):
         # Set the default value based on the extracted name
         if extracted_function_name:
             index = self.boolean_function_dropdown.findText(
-                extracted_function_name)  # Get the index of the extracted function
+                extracted_function_name
+            )  # Get the index of the extracted function
             self.boolean_function_dropdown.setCurrentIndex(index)  # Set the extracted function as default
         else:
             self.boolean_function_dropdown.setCurrentIndex(0)  # Set 'AND' as default if extraction fails
@@ -283,7 +298,7 @@ class SettingsWidget(QWidget):
         Returns:
             IconGroupBox: The group box containing the gate function settings.
         """
-        gate_function_group = IconGroupBox('Gate Function', self.icon_loader.load_function_icon())
+        gate_function_group = IconGroupBox("Gate Function", self.icon_loader.load_function_icon())
         # Boolean function drop-down
         gate_function_group.addLayout(self._create_boolean_function_drop_down())
 
@@ -297,17 +312,18 @@ class SettingsWidget(QWidget):
             QHBoxLayout: The layout containing the algorithm drop-down.
         """
         algorithm_layout = QHBoxLayout()
-        algorithm_label = QLabel('Algorithm')
+        algorithm_label = QLabel("Algorithm")
         self.algorithm_dropdown = QComboBox()
-        self.algorithm_dropdown.addItems(['Grid Search', 'Random Sampling', 'Flood Fill', 'Contour Tracing'])
+        self.algorithm_dropdown.addItems(["Grid Search", "Random Sampling", "Flood Fill", "Contour Tracing"])
 
         algorithm_layout.addWidget(algorithm_label, 30)  # 30% of the space goes to the label
         algorithm_layout.addWidget(self.algorithm_dropdown, 69)  # 69% of the space goes to the dropdown
         algorithm_info_tag = InfoTag(
-            'Grid Search is a brute-force algorithm that evaluates all possible combinations of parameters. It recreates the entire operational domain within the parameter range.\n'
-            'Random Sampling randomly samples from the parameter range and will (most likely) not recover the entire operational domain.\n'
-            'Flood Fill is a seed-based algorithm that grows the operational domain from a randomly sampled seed. It will fully recreate all operational domain islands that were hit by the initial random samples.\n'
-            'Contour Tracing is also seed-based but aims at tracing only the edges of each operational domain island that was discovered by the initial random sampling.')
+            "Grid Search is a brute-force algorithm that evaluates all possible combinations of parameters. It recreates the entire operational domain within the parameter range.\n"
+            "Random Sampling randomly samples from the parameter range and will (most likely) not recover the entire operational domain.\n"
+            "Flood Fill is a seed-based algorithm that grows the operational domain from a randomly sampled seed. It will fully recreate all operational domain islands that were hit by the initial random samples.\n"
+            "Contour Tracing is also seed-based but aims at tracing only the edges of each operational domain island that was discovered by the initial random sampling."
+        )
         algorithm_layout.addWidget(algorithm_info_tag, 1)  # 1% of the space goes to the info tag
 
         # Connect the currentTextChanged signal of the algorithm_dropdown to the new slot method
@@ -323,7 +339,7 @@ class SettingsWidget(QWidget):
             QHBoxLayout: The layout containing the random samples spinbox.
         """
         random_samples_layout = QHBoxLayout()
-        random_samples_label = QLabel('Random Samples')
+        random_samples_label = QLabel("Random Samples")
         self.random_samples_spinbox = QSpinBox()
         self.random_samples_spinbox.setRange(0, 0)
         self.random_samples_spinbox.setValue(0)
@@ -331,8 +347,9 @@ class SettingsWidget(QWidget):
         random_samples_layout.addWidget(random_samples_label, 30)  # 30% of the space goes to the label
         random_samples_layout.addWidget(self.random_samples_spinbox, 69)  # 69% of the space goes to the spinbox
         random_samples_info_tag = InfoTag(
-            'Number of random samples to take. If the Random Sampling algorithm is selected, this represents the total number of simulation samples to conduct. '
-            'If Flood Fill or Contour Tracing are selected however, this represents the number of random samples to take for the initial seed.')
+            "Number of random samples to take. If the Random Sampling algorithm is selected, this represents the total number of simulation samples to conduct. "
+            "If Flood Fill or Contour Tracing are selected however, this represents the number of random samples to take for the initial seed."
+        )
         random_samples_layout.addWidget(random_samples_info_tag, 1)  # 1% of the space goes to the info tag
 
         return random_samples_layout
@@ -345,11 +362,11 @@ class SettingsWidget(QWidget):
             QHBoxLayout: The layout containing the radio
         """
         operational_condition_layout = QHBoxLayout()
-        operational_condition_label = QLabel('Operational Condition')
+        operational_condition_label = QLabel("Operational Condition")
 
         # Radio buttons
-        tolerate_kinks_radio = QRadioButton('Tolerate Kinks')
-        reject_kinks_radio = QRadioButton('Reject Kinks')
+        tolerate_kinks_radio = QRadioButton("Tolerate Kinks")
+        reject_kinks_radio = QRadioButton("Reject Kinks")
 
         self.operational_condition_group = QButtonGroup(self)
         self.operational_condition_group.addButton(tolerate_kinks_radio)
@@ -360,11 +377,13 @@ class SettingsWidget(QWidget):
         operational_condition_layout.addWidget(reject_kinks_radio, 34)
 
         operational_condition_info_tag = InfoTag(
-            'Condition to decide if a layout is considered operational or non-operational at any given parameter point.\n'
-            'Tolerate Kinks: The layout is considered operational even if a wire exhibits kink states as long as the output BDL pair is in the correct logic state.\n'
-            'Reject Kinks: The layout is considered non-operational if any wire exhibits kink states.')
-        operational_condition_layout.addWidget(operational_condition_info_tag,
-                                               1)  # 1% of the space goes to the info tag
+            "Condition to decide if a layout is considered operational or non-operational at any given parameter point.\n"
+            "Tolerate Kinks: The layout is considered operational even if a wire exhibits kink states as long as the output BDL pair is in the correct logic state.\n"
+            "Reject Kinks: The layout is considered non-operational if any wire exhibits kink states."
+        )
+        operational_condition_layout.addWidget(
+            operational_condition_info_tag, 1
+        )  # 1% of the space goes to the info tag
 
         # Set default selection
         tolerate_kinks_radio.setChecked(True)  # Set default option if desired
@@ -379,17 +398,18 @@ class SettingsWidget(QWidget):
              QHBoxLayout: The layout containing the X dimension drop-down.
         """
         x_dimension_layout = QHBoxLayout()
-        x_dimension_label = QLabel('X-Dimension')
+        x_dimension_label = QLabel("X-Dimension")
 
         self.x_dimension_dropdown = QComboBox()
-        self.x_dimension_dropdown.addItems(['epsilon_r', 'lambda_TF [nm]', 'µ_ [eV]'])
+        self.x_dimension_dropdown.addItems(["epsilon_r", "lambda_TF [nm]", "µ_ [eV]"])
         x_dimension_layout.addWidget(x_dimension_label, 30)
         x_dimension_layout.addWidget(self.x_dimension_dropdown, 70)
 
         # Set the parameter range selector based on the selected sweep dimension
         self.x_dimension_dropdown.currentIndexChanged.connect(
-            lambda: self._set_dimension_specific_parameter_range(self.x_dimension_dropdown.currentText(),
-                                                                 self.x_parameter_range_selector)
+            lambda: self._set_dimension_specific_parameter_range(
+                self.x_dimension_dropdown.currentText(), self.x_parameter_range_selector
+            )
         )
 
         return x_dimension_layout
@@ -401,7 +421,7 @@ class SettingsWidget(QWidget):
         Returns:
              RangeSelector: The X dimension range selector.
         """
-        self.x_parameter_range_selector = RangeSelector('X-Parameter Range', 0.0, 10.0, 0.1)
+        self.x_parameter_range_selector = RangeSelector("X-Parameter Range", 0.0, 10.0, 0.1)
 
         self.x_parameter_range_selector.min_spinbox.valueChanged.connect(
             lambda: self._set_parameter_range_specific_log_scale_checkbox_status(self.x_parameter_range_selector)
@@ -420,18 +440,19 @@ class SettingsWidget(QWidget):
              QHBoxLayout: The layout containing the Y dimension drop-down.
         """
         y_dimension_layout = QHBoxLayout()
-        y_dimension_label = QLabel('Y-Dimension')
+        y_dimension_label = QLabel("Y-Dimension")
 
         self.y_dimension_dropdown = QComboBox()
-        self.y_dimension_dropdown.addItems(['epsilon_r', 'lambda_TF [nm]', 'µ_ [eV]'])
+        self.y_dimension_dropdown.addItems(["epsilon_r", "lambda_TF [nm]", "µ_ [eV]"])
         self.y_dimension_dropdown.setCurrentIndex(1)  # set lambda_TF as default
         y_dimension_layout.addWidget(y_dimension_label, 30)
         y_dimension_layout.addWidget(self.y_dimension_dropdown, 70)
 
         # Set the parameter range selector based on the selected sweep dimension
         self.y_dimension_dropdown.currentIndexChanged.connect(
-            lambda: self._set_dimension_specific_parameter_range(self.y_dimension_dropdown.currentText(),
-                                                                 self.y_parameter_range_selector)
+            lambda: self._set_dimension_specific_parameter_range(
+                self.y_dimension_dropdown.currentText(), self.y_parameter_range_selector
+            )
         )
 
         return y_dimension_layout
@@ -443,7 +464,7 @@ class SettingsWidget(QWidget):
         Returns:
              RangeSelector: The Y dimension range selector.
         """
-        self.y_parameter_range_selector = RangeSelector('Y-Parameter Range', 0.0, 10.0, 0.1)
+        self.y_parameter_range_selector = RangeSelector("Y-Parameter Range", 0.0, 10.0, 0.1)
 
         self.y_parameter_range_selector.min_spinbox.valueChanged.connect(
             lambda: self._set_parameter_range_specific_log_scale_checkbox_status(self.y_parameter_range_selector)
@@ -463,17 +484,18 @@ class SettingsWidget(QWidget):
         """
         # Z-Dimension sweep parameter drop-down (Initially set to NONE)
         z_dimension_layout = QHBoxLayout()
-        z_dimension_label = QLabel('Z-Dimension')
+        z_dimension_label = QLabel("Z-Dimension")
 
         self.z_dimension_dropdown = QComboBox()
-        self.z_dimension_dropdown.addItems(['NONE', 'epsilon_r', 'lambda_TF [nm]', 'µ_ [eV]'])
+        self.z_dimension_dropdown.addItems(["NONE", "epsilon_r", "lambda_TF [nm]", "µ_ [eV]"])
         z_dimension_layout.addWidget(z_dimension_label, 30)
         z_dimension_layout.addWidget(self.z_dimension_dropdown, 70)
 
         # Set the parameter range selector based on the selected sweep dimension
         self.z_dimension_dropdown.currentIndexChanged.connect(
-            lambda: self._set_dimension_specific_parameter_range(self.z_dimension_dropdown.currentText(),
-                                                                 self.z_parameter_range_selector)
+            lambda: self._set_dimension_specific_parameter_range(
+                self.z_dimension_dropdown.currentText(), self.z_parameter_range_selector
+            )
         )
         # Disable contour tracing if 3D sweeps are selected
         self.z_dimension_dropdown.currentIndexChanged.connect(
@@ -481,11 +503,14 @@ class SettingsWidget(QWidget):
         )
         # Disable log scale if 3D sweeps are selected
         self.z_dimension_dropdown.currentIndexChanged.connect(
-            lambda: self._set_algorithm_specific_log_scale_checkbox_status(self.z_dimension_dropdown.currentText(),
-                                                                           [self.x_parameter_range_selector,
-                                                                            self.y_parameter_range_selector,
-                                                                            # self.z_parameter_range_selector # TODO uncomment for 3D log scale
-                                                                            ])
+            lambda: self._set_algorithm_specific_log_scale_checkbox_status(
+                self.z_dimension_dropdown.currentText(),
+                [
+                    self.x_parameter_range_selector,
+                    self.y_parameter_range_selector,
+                    # self.z_parameter_range_selector # TODO uncomment for 3D log scale
+                ],
+            )
         )
 
         return z_dimension_layout
@@ -497,7 +522,7 @@ class SettingsWidget(QWidget):
         Returns:
              RangeSelector: The Z dimension range selector.
         """
-        self.z_parameter_range_selector = RangeSelector('Z-Parameter Range', 0.0, 10.0, 0.1)
+        self.z_parameter_range_selector = RangeSelector("Z-Parameter Range", 0.0, 10.0, 0.1)
         self.z_parameter_range_selector.setDisabled(True)  # Initially disabled
 
         self.z_parameter_range_selector.min_spinbox.valueChanged.connect(
@@ -518,7 +543,7 @@ class SettingsWidget(QWidget):
         """
 
         # Operational Domain Sweep Sub-group
-        self.operational_domain_sweep_group = QGroupBox('Sweep Settings')
+        self.operational_domain_sweep_group = QGroupBox("Sweep Settings")
         operational_domain_sweep_layout = QVBoxLayout()  # Layout for sweep settings
 
         # X Dimension
@@ -551,7 +576,7 @@ class SettingsWidget(QWidget):
         Returns:
             IconGroupBox: The group box containing all operational domain settings.
         """
-        operational_domain_group = IconGroupBox('Operational Domain', self.icon_loader.load_chart_icon())
+        operational_domain_group = IconGroupBox("Operational Domain", self.icon_loader.load_chart_icon())
         # Operational domain algorithm drop-down
         operational_domain_group.addLayout(self._create_algorithm_drop_down())
         # Random samples spinbox
@@ -607,7 +632,7 @@ class SettingsWidget(QWidget):
         self.settings_layout.addWidget(self.scroll_area)
 
         # Add 'Run' button
-        self.run_button = QPushButton('Run Simulation')
+        self.run_button = QPushButton("Run Simulation")
         self.settings_layout.addWidget(self.run_button)
         # Get the play icon
         play_icon = self.icon_loader.load_play_icon()
@@ -628,12 +653,12 @@ class SettingsWidget(QWidget):
             str | None: The extracted Boolean function name. Or None if no recognized gate name is found.
         """
         # Get the file name without the extension
-        base_name = os.path.basename(self.file_path).split('.')[0]
+        base_name = os.path.basename(self.file_path).split(".")[0]
         # Define recognized gate names
-        recognized_gates = ['AND', 'OR', 'NAND', 'NOR', 'XOR', 'XNOR']
+        recognized_gates = ["AND", "OR", "NAND", "NOR", "XOR", "XNOR"]
 
         # Split the base name by '_'
-        parts = base_name.split('_')
+        parts = base_name.split("_")
 
         # Check each part for a recognized gate name
         for part in parts:
@@ -651,24 +676,26 @@ class SettingsWidget(QWidget):
         any sweep dimension selector, it is re-enabled. Analogously for 'lambda_TF [nm]' and 'µ_ [eV]'.
         """
         # Get the internal values of all selected sweep dimensions
-        sweep_drop_down_values = [self.DISPLAY_TO_INTERNAL[self.x_dimension_dropdown.currentText()],
-                                  self.DISPLAY_TO_INTERNAL[self.y_dimension_dropdown.currentText()],
-                                  self.DISPLAY_TO_INTERNAL[self.z_dimension_dropdown.currentText()]]
+        sweep_drop_down_values = [
+            self.DISPLAY_TO_INTERNAL[self.x_dimension_dropdown.currentText()],
+            self.DISPLAY_TO_INTERNAL[self.y_dimension_dropdown.currentText()],
+            self.DISPLAY_TO_INTERNAL[self.z_dimension_dropdown.currentText()],
+        ]
 
         # Disable the base simulation parameter selectors if they are selected in any sweep dimension
-        if 'epsilon_r' in sweep_drop_down_values:
+        if "epsilon_r" in sweep_drop_down_values:
             self.epsilon_r_selector.setDisabled(True)
-        if 'lambda_TF' in sweep_drop_down_values:
+        if "lambda_TF" in sweep_drop_down_values:
             self.lambda_tf_selector.setDisabled(True)
-        if 'µ_' in sweep_drop_down_values:
+        if "µ_" in sweep_drop_down_values:
             self.mu_minus_selector.setDisabled(True)
 
         # Re-enable the base simulation parameter selectors if they are not selected in any sweep dimension
-        if 'epsilon_r' not in sweep_drop_down_values:
+        if "epsilon_r" not in sweep_drop_down_values:
             self.epsilon_r_selector.setEnabled(True)
-        if 'lambda_TF' not in sweep_drop_down_values:
+        if "lambda_TF" not in sweep_drop_down_values:
             self.lambda_tf_selector.setEnabled(True)
-        if 'µ_' not in sweep_drop_down_values:
+        if "µ_" not in sweep_drop_down_values:
             self.mu_minus_selector.setEnabled(True)
 
     def _set_algorithm_specific_random_sample_count(self, selected_algorithm: str) -> None:
@@ -679,13 +706,13 @@ class SettingsWidget(QWidget):
         Args:
             selected_algorithm (str): The selected algorithm name from the algorithm dropdown.
         """
-        if selected_algorithm == 'Grid Search':
+        if selected_algorithm == "Grid Search":
             self.random_samples_spinbox.setDisabled(True)
         else:
             self.random_samples_spinbox.setRange(1, 10000)
             self.random_samples_spinbox.setEnabled(True)
 
-        if selected_algorithm == 'Random Sampling':
+        if selected_algorithm == "Random Sampling":
             self.random_samples_spinbox.setValue(1000)
             self.random_samples_spinbox.setSingleStep(100)
         else:
@@ -704,7 +731,7 @@ class SettingsWidget(QWidget):
         # Retrieve 'Contour Tracing' from the model
         contour_tracing = model.item(3)
 
-        if selected_sweep_parameter == 'NONE':
+        if selected_sweep_parameter == "NONE":
             # Enable the 'Contour Tracing' option
             contour_tracing.setFlags(contour_tracing.flags() | Qt.ItemFlag.ItemIsEnabled)
             # set the 3D flag to False
@@ -716,11 +743,12 @@ class SettingsWidget(QWidget):
             self.three_dimensional_sweep = True
 
             # If 'Contour Tracing' is selected, switch to 'Grid Search'
-            if self.algorithm_dropdown.currentText() == 'Contour Tracing':
+            if self.algorithm_dropdown.currentText() == "Contour Tracing":
                 self.algorithm_dropdown.setCurrentIndex(0)
 
-    def _set_dimension_specific_parameter_range(self, selected_sweep_parameter: str,
-                                                range_selector: RangeSelector) -> None:
+    def _set_dimension_specific_parameter_range(
+        self, selected_sweep_parameter: str, range_selector: RangeSelector
+    ) -> None:
         """
         Sets the range and step size of the given range selector based on the selected sweep parameter.
         For 'µ_ [eV]', the range is set to (-0.5, -0.1) with a step size of 0.01. For all other parameters, the range
@@ -730,7 +758,7 @@ class SettingsWidget(QWidget):
             selected_sweep_parameter (str): The selected sweep parameter from the dimension dropdown.
             range_selector (RangeSelector): The range selector to set the range for.
         """
-        if selected_sweep_parameter == 'µ_ [eV]':
+        if selected_sweep_parameter == "µ_ [eV]":
             range_selector.set_range(-0.5, -0.1, 0.0001, 0.1, 0.005)
             range_selector.set_single_steps(0.01, 0.01, 0.001)
             range_selector.set_decimal_precision(2, 2, 3)
@@ -739,7 +767,7 @@ class SettingsWidget(QWidget):
             range_selector.set_single_steps(0.5, 0.5, 0.01)
             range_selector.set_decimal_precision(2, 2, 2)
 
-        if selected_sweep_parameter == 'NONE':
+        if selected_sweep_parameter == "NONE":
             range_selector.setDisabled(True)
         else:
             range_selector.setEnabled(True)
@@ -760,8 +788,9 @@ class SettingsWidget(QWidget):
             else:
                 range_selector.enable_log_scale_checkbox()
 
-    def _set_algorithm_specific_log_scale_checkbox_status(self, selected_sweep_parameter: str,
-                                                          range_selectors: List[RangeSelector]) -> None:
+    def _set_algorithm_specific_log_scale_checkbox_status(
+        self, selected_sweep_parameter: str, range_selectors: List[RangeSelector]
+    ) -> None:
         """
         Disables the log scale checkboxes of the given range_selectors if 3D sweeps are selected.
 
@@ -770,7 +799,7 @@ class SettingsWidget(QWidget):
             range_selectors (List[RangeSelector]): The range selectors to check the log scale checkboxes for.
         """
         for range_selector in range_selectors:
-            if selected_sweep_parameter != 'NONE':
+            if selected_sweep_parameter != "NONE":
                 range_selector.disable_log_scale_checkbox()
             else:
                 self._set_parameter_range_specific_log_scale_checkbox_status(range_selector)

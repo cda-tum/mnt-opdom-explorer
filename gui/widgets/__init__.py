@@ -5,4 +5,4 @@ from .PlotWidget import PlotWidget
 from .RangeSelector import RangeSelector
 from .SettingsWidget import SettingsWidget
 
-__all__ = ['DragDropWidget', 'IconLoader', 'InfoTag', 'PlotWidget', 'RangeSelector', 'SettingsWidget']
+__all__ = ["DragDropWidget", "IconLoader", "InfoTag", "PlotWidget", "RangeSelector", "SettingsWidget"]
