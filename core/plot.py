@@ -151,7 +151,7 @@ def generate_plot(
     x_param: str,
     y_param: str,
     z_param: str = None,
-    title: str = "Operational Domain",
+    title: str = None,
     xlog: bool = False,
     ylog: bool = False,
     zlog: bool = False,
@@ -173,7 +173,7 @@ def generate_plot(
        y_param (str): Name of the parameter to plot on the Y-axis (e.g., 'lambda_tf').
        z_param (str, optional): Name of the parameter to plot on the Z-axis for 3D plots. If not provided,
            a 2D plot is generated (default is None).
-       title (str, optional): Title of the plot (default is "Operational Domain").
+       title (str, optional): Title of the plot (default is None).
        xlog (bool, optional): Whether to apply a logarithmic scale to the X-axis (default is False).
        ylog (bool, optional): Whether to apply a logarithmic scale to the Y-axis (default is False).
        zlog (bool, optional): Whether to apply a logarithmic scale to the Z-axis, only applicable for 3D plots
@@ -208,6 +208,7 @@ def generate_plot(
            csv_files=["data1.csv", "data2.csv"],
            x_param="epsilon_r",
            y_param="lambda_tf",
+           title="Operational Domain",
            xlog=True,
            ylog=False,
            include_non_operational=True
@@ -283,5 +284,8 @@ def generate_plot(
 
     if show_legend:
         ax.legend(loc="upper left")  # Moves legend to the upper-left
+
+    if title is not None:
+        ax.set_title(title)
 
     return fig, ax
