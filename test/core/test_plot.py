@@ -157,7 +157,7 @@ class TestPlotFunctions(unittest.TestCase):
         )
 
         assert all(coll.get_alpha() == 1 for coll in ax.collections)
-        assert fig, dir_path / Path("../resources/only_op_plot.png")
+        assert compare_images(fig, dir_path / Path("../resources/only_op_plot.png"))
 
 
 if __name__ == "__main__":
