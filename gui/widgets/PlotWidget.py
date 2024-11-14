@@ -1,16 +1,17 @@
 import os
-from core import generate_plot
-import numpy as np
 from pathlib import Path
-import matplotlib.pyplot as plt
-from matplotlib.patches import Rectangle
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QMessageBox, QProgressBar, QApplication
-from PyQt6.QtCore import QThread, pyqtSignal, Qt
-from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
-from PyQt6.QtGui import QPixmap, QCursor
 
-from gui.widgets import IconLoader
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.patches import Rectangle
 from mnt import pyfiction
+from PyQt6.QtCore import Qt, QThread, pyqtSignal
+from PyQt6.QtGui import QCursor, QPixmap
+from PyQt6.QtWidgets import QApplication, QMessageBox, QProgressBar, QPushButton, QVBoxLayout, QWidget
+
+from core import generate_plot
+from gui.widgets import IconLoader
 
 
 class SimulationThread(QThread):
@@ -19,16 +20,15 @@ class SimulationThread(QThread):
     finished = pyqtSignal()  # Signal when the thread is finished
     simulation_result_ready = pyqtSignal(int, object)  # Iteration index and simulation result
 
-    def __init__(self, lyt, qe_params, num_input_pairs):
+    def __init__(self, lyt, qe_params, num_input_pairs) -> None:
         super().__init__()
         self.lyt = lyt
         self.qe_params = qe_params
         self.num_input_pairs = num_input_pairs
 
-    def run(self):
+    def run(self) -> None:
         input_iterator = pyfiction.bdl_input_iterator_100(self.lyt)
         total_steps = 2**self.num_input_pairs  # Calculate total steps
-        print(f"Total steps: {total_steps}")  # Debugging statement
 
         for i in range(total_steps):
             # print(f"Running simulation for iteration {i}")  # Debugging statement
@@ -56,7 +56,7 @@ class SimulationThread(QThread):
 class PlotWidget(QWidget):
     def __init__(
         self, settings_widget, lyt, input_iterator, max_pos_initial, min_pos_initial, qlabel, slider_value=None
-    ):
+    ) -> None:
         super().__init__()
         self.settings_widget = settings_widget
         self.lyt = lyt
@@ -113,10 +113,10 @@ class PlotWidget(QWidget):
         # Map the sweep dimension string to the corresponding operational domain file column identifier
         self.column_map = {"epsilon_r": "epsilon_r", "lambda_TF": "lambda_tf", "µ_": "mu_minus"}
 
-    def update_slider_value(self, value):
+    def update_slider_value(self, value) -> None:
         self.slider_value = value
 
-    def initUI(self):
+    def initUI(self) -> None:
         op_dom = self.operational_domain_computation()
 
         write_op_dom_params = pyfiction.write_operational_domain_params()
@@ -169,7 +169,7 @@ class PlotWidget(QWidget):
 
         self.setLayout(self.layout)
 
-    def set_pixmap(self, pixmap):
+    def set_pixmap(self, pixmap) -> None:
         self.pixmap = pixmap
 
     def plot_layout(
@@ -406,20 +406,21 @@ class PlotWidget(QWidget):
 
         if algo == "Grid Search":
             return pyfiction.operational_domain_grid_search(self.lyt, gate_func, op_dom_params)
-        elif algo == "Random Sampling":
+        if algo == "Random Sampling":
             return pyfiction.operational_domain_random_sampling(
                 self.lyt, gate_func, self.settings_widget.get_random_samples(), op_dom_params
             )
-        elif algo == "Flood Fill":
+        if algo == "Flood Fill":
             return pyfiction.operational_domain_flood_fill(
                 self.lyt, gate_func, self.settings_widget.get_random_samples(), op_dom_params
             )
-        elif algo == "Contour Tracing":
+        if algo == "Contour Tracing":
             return pyfiction.operational_domain_contour_tracing(
                 self.lyt, gate_func, self.settings_widget.get_random_samples(), op_dom_params
             )
+        return None
 
-    def on_click(self, event):
+    def on_click(self, event) -> None:
         # Check if the click was on the plot
         if event.inaxes is not None:
             # Check if a simulation is already running
@@ -443,7 +444,6 @@ class PlotWidget(QWidget):
             self.y = round(event.ydata / y_step) * y_step
 
             # Print the rounded coordinates
-            print("x = {}, y = {}".format(round(self.x, 3), round(self.y, 3)))
 
             # Remove the previous dot and text if they exist
             if self.previous_dot is not None:
@@ -462,7 +462,7 @@ class PlotWidget(QWidget):
                 f"({self.x:.2f}, {self.y:.2f})",
                 fontsize=10,
                 color="black",
-                bbox=dict(facecolor="white", alpha=0.8, edgecolor="none", boxstyle="round,pad=0.3"),
+                bbox={"facecolor": "white", "alpha": 0.8, "edgecolor": "none", "boxstyle": "round,pad=0.3"},
             )
 
             # Redraw the plot
@@ -474,9 +474,9 @@ class PlotWidget(QWidget):
             # Start the simulation in a separate thread
             self.start_simulation_thread()
         else:
-            print("Clicked outside axes bounds but inside plot window")
+            pass
 
-    def start_simulation_thread(self):
+    def start_simulation_thread(self) -> None:
         # Set up simulation parameters
         self.qe_sim_params = self.sim_params
 
@@ -518,7 +518,6 @@ class PlotWidget(QWidget):
 
             if msg_box.clickedButton() == back_button:
                 # User chose to go back
-                print("User chose to go back.")
                 # Remove the highlighted point
                 if self.previous_dot is not None:
                     self.previous_dot.remove()
@@ -529,9 +528,7 @@ class PlotWidget(QWidget):
                 self.simulation_running = False  # Reset the simulation flag
                 QApplication.restoreOverrideCursor()  # Restore the cursor
                 return  # Exit the method
-            else:
-                # User chose to proceed
-                print("User chose to proceed despite possible positive charges.")
+            # User chose to proceed
 
         # Proceed to set up the simulation parameters for QuickExact
         self.qe_params = pyfiction.quickexact_params()
@@ -562,7 +559,7 @@ class PlotWidget(QWidget):
         # Start the thread
         self.simulation_thread.start()
 
-    def handle_simulation_result(self, iteration, sim_result):
+    def handle_simulation_result(self, iteration, sim_result) -> None:
         # This method is called in the main thread
 
         if not sim_result.charge_distributions:
@@ -588,7 +585,7 @@ class PlotWidget(QWidget):
             gs,
             status,
             parameter_point=(self.x, self.y),
-            bin_value=bin(iteration)[2:].zfill(self.input_iterator.num_input_pairs()),
+            bin_value=f"{iteration:b}".zfill(self.input_iterator.num_input_pairs()),
         )
 
         # Update the QLabel if this is the current slider value
@@ -612,12 +609,12 @@ class PlotWidget(QWidget):
     def get_slider_value(self):
         return self.slider_value
 
-    def update_progress_bar(self, value):
+    def update_progress_bar(self, value) -> None:
         # print(f"update_progress_bar called with value: {value}")  # Debugging statement
         self.progress_bar.setValue(value)
         QApplication.processEvents()  # Ensure the GUI updates
 
-    def simulation_finished(self):
+    def simulation_finished(self) -> None:
         self.progress_bar.setValue(0)  # Reset the progress bar
         self.simulation_running = False  # Reset the simulation flag
         QApplication.restoreOverrideCursor()  # Restore the cursor

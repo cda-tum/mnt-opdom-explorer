@@ -1,5 +1,4 @@
-"""
-This module contains the SettingsWidget class, with which users configure all parameters of the operational domain
+"""This module contains the SettingsWidget class, with which users configure all parameters of the operational domain
 computations. This includes the physical simulation engine, base simulation parameters, expected Boolean function,
 operational domain algorithm, number of random samples, operational condition, and sweep settings for the X, Y, and
 Z dimensions.
@@ -9,37 +8,33 @@ It provides getter functions to obtain the values of all settings selected by th
 
 from __future__ import annotations
 
+import os
+
+from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (
-    QWidget,
-    QVBoxLayout,
-    QLabel,
+    QApplication,
+    QButtonGroup,
+    QComboBox,
+    QDoubleSpinBox,
     QFrame,
     QGroupBox,
     QHBoxLayout,
-    QComboBox,
-    QDoubleSpinBox,
+    QLabel,
     QPushButton,
-    QSpinBox,
-    QApplication,
+    QRadioButton,
     QScrollArea,
     QSizePolicy,
-    QRadioButton,
-    QButtonGroup,
+    QSpinBox,
+    QVBoxLayout,
+    QWidget,
 )
-from PyQt6.QtCore import Qt
 
-from gui.widgets import RangeSelector
-from gui.widgets import IconLoader
+from gui.widgets import IconLoader, InfoTag, RangeSelector
 from gui.widgets.IconGroupBox import IconGroupBox
-from gui.widgets import InfoTag
-
-import os
-from typing import List, Tuple
 
 
 class SettingsWidget(QWidget):
-    """
-    The SettingsWidget class provides a user interface for configuring all parameters of the operational domain
+    """The SettingsWidget class provides a user interface for configuring all parameters of the operational domain
     computations. This includes the physical simulation engine, base simulation parameters, expected Boolean function,
     operational domain algorithm, number of random samples, operational condition, and sweep settings for the X, Y, and
     Z dimensions.
@@ -47,9 +42,8 @@ class SettingsWidget(QWidget):
 
     DISPLAY_TO_INTERNAL = {"epsilon_r": "epsilon_r", "lambda_TF [nm]": "lambda_TF", "µ_ [eV]": "µ_", "NONE": "NONE"}
 
-    def __init__(self, file_path: str):
-        """
-        Initializes the SettingsWidget. The user interface is created and all settings are initialized with default
+    def __init__(self, file_path: str) -> None:
+        """Initializes the SettingsWidget. The user interface is created and all settings are initialized with default
         values. The file path to the SiDB layout file is required to attempt extracting the expected Boolean function.
 
         Args:
@@ -62,8 +56,7 @@ class SettingsWidget(QWidget):
         self._init_ui()
 
     def _create_title_bar(self) -> QWidget:
-        """
-        Creates a title bar widget with a settings icon, title text, and logos.
+        """Creates a title bar widget with a settings icon, title text, and logos.
 
         Returns:
             QWidget: The title bar widget.
@@ -123,8 +116,7 @@ class SettingsWidget(QWidget):
         return title_bar_widget
 
     def _create_horizontal_separator(self) -> QFrame:
-        """
-        Creates a horizontal line as a visual separator.
+        """Creates a horizontal line as a visual separator.
 
         Returns:
             QFrame: A QFrame object configured as a horizontal line.
@@ -136,8 +128,7 @@ class SettingsWidget(QWidget):
         return separator
 
     def _create_engine_dropdown(self) -> QHBoxLayout:
-        """
-        Creates a drop-down widget for selecting the physical simulation engine.
+        """Creates a drop-down widget for selecting the physical simulation engine.
 
         Returns:
             QComboBox: The drop-down widget for selecting the engine.
@@ -159,8 +150,7 @@ class SettingsWidget(QWidget):
         return engine_layout
 
     def _create_epsilon_r_value_selector(self) -> QHBoxLayout:
-        """
-        Creates a double spinbox widget for selecting the epsilon_r value.
+        """Creates a double spinbox widget for selecting the epsilon_r value.
 
         Returns:
             QHBoxLayout: The layout containing the epsilon_r value selector.
@@ -181,8 +171,7 @@ class SettingsWidget(QWidget):
         return epsilon_r_layout
 
     def _create_lambda_tf_value_selector(self) -> QHBoxLayout:
-        """
-        Creates a double spinbox widget for selecting the lambda_TF value.
+        """Creates a double spinbox widget for selecting the lambda_TF value.
 
         Returns:
             QHBoxLayout: The layout containing the lambda_TF value selector.
@@ -203,8 +192,7 @@ class SettingsWidget(QWidget):
         return lambda_tf_layout
 
     def _create_mu_minus_value_selector(self) -> QHBoxLayout:
-        """
-        Creates a double spinbox widget for selecting the µ_ value.
+        """Creates a double spinbox widget for selecting the µ_ value.
 
         Returns:
             QHBoxLayout: The layout containing the µ_ value selector.
@@ -226,8 +214,7 @@ class SettingsWidget(QWidget):
         return mu_layout
 
     def _create_physical_simulation_group(self) -> IconGroupBox:
-        """
-        Creates the physical simulation group containing settings for the physical simulation engine as well as µ_,
+        """Creates the physical simulation group containing settings for the physical simulation engine as well as µ_,
         epsilon_r, and lambda_TF values.
 
         Returns:
@@ -246,8 +233,7 @@ class SettingsWidget(QWidget):
         return physical_simulation_group
 
     def _create_boolean_function_drop_down(self) -> QHBoxLayout:
-        """
-        Creates a drop-down widget for selecting the Boolean function.
+        """Creates a drop-down widget for selecting the Boolean function.
 
         Returns:
             QHBoxLayout: The layout containing the Boolean function drop-down.
@@ -292,8 +278,7 @@ class SettingsWidget(QWidget):
         return boolean_function_layout
 
     def _create_gate_function_group(self) -> IconGroupBox:
-        """
-        Creates the gate function group containing the Boolean function drop-down.
+        """Creates the gate function group containing the Boolean function drop-down.
 
         Returns:
             IconGroupBox: The group box containing the gate function settings.
@@ -305,8 +290,7 @@ class SettingsWidget(QWidget):
         return gate_function_group
 
     def _create_algorithm_drop_down(self) -> QHBoxLayout:
-        """
-        Creates a drop-down widget for selecting the operational domain algorithm.
+        """Creates a drop-down widget for selecting the operational domain algorithm.
 
         Returns:
             QHBoxLayout: The layout containing the algorithm drop-down.
@@ -332,8 +316,7 @@ class SettingsWidget(QWidget):
         return algorithm_layout
 
     def _create_random_samples_spinbox(self) -> QHBoxLayout:
-        """
-        Creates a spinbox widget for selecting the number of random samples.
+        """Creates a spinbox widget for selecting the number of random samples.
 
         Returns:
             QHBoxLayout: The layout containing the random samples spinbox.
@@ -355,8 +338,7 @@ class SettingsWidget(QWidget):
         return random_samples_layout
 
     def _create_operational_condition_radio_buttons(self) -> QHBoxLayout:
-        """
-        Creates radio buttons for selecting the operational condition.
+        """Creates radio buttons for selecting the operational condition.
 
         Returns:
             QHBoxLayout: The layout containing the radio
@@ -391,8 +373,7 @@ class SettingsWidget(QWidget):
         return operational_condition_layout
 
     def _create_x_dimension_drop_down(self) -> QHBoxLayout:
-        """
-        Creates a drop-down for selecting the sweep dimension in X direction.
+        """Creates a drop-down for selecting the sweep dimension in X direction.
 
         Returns:
              QHBoxLayout: The layout containing the X dimension drop-down.
@@ -415,8 +396,7 @@ class SettingsWidget(QWidget):
         return x_dimension_layout
 
     def _create_x_dimension_range_selector(self) -> RangeSelector:
-        """
-        Creates the range selector for the X parameter range that enables selecting the desired sweep values.
+        """Creates the range selector for the X parameter range that enables selecting the desired sweep values.
 
         Returns:
              RangeSelector: The X dimension range selector.
@@ -433,8 +413,7 @@ class SettingsWidget(QWidget):
         return self.x_parameter_range_selector
 
     def _create_y_dimension_drop_down(self) -> QHBoxLayout:
-        """
-        Creates a drop-down for selecting the sweep dimension in Y direction.
+        """Creates a drop-down for selecting the sweep dimension in Y direction.
 
         Returns:
              QHBoxLayout: The layout containing the Y dimension drop-down.
@@ -458,8 +437,7 @@ class SettingsWidget(QWidget):
         return y_dimension_layout
 
     def _create_y_dimension_range_selector(self) -> RangeSelector:
-        """
-        Creates the range selector for the Y parameter range that enables selecting the desired sweep values.
+        """Creates the range selector for the Y parameter range that enables selecting the desired sweep values.
 
         Returns:
              RangeSelector: The Y dimension range selector.
@@ -476,8 +454,7 @@ class SettingsWidget(QWidget):
         return self.y_parameter_range_selector
 
     def _create_z_dimension_drop_down(self) -> QHBoxLayout:
-        """
-        Creates a drop-down for selecting the sweep dimension in Z direction.
+        """Creates a drop-down for selecting the sweep dimension in Z direction.
 
         Returns:
              QHBoxLayout: The layout containing the Z dimension drop-down.
@@ -516,8 +493,7 @@ class SettingsWidget(QWidget):
         return z_dimension_layout
 
     def _create_z_dimension_range_selector(self) -> RangeSelector:
-        """
-        Creates the range selector for the Z parameter range that enables selecting the desired sweep values.
+        """Creates the range selector for the Z parameter range that enables selecting the desired sweep values.
 
         Returns:
              RangeSelector: The Z dimension range selector.
@@ -535,13 +511,11 @@ class SettingsWidget(QWidget):
         return self.z_parameter_range_selector
 
     def _create_sweep_settings_sub_group(self) -> QGroupBox:
-        """
-        Creates the sweep settings sub-group containing settings for the sweep parameters in X, Y, and Z dimension.
+        """Creates the sweep settings sub-group containing settings for the sweep parameters in X, Y, and Z dimension.
 
         Returns:
             QGroupBox: The group box containing all sweep settings.
         """
-
         # Operational Domain Sweep Sub-group
         self.operational_domain_sweep_group = QGroupBox("Sweep Settings")
         operational_domain_sweep_layout = QVBoxLayout()  # Layout for sweep settings
@@ -569,8 +543,7 @@ class SettingsWidget(QWidget):
         return self.operational_domain_sweep_group
 
     def _create_operational_domain_group(self) -> IconGroupBox:
-        """
-        Creates the operational domain group containing settings for the operational domain algorithm, random samples,
+        """Creates the operational domain group containing settings for the operational domain algorithm, random samples,
         operational condition, and sweep settings.
 
         Returns:
@@ -589,9 +562,7 @@ class SettingsWidget(QWidget):
         return operational_domain_group
 
     def _init_ui(self) -> None:
-        """
-        Initializes the user interface by creating the settings widget.
-        """
+        """Initializes the user interface by creating the settings widget."""
         self.icon_loader = IconLoader()
 
         # Create a scrollable widget to hold the settings
@@ -645,8 +616,7 @@ class SettingsWidget(QWidget):
         self.setLayout(layout)
 
     def _extract_boolean_function_from_file_name(self) -> str | None:
-        """
-        Tries to extract the Boolean function from the file name. The function name is expected to be separated by an
+        """Tries to extract the Boolean function from the file name. The function name is expected to be separated by an
         underscore from the rest of the file name.
 
         Returns:
@@ -670,8 +640,7 @@ class SettingsWidget(QWidget):
         return None  # Return None if no recognized gate is found
 
     def _set_sweep_specific_simulation_parameter_selectors(self) -> None:
-        """
-        Disables the respective base simulation parameter selector based on the currently active sweep parameters. E.g.,
+        """Disables the respective base simulation parameter selector based on the currently active sweep parameters. E.g.,
         if 'epsilon_r' is selected, the epsilon_r selector is disabled. Also, if 'epsilon_r' is no longer selected at
         any sweep dimension selector, it is re-enabled. Analogously for 'lambda_TF [nm]' and 'µ_ [eV]'.
         """
@@ -699,8 +668,7 @@ class SettingsWidget(QWidget):
             self.mu_minus_selector.setEnabled(True)
 
     def _set_algorithm_specific_random_sample_count(self, selected_algorithm: str) -> None:
-        """
-        Sets the range and step size of the random samples spinbox based on the selected operational domain algorithm.
+        """Sets the range and step size of the random samples spinbox based on the selected operational domain algorithm.
         The default value is set to 1000 for 'Random Sampling' and 100 for all other algorithms.
 
         Args:
@@ -720,8 +688,7 @@ class SettingsWidget(QWidget):
             self.random_samples_spinbox.setSingleStep(10)
 
     def _set_dimension_specific_algorithm_selector(self, selected_sweep_parameter: str) -> None:
-        """
-        Disables the 'Contour Tracing' operational domain algorithm option if 3D sweeps are selected.
+        """Disables the 'Contour Tracing' operational domain algorithm option if 3D sweeps are selected.
 
         Args:
             selected_sweep_parameter (str): The selected sweep parameter from the Z dimension dropdown.
@@ -749,8 +716,7 @@ class SettingsWidget(QWidget):
     def _set_dimension_specific_parameter_range(
         self, selected_sweep_parameter: str, range_selector: RangeSelector
     ) -> None:
-        """
-        Sets the range and step size of the given range selector based on the selected sweep parameter.
+        """Sets the range and step size of the given range selector based on the selected sweep parameter.
         For 'µ_ [eV]', the range is set to (-0.5, -0.1) with a step size of 0.01. For all other parameters, the range
         is set to (0.0, 10.0) with a step size of 0.5. If 'NONE' is selected, the range selector is disabled.
 
@@ -773,8 +739,7 @@ class SettingsWidget(QWidget):
             range_selector.setEnabled(True)
 
     def _set_parameter_range_specific_log_scale_checkbox_status(self, range_selector: RangeSelector) -> None:
-        """
-        Disables the log scale checkbox of the given range_selector if the range min/max is not fully positive.
+        """Disables the log scale checkbox of the given range_selector if the range min/max is not fully positive.
 
         Args:
             range_selector (RangeSelector): The range selector to check the log scale checkbox for.
@@ -789,10 +754,9 @@ class SettingsWidget(QWidget):
                 range_selector.enable_log_scale_checkbox()
 
     def _set_algorithm_specific_log_scale_checkbox_status(
-        self, selected_sweep_parameter: str, range_selectors: List[RangeSelector]
+        self, selected_sweep_parameter: str, range_selectors: list[RangeSelector]
     ) -> None:
-        """
-        Disables the log scale checkboxes of the given range_selectors if 3D sweeps are selected.
+        """Disables the log scale checkboxes of the given range_selectors if 3D sweeps are selected.
 
         Args:
             selected_sweep_parameter (str): The selected sweep parameter from the Z dimension dropdown.
@@ -805,22 +769,17 @@ class SettingsWidget(QWidget):
                 self._set_parameter_range_specific_log_scale_checkbox_status(range_selector)
 
     def disable_run_button(self) -> None:
-        """
-        Disables the 'Run Simulation' button.
-        """
+        """Disables the 'Run Simulation' button."""
         self.run_button.setDisabled(True)
         QApplication.processEvents()  # Force GUI update
 
     def enable_run_button(self) -> None:
-        """
-        Enables the 'Run Simulation' button.
-        """
+        """Enables the 'Run Simulation' button."""
         self.run_button.setEnabled(True)
         QApplication.processEvents()  # Force GUI update
 
     def get_simulation_engine(self) -> str:
-        """
-        Retrieves the selected physical simulation engine.
+        """Retrieves the selected physical simulation engine.
 
         Returns:
              str: The selected physical simulation engine.
@@ -828,8 +787,7 @@ class SettingsWidget(QWidget):
         return self.engine_dropdown.currentText()
 
     def get_mu_minus(self) -> float:
-        """
-        Retrieves the selected base µ_ value.
+        """Retrieves the selected base µ_ value.
 
         Returns:
              float: The selected base µ_ value.
@@ -837,8 +795,7 @@ class SettingsWidget(QWidget):
         return self.mu_minus_selector.value()
 
     def get_epsilon_r(self) -> float:
-        """
-        Retrieves the selected base epsilon_r value.
+        """Retrieves the selected base epsilon_r value.
 
         Returns:
              float: The selected base epsilon_r value.
@@ -846,8 +803,7 @@ class SettingsWidget(QWidget):
         return self.epsilon_r_selector.value()
 
     def get_lambda_tf(self) -> float:
-        """
-        Retrieves the selected base lambda_TF value.
+        """Retrieves the selected base lambda_TF value.
 
         Returns:
              float: The selected base lambda_TF value.
@@ -855,8 +811,7 @@ class SettingsWidget(QWidget):
         return self.lambda_tf_selector.value()
 
     def get_boolean_function(self) -> str:
-        """
-        Retrieves the selected Boolean function.
+        """Retrieves the selected Boolean function.
 
         Returns:
             str: The selected Boolean function.
@@ -864,8 +819,7 @@ class SettingsWidget(QWidget):
         return self.boolean_function_dropdown.currentText()
 
     def get_algorithm(self) -> str:
-        """
-        Retrieves the selected operational domain algorithm.
+        """Retrieves the selected operational domain algorithm.
 
         Returns:
             str: The selected operational domain algorithm.
@@ -873,8 +827,7 @@ class SettingsWidget(QWidget):
         return self.algorithm_dropdown.currentText()
 
     def get_random_samples(self) -> int:
-        """
-        Retrieves the selected number of random samples.
+        """Retrieves the selected number of random samples.
 
         Returns:
             int: The selected number of random samples.
@@ -882,8 +835,7 @@ class SettingsWidget(QWidget):
         return self.random_samples_spinbox.value()
 
     def get_operational_condition(self) -> str | None:
-        """
-        Retrieves the selected operational condition.
+        """Retrieves the selected operational condition.
 
         Returns:
             str | None: The selected operational condition.
@@ -894,17 +846,15 @@ class SettingsWidget(QWidget):
         return None  # Return None if no button is selected (edge case)
 
     def get_x_dimension(self) -> str:
-        """
-        Retrieves the selected sweep dimension in X direction.
+        """Retrieves the selected sweep dimension in X direction.
 
         Returns:
             str: The selected sweep dimension in X direction.
         """
         return self.DISPLAY_TO_INTERNAL.get(self.x_dimension_dropdown.currentText())
 
-    def get_x_parameter_range(self) -> Tuple[float, float, float]:
-        """
-        Retrieves the selected X parameter range as a tuple of (min, max, step).
+    def get_x_parameter_range(self) -> tuple[float, float, float]:
+        """Retrieves the selected X parameter range as a tuple of (min, max, step).
 
         Returns:
             Tuple[float, float, float]: The selected X parameter range.
@@ -912,8 +862,7 @@ class SettingsWidget(QWidget):
         return self.x_parameter_range_selector.get_range()
 
     def get_x_log_scale(self) -> bool:
-        """
-        Retrieves the selected X log scale status.
+        """Retrieves the selected X log scale status.
 
         Returns:
             bool: True if the X dimension log scale is enabled, False otherwise.
@@ -921,17 +870,15 @@ class SettingsWidget(QWidget):
         return self.x_parameter_range_selector.get_log_scale()
 
     def get_y_dimension(self) -> str:
-        """
-        Retrieves the selected sweep dimension in Y direction.
+        """Retrieves the selected sweep dimension in Y direction.
 
         Returns:
             str: The selected sweep dimension in Y direction.
         """
         return self.DISPLAY_TO_INTERNAL.get(self.y_dimension_dropdown.currentText())
 
-    def get_y_parameter_range(self) -> Tuple[float, float, float]:
-        """
-        Retrieves the selected Y parameter range as a tuple of (min, max, step).
+    def get_y_parameter_range(self) -> tuple[float, float, float]:
+        """Retrieves the selected Y parameter range as a tuple of (min, max, step).
 
         Returns:
             Tuple[float, float, float]: The selected Y parameter range.
@@ -939,8 +886,7 @@ class SettingsWidget(QWidget):
         return self.y_parameter_range_selector.get_range()
 
     def get_y_log_scale(self) -> bool:
-        """
-        Retrieves the selected Y log scale status.
+        """Retrieves the selected Y log scale status.
 
         Returns:
             bool: True if the Y dimension log scale is enabled, False otherwise.
@@ -948,17 +894,15 @@ class SettingsWidget(QWidget):
         return self.y_parameter_range_selector.get_log_scale()
 
     def get_z_dimension(self) -> str:
-        """
-        Retrieves the selected sweep dimension in Z direction.
+        """Retrieves the selected sweep dimension in Z direction.
 
         Returns:
             str: The selected sweep dimension in Z direction.
         """
         return self.DISPLAY_TO_INTERNAL.get(self.z_dimension_dropdown.currentText())
 
-    def get_z_parameter_range(self) -> Tuple[float, float, float]:
-        """
-        Retrieves the selected Z parameter range as a tuple of (min, max, step).
+    def get_z_parameter_range(self) -> tuple[float, float, float]:
+        """Retrieves the selected Z parameter range as a tuple of (min, max, step).
 
         Returns:
             Tuple[float, float, float]: The selected Z parameter range.
@@ -966,8 +910,7 @@ class SettingsWidget(QWidget):
         return self.z_parameter_range_selector.get_range()
 
     def get_z_log_scale(self) -> bool:
-        """
-        Retrieves the selected Z log scale status.
+        """Retrieves the selected Z log scale status.
 
         Returns:
             bool: True if the Z dimension log scale is enabled, False otherwise.

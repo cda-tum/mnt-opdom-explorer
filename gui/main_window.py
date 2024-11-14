@@ -1,81 +1,78 @@
-from pathlib import Path
 import shutil
+from pathlib import Path
 
-from PyQt6.QtCore import QUrl
-from PyQt6.QtGui import QPixmap, QDesktopServices, QColor
+from mnt import pyfiction
+from PyQt6.QtCore import Qt, QUrl
+from PyQt6.QtGui import QColor, QDesktopServices, QPainter, QPen, QPixmap
 from PyQt6.QtWidgets import (
     QFileDialog,
+    QHBoxLayout,
+    QLabel,
     QMainWindow,
+    QPushButton,
+    QSizePolicy,
+    QSlider,
+    QSpacerItem,
     QSplitter,
     QStackedWidget,
-    QPushButton,
     QVBoxLayout,
-    QLabel,
-    QSizePolicy,
     QWidget,
-    QSpacerItem,
-    QHBoxLayout,
 )
 
 from gui.widgets import DragDropWidget, PlotWidget, SettingsWidget
-import mnt.pyfiction as pyfiction
 from gui.widgets.IconLoader import IconLoader
-
-from PyQt6.QtWidgets import QSlider
-from PyQt6.QtGui import QPainter, QPen
-from PyQt6.QtCore import Qt
 
 
 # TODO: This is WIP code and we should probably put it in a separate file.
 class customized_slider(QSlider):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.checkmark_positions = []  # List to hold positions for checkmarks
         self.crossmark_positions = []  # List to hold positions for crossmarks
         self.checkmark_color = QColor("green")  # Default color for checkmarks
         self.crossmark_color = QColor("red")  # Default color for crossmarks
 
-    def set_checkmark_color(self, color):
+    def set_checkmark_color(self, color) -> None:
         """Set the color for checkmarks."""
         self.checkmark_color = QColor(color)
         self.update()  # Request a repaint to show the changes
 
-    def set_crossmark_color(self, color):
+    def set_crossmark_color(self, color) -> None:
         """Set the color for crossmarks."""
         self.crossmark_color = QColor(color)
         self.update()  # Request a repaint to show the changes
 
-    def add_checkmark(self, position):
+    def add_checkmark(self, position) -> None:
         """Add a checkmark at a specific position."""
         if position not in self.checkmark_positions:
             self.checkmark_positions.append(position)
             self.update()  # Request a repaint to show the changes
 
-    def remove_checkmark(self, position):
+    def remove_checkmark(self, position) -> None:
         """Remove a checkmark from a specific position."""
         if position in self.checkmark_positions:
             self.checkmark_positions.remove(position)
             self.update()  # Request a repaint to show the changes
 
-    def add_crossmark(self, position):
+    def add_crossmark(self, position) -> None:
         """Add a crossmark at a specific position."""
         if position not in self.crossmark_positions:
             self.crossmark_positions.append(position)
             self.update()  # Request a repaint to show the changes
 
-    def remove_crossmark(self, position):
+    def remove_crossmark(self, position) -> None:
         """Remove a crossmark from a specific position."""
         if position in self.crossmark_positions:
             self.crossmark_positions.remove(position)
             self.update()  # Request a repaint to show the changes
 
-    def remove_all_marks(self):
+    def remove_all_marks(self) -> None:
         """Remove all checkmarks and crossmarks."""
         self.checkmark_positions.clear()  # Clear all checkmark positions
         self.crossmark_positions.clear()  # Clear all crossmark positions
         self.update()  # Request a repaint to show the changes
 
-    def paintEvent(self, event):
+    def paintEvent(self, event) -> None:
         """Override paint event to draw checkmarks and crossmarks."""
         super().paintEvent(event)
         painter = QPainter(self)
@@ -88,7 +85,7 @@ class customized_slider(QSlider):
         for pos in self.crossmark_positions:
             self.draw_mark(painter, pos, height, self.crossmark_color, is_checkmark=False)
 
-    def draw_mark(self, painter, position, height, color, is_checkmark=True):
+    def draw_mark(self, painter, position, height, color, is_checkmark=True) -> None:
         """Draw a checkmark or crossmark at the given position."""
         pen = QPen(color, 3)  # Thicker line for better visibility
         painter.setPen(pen)
@@ -115,7 +112,7 @@ class customized_slider(QSlider):
 
 
 class MainWindow(QMainWindow):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.initUI()
         self.is_plot_view_active = True  # Start with the settings view
@@ -126,7 +123,7 @@ class MainWindow(QMainWindow):
 
         self.icon_loader = IconLoader()
 
-    def initUI(self):
+    def initUI(self) -> None:
         self.is_plot_view_active = True
         self.setWindowTitle("Operational Domain Explorer")
         self.setGeometry(100, 100, 600, 400)
@@ -141,13 +138,13 @@ class MainWindow(QMainWindow):
         # Set the stacked widget as the central widget
         self.setCentralWidget(self.stacked_widget)
 
-    def keyPressEvent(self, event):
+    def keyPressEvent(self, event) -> None:
         if event.key() == Qt.Key.Key_Escape:  # Check if the ESC key was pressed
             self.close()  # Close the application
         else:
             super().keyPressEvent(event)  # Call the parent class method to ensure default behavior
 
-    def file_parsed(self, file_path):
+    def file_parsed(self, file_path) -> None:
         # Display the selected file name in the QLabel
         file_name = Path(file_path).name  # Extract the file name from the full path
         self.current_file_name_label.setText(f"{file_name}")
@@ -227,7 +224,7 @@ class MainWindow(QMainWindow):
         email_button = QPushButton("Email Support", self)
         email_button.setIcon(email_icon)
         email_button.setFixedSize(120, 30)  # Set a fixed size for the button
-        email_button.clicked.connect(lambda: self.open_email())  # Connect to the open email function
+        email_button.clicked.connect(self.open_email)  # Connect to the open email function
         button_layout.addWidget(email_button)  # Add to horizontal layout
 
         # Create button for Reporting Issues
@@ -235,7 +232,7 @@ class MainWindow(QMainWindow):
         issue_button = QPushButton("Report an Issue", self)
         issue_button.setIcon(issue_icon)
         issue_button.setFixedSize(120, 30)  # Set a fixed size for the button
-        issue_button.clicked.connect(lambda: self.open_issue_report())  # Connect to the open issue report function
+        issue_button.clicked.connect(self.open_issue_report)  # Connect to the open issue report function
         # TODO: Activate when repo is set to public
         # button_layout.addWidget(issue_button)  # Add to horizontal layout
 
@@ -281,7 +278,7 @@ class MainWindow(QMainWindow):
                 self.lyt,
                 self.bdl_input_iterator.get_layout(),
                 slider_value=i,
-                bin_value=bin(i)[2:].zfill(self.bdl_input_iterator.num_input_pairs()),
+                bin_value=f"{i:b}".zfill(self.bdl_input_iterator.num_input_pairs()),
             )
             self.bdl_input_iterator += 1
 
@@ -307,21 +304,21 @@ class MainWindow(QMainWindow):
         self.plot_label.setFixedSize(pixmap.size())  # Set fixed size based on original pixmap size
         self.update_slider_label(self.slider.value())
 
-    def open_email(self):
+    def open_email(self) -> None:
         """Open the default email client with pre-filled addresses."""
         QDesktopServices.openUrl(QUrl("mailto:marcel.walter@tum.de?cc=jan.drewniok@tum.de"))
 
-    def open_issue_report(self):
+    def open_issue_report(self) -> None:
         """Open the issue report page in the default web browser."""
         QDesktopServices.openUrl(QUrl("https://github.com/cda-tum/mnt-opdom-explorer/issues"))
 
-    def load_new_file(self):
+    def load_new_file(self) -> None:
         # Open file dialog to select a new file
         file_path, _ = QFileDialog.getOpenFileName(self, "Open Layout File", "", "Layout Files (*.sqd *.json)")
         if file_path:
             self.file_parsed(file_path)
 
-    def update_slider_label(self, value):
+    def update_slider_label(self, value) -> None:
         self.plot.update_slider_value(value)
         # Assume self.bdl_input_iterator is already defined in your class
         value_diff = value - self.previous_slider_value
@@ -329,14 +326,13 @@ class MainWindow(QMainWindow):
             self.bdl_input_iterator += value_diff
 
             # Convert value to a binary string
-            self.bin_value = bin(value)[2:].zfill(self.bdl_input_iterator.num_input_pairs())
+            self.bin_value = f"{value:b}".zfill(self.bdl_input_iterator.num_input_pairs())
 
             self.previous_slider_value = value
 
             script_dir = Path(__file__).resolve().parent
 
             if self.is_plot_view_active:
-                print(script_dir)
                 # Construct the full path to the file
                 plot_image_path = script_dir / "widgets" / "caching" / f"lyt_plot_{self.slider.value()}.svg"
 
@@ -354,7 +350,7 @@ class MainWindow(QMainWindow):
             )
             self.plot_label.setPixmap(self.pixmap)
 
-    def plot_operational_domain(self):
+    def plot_operational_domain(self) -> None:
         self.is_plot_view_active = False
         # Create the plot view
         self.plot = PlotWidget(
@@ -380,11 +376,11 @@ class MainWindow(QMainWindow):
         # Connect the 'Back' button's clicked signal to the go_back_to_settings method
         self.plot.rerun_button.clicked.connect(self.go_back_to_settings)
 
-    def go_back_to_drag_and_drop(self):
+    def go_back_to_drag_and_drop(self) -> None:
         self.is_plot_view_active = True
         self.stacked_widget.setCurrentIndex(0)
 
-    def go_back_to_settings(self):
+    def go_back_to_settings(self) -> None:
         self.is_plot_view_active = True
         # Get the index of the PlotWidget in the QSplitter
         index = self.splitter.indexOf(self.plot)

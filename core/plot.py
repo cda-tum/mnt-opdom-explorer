@@ -1,12 +1,10 @@
-"""
-This module provides functions to generate 2D and 3D scatter plots from operational domain data stored in CSV files.
-"""
+"""This module provides functions to generate 2D and 3D scatter plots from operational domain data stored in CSV files."""
 
-import pandas as pd
+from __future__ import annotations
+
 import matplotlib.pyplot as plt
 import numpy as np
-
-from typing import List, Tuple
+import pandas as pd
 
 # Define colors
 GRAY = np.array([0.75, 0.75, 0.75])  # RGB for gray
@@ -14,9 +12,8 @@ BASE_PURPLE = np.array([128, 26, 153]) / 255  # RGB for purple, normalized
 RED = np.array([255, 0, 0]) / 255  # RGB for red, normalized
 
 
-def load_data(csv_files: List[str]) -> Tuple[List[pd.DataFrame], List[pd.DataFrame]]:
-    """
-    Load data from CSV files and separate into operational and non-operational datasets.
+def load_data(csv_files: list[str]) -> tuple[list[pd.DataFrame], list[pd.DataFrame]]:
+    """Load data from CSV files and separate into operational and non-operational datasets.
 
     Args:
         csv_files (List[str]): List of paths to CSV files.
@@ -35,10 +32,9 @@ def load_data(csv_files: List[str]) -> Tuple[List[pd.DataFrame], List[pd.DataFra
 
 
 def extract_parameters(
-    data: List[pd.DataFrame], x_param: str, y_param: str, z_param: str = None
-) -> Tuple[List[pd.Series], List[pd.Series], List[pd.Series]]:
-    """
-    Extract specific parameters from the dataset based on given names.
+    data: list[pd.DataFrame], x_param: str, y_param: str, z_param: str = None
+) -> tuple[list[pd.Series], list[pd.Series], list[pd.Series]]:
+    """Extract specific parameters from the dataset based on given names.
 
     Args:
         data (List[pd.DataFrame]): List of dataframes containing the (non-)operational data (obtained from load_data).
@@ -57,8 +53,7 @@ def extract_parameters(
 
 
 def calculate_colors(y_values: np.ndarray, z_values: np.ndarray) -> np.ndarray:
-    """
-    Calculate colors for the 3D scatter plot based on Y and Z values. The colors are a linear combination of purple and
+    """Calculate colors for the 3D scatter plot based on Y and Z values. The colors are a linear combination of purple and
     red based on the normalized values of Y and Z. It is intended for better visibility of the data points in 3D space.
 
     Args:
@@ -78,17 +73,16 @@ def calculate_colors(y_values: np.ndarray, z_values: np.ndarray) -> np.ndarray:
 
 def plot_data(
     ax: plt.Axes,
-    x_data: List[pd.Series],
-    y_data: List[pd.Series],
-    z_data: List[pd.Series] = None,
-    log_scale: Tuple[bool, bool, bool] = (False, False, False),
+    x_data: list[pd.Series],
+    y_data: list[pd.Series],
+    z_data: list[pd.Series] = None,
+    log_scale: tuple[bool, bool, bool] = (False, False, False),
     label: str = None,
     color: np.ndarray = BASE_PURPLE,
     marker_size: int = 4,
     alpha: float = 1.0,
 ) -> None:
-    """
-    Plot data on a given matplotlib axis with support for 2D and 3D plotting, optional log scaling, and custom styling.
+    """Plot data on a given matplotlib axis with support for 2D and 3D plotting, optional log scaling, and custom styling.
 
     This function can create both 2D and 3D plots on the specified axis (`ax`). If `z_data` is provided, it will plot
     a 3D scatter plot; otherwise, it defaults to 2D plotting. Log scaling can be enabled individually for the X, Y,
@@ -153,7 +147,7 @@ def plot_data(
 
 
 def generate_plot(
-    csv_files: List[str],
+    csv_files: list[str],
     x_param: str,
     y_param: str,
     z_param: str = None,
@@ -163,12 +157,11 @@ def generate_plot(
     zlog: bool = False,
     include_non_operational: bool = True,
     show_legend: bool = True,
-    x_range: Tuple[float, float] = (0.5, 10.5),
-    y_range: Tuple[float, float] = (0.5, 10.5),
-    z_range: Tuple[float, float] = (-0.55, -0.05),
-) -> Tuple[plt.Figure, plt.Axes]:
-    """
-    Generate a 2D or 3D scatter plot from operational domain data stored in CSV files.
+    x_range: tuple[float, float] = (0.5, 10.5),
+    y_range: tuple[float, float] = (0.5, 10.5),
+    z_range: tuple[float, float] = (-0.55, -0.05),
+) -> tuple[plt.Figure, plt.Axes]:
+    """Generate a 2D or 3D scatter plot from operational domain data stored in CSV files.
 
     This function creates a customizable 2D or 3D scatter plot based on operational data parameters provided
     in CSV files. It can generate plots with linear or logarithmic scaling on the X, Y, and Z axes, supports

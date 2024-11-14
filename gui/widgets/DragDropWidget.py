@@ -1,14 +1,14 @@
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
-from PyQt6.QtGui import QColor, QFont, QPalette, QCursor
+from PyQt6.QtGui import QColor, QCursor, QFont, QPalette
 from PyQt6.QtWidgets import (
-    QWidget,
-    QVBoxLayout,
-    QLabel,
-    QPushButton,
-    QFileDialog,
-    QProgressBar,
-    QMessageBox,
     QApplication,
+    QFileDialog,
+    QLabel,
+    QMessageBox,
+    QProgressBar,
+    QPushButton,
+    QVBoxLayout,
+    QWidget,
 )
 
 from gui.widgets.IconLoader import IconLoader
@@ -18,11 +18,11 @@ class FileLoaderThread(QThread):
     file_loaded = pyqtSignal(str)  # Signal to emit when the file is loaded
     progress = pyqtSignal(int)  # Signal to emit progress updates
 
-    def __init__(self, file_path):
+    def __init__(self, file_path) -> None:
         super().__init__()
         self.file_path = file_path
 
-    def run(self):
+    def run(self) -> None:
         # Simulate file loading with progress updates
         for i in range(101):
             self.progress.emit(i)  # Emit progress value
@@ -32,13 +32,13 @@ class FileLoaderThread(QThread):
 
 
 class DragDropWidget(QWidget):
-    def __init__(self, file_parsed_callback):
+    def __init__(self, file_parsed_callback) -> None:
         super().__init__()
         self.file_parsed_callback = file_parsed_callback
         self.loading = False  # Flag to track loading status
         self.initUI()
 
-    def initUI(self):
+    def initUI(self) -> None:
         self.setAcceptDrops(True)
 
         # Determine if the application is in dark mode
@@ -122,7 +122,7 @@ class DragDropWidget(QWidget):
 
         self.setLayout(layout)
 
-    def openFileDialog(self):
+    def openFileDialog(self) -> None:
         if self.loading:
             # Prevent opening the dialog if loading is in progress
             QMessageBox.information(self, "Loading in Progress", "Please wait until the current file is loaded.")
@@ -132,7 +132,7 @@ class DragDropWidget(QWidget):
         if fileName:
             self.startLoading(fileName)
 
-    def startLoading(self, file_path):
+    def startLoading(self, file_path) -> None:
         # Set the loading flag
         self.loading = True
 
@@ -153,10 +153,10 @@ class DragDropWidget(QWidget):
         self.file_loader_thread.file_loaded.connect(self.onFileLoaded)
         self.file_loader_thread.start()
 
-    def updateProgressBar(self, value):
+    def updateProgressBar(self, value) -> None:
         self.progress_bar.setValue(value)
 
-    def onFileLoaded(self, file_path):
+    def onFileLoaded(self, file_path) -> None:
         # Hide the progress bar and loading text once loading is done
         self.progress_bar.setVisible(False)
         self.loading_label.setVisible(False)
@@ -171,7 +171,7 @@ class DragDropWidget(QWidget):
         # Call the callback with the loaded file
         self.file_parsed_callback(file_path)
 
-    def dragEnterEvent(self, event):
+    def dragEnterEvent(self, event) -> None:
         if self.loading:
             event.ignore()  # Ignore drag events if loading is in progress
         elif event.mimeData().hasUrls():
@@ -179,7 +179,7 @@ class DragDropWidget(QWidget):
         else:
             event.ignore()
 
-    def dropEvent(self, event):
+    def dropEvent(self, event) -> None:
         if self.loading:
             # Ignore drop events if loading is in progress
             QMessageBox.information(self, "Loading in Progress", "Please wait until the current file is loaded.")

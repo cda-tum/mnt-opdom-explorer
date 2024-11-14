@@ -1,14 +1,14 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QDoubleSpinBox, QSizePolicy, QHBoxLayout, QCheckBox
+from PyQt6.QtWidgets import QCheckBox, QDoubleSpinBox, QHBoxLayout, QLabel, QSizePolicy, QVBoxLayout, QWidget
 
 from gui.widgets import InfoTag
 
 
 class RangeSelector(QWidget):
-    def __init__(self, label_text, default_min, default_max, default_step, parent=None):
+    def __init__(self, label_text, default_min, default_max, default_step, parent=None) -> None:
         super().__init__(parent)
         self.initUI(label_text, default_min, default_max, default_step)
 
-    def initUI(self, label_text, default_min, default_max, default_step):
+    def initUI(self, label_text, default_min, default_max, default_step) -> None:
         # Main layout for this custom widget
         layout = QVBoxLayout()
 
@@ -72,7 +72,7 @@ class RangeSelector(QWidget):
         # Set the overall layout for the widget
         self.setLayout(layout)
 
-    def set_range(self, min_value, max_value, min_step_value, max_step_value, step_value):
+    def set_range(self, min_value, max_value, min_step_value, max_step_value, step_value) -> None:
         self.min_spinbox.setRange(min_value, max_value)
         self.min_spinbox.setValue(min_value)
 
@@ -85,12 +85,12 @@ class RangeSelector(QWidget):
     def get_range(self):
         return self.min_spinbox.value(), self.max_spinbox.value(), self.step_spinbox.value()
 
-    def set_single_steps(self, min_step, max_step, step_step):
+    def set_single_steps(self, min_step, max_step, step_step) -> None:
         self.min_spinbox.setSingleStep(min_step)
         self.max_spinbox.setSingleStep(max_step)
         self.step_spinbox.setSingleStep(step_step)
 
-    def set_decimal_precision(self, min_decimals, max_decimals, step_decimals):
+    def set_decimal_precision(self, min_decimals, max_decimals, step_decimals) -> None:
         self.min_spinbox.setDecimals(min_decimals)
         self.max_spinbox.setDecimals(max_decimals)
         self.step_spinbox.setDecimals(step_decimals)
@@ -98,9 +98,9 @@ class RangeSelector(QWidget):
     def get_log_scale(self):
         return self.scale_checkbox.isChecked()
 
-    def disable_log_scale_checkbox(self):
+    def disable_log_scale_checkbox(self) -> None:
         self.scale_checkbox.setChecked(False)
         self.scale_checkbox.setEnabled(False)
 
-    def enable_log_scale_checkbox(self):
+    def enable_log_scale_checkbox(self) -> None:
         self.scale_checkbox.setEnabled(True)

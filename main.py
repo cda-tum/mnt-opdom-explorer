@@ -4,7 +4,7 @@ from core import Application
 from gui import MainWindow
 
 
-def main():
+def main() -> None:
     app = Application(sys.argv)
     main_window = MainWindow()
     main_window.show()

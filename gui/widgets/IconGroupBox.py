@@ -1,8 +1,8 @@
-from PyQt6.QtWidgets import QGroupBox, QVBoxLayout, QHBoxLayout, QLabel
+from PyQt6.QtWidgets import QGroupBox, QHBoxLayout, QLabel, QVBoxLayout
 
 
 class IconGroupBox(QGroupBox):
-    def __init__(self, title, icon):
+    def __init__(self, title, icon) -> None:
         super().__init__()
 
         # Main layout for the custom group box
@@ -38,10 +38,10 @@ class IconGroupBox(QGroupBox):
         self.group_box.setLayout(group_box_layout)  # Set the layout directly here
         layout.addWidget(self.group_box)
 
-    def addWidget(self, widget):
+    def addWidget(self, widget) -> None:
         # Add widgets to the group box's layout
         self.group_box.layout().addWidget(widget)
 
-    def addLayout(self, layout):
+    def addLayout(self, layout) -> None:
         # Add a layout to the group box's layout
         self.group_box.layout().addLayout(layout)
