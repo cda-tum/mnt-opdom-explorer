@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -144,9 +143,9 @@ class PlotWidget(QWidget):
         )
 
         # Delete the CSV file after it's used
-        csv_file_path = "op_dom.csv"
-        if os.path.exists(csv_file_path):
-            os.remove(csv_file_path)
+        csv_file_path = Path("op_dom.csv")
+        if Path.exists(csv_file_path):
+            Path.unlink(csv_file_path)
 
         self.canvas = FigureCanvas(self.fig)
         self.layout.addWidget(self.canvas)

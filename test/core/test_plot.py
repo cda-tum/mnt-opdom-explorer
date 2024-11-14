@@ -1,7 +1,7 @@
 import io
-import os
 import sys
 import unittest
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -11,11 +11,10 @@ from PIL import Image
 from core.plot import calculate_colors, extract_parameters, generate_plot, load_data, plot_data
 
 # Directly manipulate sys.path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
-
+sys.path.append((Path(__file__).parent.parent.parent).resolve())
 
 # Define the directory path for accessing files
-dir_path = os.path.dirname(os.path.realpath(__file__))
+dir_path = Path(__file__).parent.resolve()
 
 
 def compare_images(fig, img2_path):
@@ -50,7 +49,7 @@ class TestPlotFunctions(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Set up the class-level resources, such as file paths."""
-        cls.csv_file_path = os.path.join(dir_path, "../resources/op_domain.csv")
+        cls.csv_file_path = dir_path / Path("../resources/op_domain.csv")
 
     def setUp(self) -> None:
         """Set up the test environment by loading the CSV file into a DataFrame."""
@@ -129,7 +128,7 @@ class TestPlotFunctions(unittest.TestCase):
         assert isinstance(fig, plt.Figure)
         assert isinstance(ax, plt.Axes)
 
-        assert compare_images(fig, dir_path + "/../resources/2d_plot_test.png")
+        assert compare_images(fig, dir_path / Path("../resources/2d_plot_test.png"))
 
     def test_generate_plot_3d(self) -> None:
         """Test generate_plot function for 3D plots."""
@@ -139,7 +138,7 @@ class TestPlotFunctions(unittest.TestCase):
         assert isinstance(fig, plt.Figure)
         assert hasattr(ax, "get_proj")
 
-        assert compare_images(fig, dir_path + "/../resources/3d_plot_test.png")
+        assert compare_images(fig, dir_path / Path("../resources/3d_plot_test.png"))
 
     def test_generate_plot_operational_and_non(self) -> None:
         """Test generate_plot function including both operational and non-operational data."""
@@ -148,7 +147,7 @@ class TestPlotFunctions(unittest.TestCase):
             csv_files, "epsilon_r", "lambda_tf", title="op_and_non_op_plot", include_non_operational=True
         )
 
-        assert compare_images(fig, dir_path + "/../resources/op_and_non_op_plot.png")
+        assert compare_images(fig, dir_path / Path("../resources/op_and_non_op_plot.png"))
 
     def test_generate_plot_only_operational(self) -> None:
         """Test generate_plot function including only operational data."""
@@ -158,7 +157,7 @@ class TestPlotFunctions(unittest.TestCase):
         )
 
         assert all(coll.get_alpha() == 1 for coll in ax.collections)
-        assert fig, dir_path + "/../resources/only_op_plot.png"
+        assert fig, dir_path / Path("../resources/only_op_plot.png")
 
 
 if __name__ == "__main__":

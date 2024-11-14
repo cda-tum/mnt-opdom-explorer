@@ -8,7 +8,7 @@ It provides getter functions to obtain the values of all settings selected by th
 
 from __future__ import annotations
 
-import os
+from pathlib import Path
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (
@@ -50,7 +50,7 @@ class SettingsWidget(QWidget):
             file_path (str): The path to the SiDB layout file.
         """
         super().__init__()
-        self.file_path = file_path
+        self.file_path = Path(file_path)
         self.three_dimensional_sweep = False  # flag for 3D sweeps
 
         self._init_ui()
@@ -623,7 +623,7 @@ class SettingsWidget(QWidget):
             str | None: The extracted Boolean function name. Or None if no recognized gate name is found.
         """
         # Get the file name without the extension
-        base_name = os.path.basename(self.file_path).split(".")[0]
+        base_name = self.file_path.name.split(".")[0]
         # Define recognized gate names
         recognized_gates = ["AND", "OR", "NAND", "NOR", "XOR", "XNOR"]
 
