@@ -32,7 +32,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [ 'python' ]  # Only Python, since this is a Python project
+        language: ["python"] # Only Python, since this is a Python project
 
     steps:
       - name: Free Disk Space (Ubuntu)
@@ -52,8 +52,8 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10.x'
-          cache: 'pip'
+          python-version: "3.10.x"
+          cache: "pip"
 
       # Install project dependencies from pyproject.toml
       - name: Install dependencies
