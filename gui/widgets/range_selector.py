@@ -6,9 +6,9 @@ from gui.widgets import InfoTag
 class RangeSelector(QWidget):
     def __init__(self, label_text, default_min, default_max, default_step, parent=None) -> None:
         super().__init__(parent)
-        self.initUI(label_text, default_min, default_max, default_step)
+        self._init_ui(label_text, default_min, default_max, default_step)
 
-    def initUI(self, label_text, default_min, default_max, default_step) -> None:
+    def _init_ui(self, label_text, default_min, default_max, default_step) -> None:
         # Main layout for this custom widget
         layout = QVBoxLayout()
 

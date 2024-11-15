@@ -31,7 +31,7 @@ from PyQt6.QtWidgets import (
 )
 
 from gui.widgets import IconLoader, InfoTag, RangeSelector
-from gui.widgets.IconGroupBox import IconGroupBox
+from gui.widgets.icon_group_box import IconGroupBox
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
@@ -231,13 +231,13 @@ class SettingsWidget(QWidget):
         """
         physical_simulation_group = IconGroupBox("Physical Simulation", self.icon_loader.load_atom_icon())
         # Physical simulation engine
-        physical_simulation_group.addLayout(self._create_engine_dropdown())
+        physical_simulation_group.add_layout(self._create_engine_dropdown())
         # epsilon_r value selector
-        physical_simulation_group.addLayout(self._create_epsilon_r_value_selector())
+        physical_simulation_group.add_layout(self._create_epsilon_r_value_selector())
         # lambda_TF value selector
-        physical_simulation_group.addLayout(self._create_lambda_tf_value_selector())
+        physical_simulation_group.add_layout(self._create_lambda_tf_value_selector())
         # μ_ value selector
-        physical_simulation_group.addLayout(self._create_mu_minus_value_selector())
+        physical_simulation_group.add_layout(self._create_mu_minus_value_selector())
 
         return physical_simulation_group
 
@@ -294,7 +294,7 @@ class SettingsWidget(QWidget):
         """
         gate_function_group = IconGroupBox("Gate Function", self.icon_loader.load_function_icon())
         # Boolean function drop-down
-        gate_function_group.addLayout(self._create_boolean_function_drop_down())
+        gate_function_group.add_layout(self._create_boolean_function_drop_down())
 
         return gate_function_group
 
@@ -560,13 +560,13 @@ class SettingsWidget(QWidget):
         """
         operational_domain_group = IconGroupBox("Operational Domain", self.icon_loader.load_chart_icon())
         # Operational domain algorithm drop-down
-        operational_domain_group.addLayout(self._create_algorithm_drop_down())
+        operational_domain_group.add_layout(self._create_algorithm_drop_down())
         # Random samples spinbox
-        operational_domain_group.addLayout(self._create_random_samples_spinbox())
+        operational_domain_group.add_layout(self._create_random_samples_spinbox())
         # Operational condition radio buttons
-        operational_domain_group.addLayout(self._create_operational_condition_radio_buttons())
+        operational_domain_group.add_layout(self._create_operational_condition_radio_buttons())
         # Sweep settings sub-group
-        operational_domain_group.addWidget(self._create_sweep_settings_sub_group())
+        operational_domain_group.add_widget(self._create_sweep_settings_sub_group())
 
         return operational_domain_group
 

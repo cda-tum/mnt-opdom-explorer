@@ -20,11 +20,11 @@ from PyQt6.QtWidgets import (
 )
 
 from gui.widgets import DragDropWidget, PlotWidget, SettingsWidget
-from gui.widgets.IconLoader import IconLoader
+from gui.widgets.icon_loader import IconLoader
 
 
 # TODO: This is WIP code and we should probably put it in a separate file.
-class customized_slider(QSlider):
+class CustomizedSlider(QSlider):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.checkmark_positions = []  # List to hold positions for checkmarks
@@ -72,7 +72,7 @@ class customized_slider(QSlider):
         self.crossmark_positions.clear()  # Clear all crossmark positions
         self.update()  # Request a repaint to show the changes
 
-    def paintEvent(self, event) -> None:
+    def paintEvent(self, event) -> None:  # noqa: N802
         """Override paint event to draw checkmarks and crossmarks."""
         super().paintEvent(event)
         painter = QPainter(self)
@@ -114,7 +114,7 @@ class customized_slider(QSlider):
 class MainWindow(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
-        self.initUI()
+        self._init_ui()
         self.is_plot_view_active = True  # Start with the settings view
         self.current_file_name_label = QLabel(self)  # Label for displaying the file name
 
@@ -123,7 +123,7 @@ class MainWindow(QMainWindow):
 
         self.icon_loader = IconLoader()
 
-    def initUI(self) -> None:
+    def _init_ui(self) -> None:
         self.is_plot_view_active = True
         self.setWindowTitle("Operational Domain Explorer")
         self.setGeometry(100, 100, 600, 400)
@@ -138,7 +138,7 @@ class MainWindow(QMainWindow):
         # Set the stacked widget as the central widget
         self.setCentralWidget(self.stacked_widget)
 
-    def keyPressEvent(self, event) -> None:
+    def keyPressEvent(self, event) -> None:  # noqa: N802
         if event.key() == Qt.Key.Key_Escape:  # Check if the ESC key was pressed
             self.close()  # Close the application
         else:
@@ -188,7 +188,7 @@ class MainWindow(QMainWindow):
         grouped_layout.addWidget(self.plot_label)
 
         # Create and configure QSlider
-        self.slider = customized_slider(Qt.Horizontal, self)
+        self.slider = CustomizedSlider(Qt.Horizontal, self)
         self.slider.setRange(0, 2 ** self.bdl_input_iterator.num_input_pairs() - 1)
         self.slider.setTickInterval(1)  # Ticks at each integer position
         self.slider.setTickPosition(QSlider.TicksBelow)
@@ -359,7 +359,6 @@ class MainWindow(QMainWindow):
             self.plot_label,
             self.slider.value(),
         )
-        self.plot.initUI()
 
         # Store the QSplitter widget in a class variable
         self.splitter = self.stacked_widget.currentWidget()

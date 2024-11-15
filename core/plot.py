@@ -2,14 +2,26 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
 
 # Define colors
 GRAY = np.array([0.75, 0.75, 0.75])  # RGB for gray
 BASE_PURPLE = np.array([128, 26, 153]) / 255  # RGB for purple, normalized
 RED = np.array([255, 0, 0]) / 255  # RGB for red, normalized
+
+# A dictionary to map parameter names to LaTeX labels
+_LATEX_LABELS: Mapping[str, str] = {
+    "epsilon_r": r"$\epsilon_r$",
+    "lambda_tf": r"$\lambda_{\text{TF}}$ [nm]",
+    "mu_minus": r"$\mu_{-}$ [eV]",
+}
 
 
 def load_data(csv_files: list[str]) -> tuple[list[pd.DataFrame], list[pd.DataFrame]]:
@@ -223,13 +235,6 @@ def generate_plot(
 
     # Create a figure
     fig = plt.figure()
-
-    # A dictionary to map parameter names to LaTeX labels
-    _LATEX_LABELS = {
-        "epsilon_r": r"$\epsilon_r$",
-        "lambda_tf": r"$\lambda_{\text{TF}}$ [nm]",
-        "mu_minus": r"$\mu_{-}$ [eV]",
-    }
 
     if z_param:
         # 3D plot

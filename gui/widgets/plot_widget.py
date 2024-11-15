@@ -112,10 +112,12 @@ class PlotWidget(QWidget):
         # Map the sweep dimension string to the corresponding operational domain file column identifier
         self.column_map = {"epsilon_r": "epsilon_r", "lambda_TF": "lambda_tf", "μ_": "mu_minus"}
 
+        self._init_ui()
+
     def update_slider_value(self, value) -> None:
         self.slider_value = value
 
-    def initUI(self) -> None:
+    def _init_ui(self) -> None:
         op_dom = self.operational_domain_computation()
 
         write_op_dom_params = pyfiction.write_operational_domain_params()
