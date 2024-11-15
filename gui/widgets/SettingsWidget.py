@@ -9,6 +9,7 @@ It provides getter functions to obtain the values of all settings selected by th
 from __future__ import annotations
 
 from pathlib import Path
+from typing import TYPE_CHECKING, ClassVar
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (
@@ -32,6 +33,9 @@ from PyQt6.QtWidgets import (
 from gui.widgets import IconLoader, InfoTag, RangeSelector
 from gui.widgets.IconGroupBox import IconGroupBox
 
+if TYPE_CHECKING:
+    from collections.abc import Mapping
+
 
 class SettingsWidget(QWidget):
     """The SettingsWidget class provides a user interface for configuring all parameters of the operational domain
@@ -40,7 +44,12 @@ class SettingsWidget(QWidget):
     Z dimensions.
     """
 
-    DISPLAY_TO_INTERNAL = {"epsilon_r": "epsilon_r", "lambda_TF [nm]": "lambda_TF", "µ_ [eV]": "µ_", "NONE": "NONE"}
+    DISPLAY_TO_INTERNAL: ClassVar[Mapping[str, str]] = {
+        "epsilon_r": "epsilon_r",
+        "lambda_TF [nm]": "lambda_TF",
+        "μ_ [eV]": "μ_",
+        "NONE": "NONE",
+    }
 
     def __init__(self, file_path: str) -> None:
         """Initializes the SettingsWidget. The user interface is created and all settings are initialized with default
@@ -192,13 +201,13 @@ class SettingsWidget(QWidget):
         return lambda_tf_layout
 
     def _create_mu_minus_value_selector(self) -> QHBoxLayout:
-        """Creates a double spinbox widget for selecting the µ_ value.
+        """Creates a double spinbox widget for selecting the μ_ value.
 
         Returns:
-            QHBoxLayout: The layout containing the µ_ value selector.
+            QHBoxLayout: The layout containing the μ_ value selector.
         """
         mu_layout = QHBoxLayout()
-        mu_label = QLabel("µ_ [eV]")
+        mu_label = QLabel("μ_ [eV]")
         self.mu_minus_selector = QDoubleSpinBox()
         self.mu_minus_selector.setRange(-1.0, 1.0)
         self.mu_minus_selector.setDecimals(2)
@@ -207,14 +216,14 @@ class SettingsWidget(QWidget):
         mu_layout.addWidget(mu_label, 30)  # 30% of the space goes to the label
         mu_layout.addWidget(self.mu_minus_selector, 69)  # 69% of the space goes to the selector
         mu_info_tag = InfoTag(
-            "µ_ is the energy difference between the Fermi Energy and the charge transition level (0/−) in eV."
+            "μ_ is the energy difference between the Fermi Energy and the charge transition level (0/−) in eV."  # noqa: RUF001
         )
         mu_layout.addWidget(mu_info_tag, 1)  # 1% of the space goes to the info tag
 
         return mu_layout
 
     def _create_physical_simulation_group(self) -> IconGroupBox:
-        """Creates the physical simulation group containing settings for the physical simulation engine as well as µ_,
+        """Creates the physical simulation group containing settings for the physical simulation engine as well as μ_,
         epsilon_r, and lambda_TF values.
 
         Returns:
@@ -227,7 +236,7 @@ class SettingsWidget(QWidget):
         physical_simulation_group.addLayout(self._create_epsilon_r_value_selector())
         # lambda_TF value selector
         physical_simulation_group.addLayout(self._create_lambda_tf_value_selector())
-        # µ_ value selector
+        # μ_ value selector
         physical_simulation_group.addLayout(self._create_mu_minus_value_selector())
 
         return physical_simulation_group
@@ -382,7 +391,7 @@ class SettingsWidget(QWidget):
         x_dimension_label = QLabel("X-Dimension")
 
         self.x_dimension_dropdown = QComboBox()
-        self.x_dimension_dropdown.addItems(["epsilon_r", "lambda_TF [nm]", "µ_ [eV]"])
+        self.x_dimension_dropdown.addItems(["epsilon_r", "lambda_TF [nm]", "μ_ [eV]"])
         x_dimension_layout.addWidget(x_dimension_label, 30)
         x_dimension_layout.addWidget(self.x_dimension_dropdown, 70)
 
@@ -422,7 +431,7 @@ class SettingsWidget(QWidget):
         y_dimension_label = QLabel("Y-Dimension")
 
         self.y_dimension_dropdown = QComboBox()
-        self.y_dimension_dropdown.addItems(["epsilon_r", "lambda_TF [nm]", "µ_ [eV]"])
+        self.y_dimension_dropdown.addItems(["epsilon_r", "lambda_TF [nm]", "μ_ [eV]"])
         self.y_dimension_dropdown.setCurrentIndex(1)  # set lambda_TF as default
         y_dimension_layout.addWidget(y_dimension_label, 30)
         y_dimension_layout.addWidget(self.y_dimension_dropdown, 70)
@@ -464,7 +473,7 @@ class SettingsWidget(QWidget):
         z_dimension_label = QLabel("Z-Dimension")
 
         self.z_dimension_dropdown = QComboBox()
-        self.z_dimension_dropdown.addItems(["NONE", "epsilon_r", "lambda_TF [nm]", "µ_ [eV]"])
+        self.z_dimension_dropdown.addItems(["NONE", "epsilon_r", "lambda_TF [nm]", "μ_ [eV]"])
         z_dimension_layout.addWidget(z_dimension_label, 30)
         z_dimension_layout.addWidget(self.z_dimension_dropdown, 70)
 
@@ -642,7 +651,7 @@ class SettingsWidget(QWidget):
     def _set_sweep_specific_simulation_parameter_selectors(self) -> None:
         """Disables the respective base simulation parameter selector based on the currently active sweep parameters. E.g.,
         if 'epsilon_r' is selected, the epsilon_r selector is disabled. Also, if 'epsilon_r' is no longer selected at
-        any sweep dimension selector, it is re-enabled. Analogously for 'lambda_TF [nm]' and 'µ_ [eV]'.
+        any sweep dimension selector, it is re-enabled. Analogously for 'lambda_TF [nm]' and 'μ_ [eV]'.
         """
         # Get the internal values of all selected sweep dimensions
         sweep_drop_down_values = [
@@ -656,7 +665,7 @@ class SettingsWidget(QWidget):
             self.epsilon_r_selector.setDisabled(True)
         if "lambda_TF" in sweep_drop_down_values:
             self.lambda_tf_selector.setDisabled(True)
-        if "µ_" in sweep_drop_down_values:
+        if "μ_" in sweep_drop_down_values:
             self.mu_minus_selector.setDisabled(True)
 
         # Re-enable the base simulation parameter selectors if they are not selected in any sweep dimension
@@ -664,7 +673,7 @@ class SettingsWidget(QWidget):
             self.epsilon_r_selector.setEnabled(True)
         if "lambda_TF" not in sweep_drop_down_values:
             self.lambda_tf_selector.setEnabled(True)
-        if "µ_" not in sweep_drop_down_values:
+        if "μ_" not in sweep_drop_down_values:
             self.mu_minus_selector.setEnabled(True)
 
     def _set_algorithm_specific_random_sample_count(self, selected_algorithm: str) -> None:
@@ -717,14 +726,14 @@ class SettingsWidget(QWidget):
         self, selected_sweep_parameter: str, range_selector: RangeSelector
     ) -> None:
         """Sets the range and step size of the given range selector based on the selected sweep parameter.
-        For 'µ_ [eV]', the range is set to (-0.5, -0.1) with a step size of 0.01. For all other parameters, the range
+        For 'μ_ [eV]', the range is set to (-0.5, -0.1) with a step size of 0.01. For all other parameters, the range
         is set to (0.0, 10.0) with a step size of 0.5. If 'NONE' is selected, the range selector is disabled.
 
         Args:
             selected_sweep_parameter (str): The selected sweep parameter from the dimension dropdown.
             range_selector (RangeSelector): The range selector to set the range for.
         """
-        if selected_sweep_parameter == "µ_ [eV]":
+        if selected_sweep_parameter == "μ_ [eV]":
             range_selector.set_range(-0.5, -0.1, 0.0001, 0.1, 0.005)
             range_selector.set_single_steps(0.01, 0.01, 0.001)
             range_selector.set_decimal_precision(2, 2, 3)
@@ -787,10 +796,10 @@ class SettingsWidget(QWidget):
         return self.engine_dropdown.currentText()
 
     def get_mu_minus(self) -> float:
-        """Retrieves the selected base µ_ value.
+        """Retrieves the selected base μ_ value.
 
         Returns:
-             float: The selected base µ_ value.
+             float: The selected base μ_ value.
         """
         return self.mu_minus_selector.value()
 

@@ -106,11 +106,11 @@ class PlotWidget(QWidget):
         self.sweep_dimension_map = {
             "epsilon_r": pyfiction.sweep_parameter.EPSILON_R,
             "lambda_TF": pyfiction.sweep_parameter.LAMBDA_TF,
-            "µ_": pyfiction.sweep_parameter.MU_MINUS,
+            "μ_": pyfiction.sweep_parameter.MU_MINUS,
         }
 
         # Map the sweep dimension string to the corresponding operational domain file column identifier
-        self.column_map = {"epsilon_r": "epsilon_r", "lambda_TF": "lambda_tf", "µ_": "mu_minus"}
+        self.column_map = {"epsilon_r": "epsilon_r", "lambda_TF": "lambda_tf", "μ_": "mu_minus"}
 
     def update_slider_value(self, value) -> None:
         self.slider_value = value
@@ -488,14 +488,14 @@ class PlotWidget(QWidget):
             self.qe_sim_params.epsilon_r = self.x
         elif x_dimension == "lambda_TF":
             self.qe_sim_params.lambda_tf = self.x
-        elif x_dimension == "µ_":
+        elif x_dimension == "μ_":
             self.qe_sim_params.mu_minus = self.x
 
         if y_dimension == "epsilon_r":
             self.qe_sim_params.epsilon_r = self.y
         elif y_dimension == "lambda_TF":
             self.qe_sim_params.lambda_tf = self.y
-        elif y_dimension == "µ_":
+        elif y_dimension == "μ_":
             self.qe_sim_params.mu_minus = self.y
 
         # Perform Positive Charges Check in the Main Thread

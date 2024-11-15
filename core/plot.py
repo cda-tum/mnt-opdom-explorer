@@ -32,7 +32,7 @@ def load_data(csv_files: list[str]) -> tuple[list[pd.DataFrame], list[pd.DataFra
 
 
 def extract_parameters(
-    data: list[pd.DataFrame], x_param: str, y_param: str, z_param: str = None
+    data: list[pd.DataFrame], x_param: str, y_param: str, z_param: str | None = None
 ) -> tuple[list[pd.Series], list[pd.Series], list[pd.Series]]:
     """Extract specific parameters from the dataset based on given names.
 
@@ -75,9 +75,9 @@ def plot_data(
     ax: plt.Axes,
     x_data: list[pd.Series],
     y_data: list[pd.Series],
-    z_data: list[pd.Series] = None,
+    z_data: list[pd.Series] | None = None,
     log_scale: tuple[bool, bool, bool] = (False, False, False),
-    label: str = None,
+    label: str | None = None,
     color: np.ndarray = BASE_PURPLE,
     marker_size: int = 4,
     alpha: float = 1.0,
@@ -150,8 +150,8 @@ def generate_plot(
     csv_files: list[str],
     x_param: str,
     y_param: str,
-    z_param: str = None,
-    title: str = None,
+    z_param: str | None = None,
+    title: str | None = None,
     xlog: bool = False,
     ylog: bool = False,
     zlog: bool = False,
