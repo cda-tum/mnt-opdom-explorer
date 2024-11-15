@@ -25,7 +25,8 @@ class IconLoader:
         self._color_light_mode = QColor("#000000")  # Black for light mode
         self._color_dark_mode = QColor("#ffffff")  # White for dark mode
 
-    def _detect_dark_mode(self) -> bool:
+    @staticmethod
+    def _detect_dark_mode() -> bool:
         """Detects if the system/application is in dark mode.
 
         Returns:
@@ -71,7 +72,8 @@ class IconLoader:
 
         return QSvgWidget(logo_path)
 
-    def load_tum_logo(self) -> QSvgWidget:
+    @staticmethod
+    def load_tum_logo() -> QSvgWidget:
         """Loads the TUM logo from an SVG file in the resources folder.
 
         Returns:

@@ -124,7 +124,8 @@ class SettingsWidget(QWidget):
 
         return title_bar_widget
 
-    def _create_horizontal_separator(self) -> QFrame:
+    @staticmethod
+    def _create_horizontal_separator() -> QFrame:
         """Creates a horizontal line as a visual separator.
 
         Returns:
@@ -722,9 +723,8 @@ class SettingsWidget(QWidget):
             if self.algorithm_dropdown.currentText() == "Contour Tracing":
                 self.algorithm_dropdown.setCurrentIndex(0)
 
-    def _set_dimension_specific_parameter_range(
-        self, selected_sweep_parameter: str, range_selector: RangeSelector
-    ) -> None:
+    @staticmethod
+    def _set_dimension_specific_parameter_range(selected_sweep_parameter: str, range_selector: RangeSelector) -> None:
         """Sets the range and step size of the given range selector based on the selected sweep parameter.
         For 'μ_ [eV]', the range is set to (-0.5, -0.1) with a step size of 0.01. For all other parameters, the range
         is set to (0.0, 10.0) with a step size of 0.5. If 'NONE' is selected, the range selector is disabled.

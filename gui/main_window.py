@@ -304,11 +304,13 @@ class MainWindow(QMainWindow):
         self.plot_label.setFixedSize(pixmap.size())  # Set fixed size based on original pixmap size
         self.update_slider_label(self.slider.value())
 
-    def open_email(self) -> None:
+    @staticmethod
+    def open_email() -> None:
         """Open the default email client with pre-filled addresses."""
         QDesktopServices.openUrl(QUrl("mailto:marcel.walter@tum.de?cc=jan.drewniok@tum.de"))
 
-    def open_issue_report(self) -> None:
+    @staticmethod
+    def open_issue_report() -> None:
         """Open the issue report page in the default web browser."""
         QDesktopServices.openUrl(QUrl("https://github.com/cda-tum/mnt-opdom-explorer/issues"))
 

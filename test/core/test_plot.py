@@ -77,7 +77,8 @@ class TestPlotFunctions(unittest.TestCase):
         assert y_data[0].shape[0] == self.df.shape[0]
         assert z_data[0].shape[0] == self.df.shape[0]
 
-    def test_calculate_colors(self) -> None:
+    @staticmethod
+    def test_calculate_colors() -> None:
         """Test the calculate_colors function to ensure it produces the correct color array."""
         y_values = np.array([1.0, 2.0, 3.0])
         z_values = np.array([1.0, 2.0, 3.0])
@@ -87,7 +88,8 @@ class TestPlotFunctions(unittest.TestCase):
         assert (colors >= 0).all()
         assert (colors <= 1).all()
 
-    def test_plot_data_2d(self) -> None:
+    @staticmethod
+    def test_plot_data_2d() -> None:
         """Test the plot_data function for 2D plotting."""
         _fig, ax = plt.subplots()
         x_data = [np.array([1.0, 2.0])]
@@ -97,7 +99,8 @@ class TestPlotFunctions(unittest.TestCase):
 
         assert len(ax.lines) == 1
 
-    def test_plot_data_3d(self) -> None:
+    @staticmethod
+    def test_plot_data_3d() -> None:
         """Test the plot_data function for 3D plotting."""
         fig = plt.figure()
         ax = fig.add_subplot(111, projection="3d")
@@ -109,7 +112,8 @@ class TestPlotFunctions(unittest.TestCase):
 
         assert len(ax.collections) == 1  # In 3D, scatter plot creates a collection
 
-    def test_plot_data_log_scale(self) -> None:
+    @staticmethod
+    def test_plot_data_log_scale() -> None:
         """Test the plot_data function with logarithmic scale on both axes."""
         _fig, ax = plt.subplots()
         x_data = [np.array([1.0, 10.0])]
