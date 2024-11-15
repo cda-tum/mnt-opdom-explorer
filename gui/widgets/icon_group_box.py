@@ -1,8 +1,9 @@
+from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QGroupBox, QHBoxLayout, QLabel, QLayout, QVBoxLayout, QWidget
 
 
 class IconGroupBox(QGroupBox):
-    def __init__(self, title, icon) -> None:
+    def __init__(self, title: str, icon: QIcon) -> None:
         super().__init__()
 
         # Main layout for the custom group box

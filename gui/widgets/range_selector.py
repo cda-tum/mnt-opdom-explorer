@@ -4,11 +4,13 @@ from gui.widgets import InfoTag
 
 
 class RangeSelector(QWidget):
-    def __init__(self, label_text, default_min, default_max, default_step, parent=None) -> None:
+    def __init__(
+        self, label_text: str, default_min: float, default_max: float, default_step: float, parent: QWidget = None
+    ) -> None:
         super().__init__(parent)
         self._init_ui(label_text, default_min, default_max, default_step)
 
-    def _init_ui(self, label_text, default_min, default_max, default_step) -> None:
+    def _init_ui(self, label_text: str, default_min: float, default_max: float, default_step: float) -> None:
         # Main layout for this custom widget
         layout = QVBoxLayout()
 
@@ -72,7 +74,9 @@ class RangeSelector(QWidget):
         # Set the overall layout for the widget
         self.setLayout(layout)
 
-    def set_range(self, min_value, max_value, min_step_value, max_step_value, step_value) -> None:
+    def set_range(
+        self, min_value: float, max_value: float, min_step_value: float, max_step_value: float, step_value: float
+    ) -> None:
         self.min_spinbox.setRange(min_value, max_value)
         self.min_spinbox.setValue(min_value)
 
@@ -82,20 +86,20 @@ class RangeSelector(QWidget):
         self.step_spinbox.setRange(min_step_value, max_step_value)
         self.step_spinbox.setValue(step_value)
 
-    def get_range(self):
+    def get_range(self) -> tuple[float, float, float]:
         return self.min_spinbox.value(), self.max_spinbox.value(), self.step_spinbox.value()
 
-    def set_single_steps(self, min_step, max_step, step_step) -> None:
+    def set_single_steps(self, min_step: float, max_step: float, step_step: float) -> None:
         self.min_spinbox.setSingleStep(min_step)
         self.max_spinbox.setSingleStep(max_step)
         self.step_spinbox.setSingleStep(step_step)
 
-    def set_decimal_precision(self, min_decimals, max_decimals, step_decimals) -> None:
+    def set_decimal_precision(self, min_decimals: int, max_decimals: int, step_decimals: int) -> None:
         self.min_spinbox.setDecimals(min_decimals)
         self.max_spinbox.setDecimals(max_decimals)
         self.step_spinbox.setDecimals(step_decimals)
 
-    def get_log_scale(self):
+    def get_log_scale(self) -> bool:
         return self.scale_checkbox.isChecked()
 
     def disable_log_scale_checkbox(self) -> None:

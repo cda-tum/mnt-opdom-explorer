@@ -1,5 +1,8 @@
+from __future__ import annotations
+
 from pathlib import Path
 
+import matplotlib.backend_bases
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
@@ -7,10 +10,10 @@ from matplotlib.patches import Rectangle
 from mnt import pyfiction
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
 from PyQt6.QtGui import QCursor, QPixmap
-from PyQt6.QtWidgets import QApplication, QMessageBox, QProgressBar, QPushButton, QVBoxLayout, QWidget
+from PyQt6.QtWidgets import QApplication, QLabel, QMessageBox, QProgressBar, QPushButton, QVBoxLayout, QWidget
 
 from core import generate_plot
-from gui.widgets import IconLoader
+from gui.widgets import IconLoader, SettingsWidget
 
 
 class SimulationThread(QThread):
@@ -19,7 +22,12 @@ class SimulationThread(QThread):
     finished = pyqtSignal()  # Signal when the thread is finished
     simulation_result_ready = pyqtSignal(int, object)  # Iteration index and simulation result
 
-    def __init__(self, lyt, qe_params, num_input_pairs) -> None:
+    def __init__(
+        self,
+        lyt: pyfiction.charge_distribution_surface_100,
+        qe_params: pyfiction.quickexact_params,
+        num_input_pairs: int,
+    ) -> None:
         super().__init__()
         self.lyt = lyt
         self.qe_params = qe_params
@@ -54,7 +62,14 @@ class SimulationThread(QThread):
 
 class PlotWidget(QWidget):
     def __init__(
-        self, settings_widget, lyt, input_iterator, max_pos_initial, min_pos_initial, qlabel, slider_value=None
+        self,
+        settings_widget: SettingsWidget,
+        lyt: pyfiction.charge_distribution_surface_100,
+        input_iterator: pyfiction.bdl_input_iterator_100,
+        max_pos_initial: pyfiction.offset_coordinate,
+        min_pos_initial: pyfiction.offset_coordinate,
+        qlabel: QLabel,
+        slider_value: int | None = None,
     ) -> None:
         super().__init__()
         self.settings_widget = settings_widget
@@ -114,7 +129,7 @@ class PlotWidget(QWidget):
 
         self._init_ui()
 
-    def update_slider_value(self, value) -> None:
+    def update_slider_value(self, value: int) -> None:
         self.slider_value = value
 
     def _init_ui(self) -> None:
@@ -170,19 +185,19 @@ class PlotWidget(QWidget):
 
         self.setLayout(self.layout)
 
-    def set_pixmap(self, pixmap) -> None:
+    def set_pixmap(self, pixmap: QPixmap) -> None:
         self.pixmap = pixmap
 
     def plot_layout(
         self,
-        lyt_original,
-        lyt,
-        slider_value,
-        charge_lyt=None,
-        operation_status=None,
-        parameter_point=None,
-        bin_value=None,
-    ):
+        lyt_original: pyfiction.charge_distribution_surface_100,
+        lyt: pyfiction.charge_distribution_surface_100,
+        slider_value: int,
+        charge_lyt: pyfiction.charge_distribution_surface_100 = None,
+        operation_status: pyfiction.operational_status = None,
+        parameter_point: tuple[float, float] | None = None,
+        bin_value: int | None = None,
+    ) -> Path:
         # Generate the plot and return the path to the saved image
         script_dir = Path(__file__).resolve().parent
 
@@ -360,7 +375,7 @@ class PlotWidget(QWidget):
 
         return plot_image_path
 
-    def operational_domain_computation(self):
+    def operational_domain_computation(self) -> pyfiction.operational_domain | None:
         self.sim_params = pyfiction.sidb_simulation_parameters()
         self.sim_params.base = 2
         self.sim_params.epsilon_r = self.settings_widget.get_epsilon_r()
@@ -421,7 +436,7 @@ class PlotWidget(QWidget):
             )
         return None
 
-    def on_click(self, event) -> None:
+    def on_click(self, event: matplotlib.backend_bases.MouseEvent) -> None:
         # Check if the click was on the plot
         if event.inaxes is not None:
             # Check if a simulation is already running
@@ -560,7 +575,7 @@ class PlotWidget(QWidget):
         # Start the thread
         self.simulation_thread.start()
 
-    def handle_simulation_result(self, iteration, sim_result) -> None:
+    def handle_simulation_result(self, iteration: int, sim_result: pyfiction.sidb_simulation_result_100) -> None:
         # This method is called in the main thread
 
         if not sim_result.charge_distributions:
@@ -607,10 +622,10 @@ class PlotWidget(QWidget):
         # Move to the next input pattern
         self.input_iterator_initial += 1
 
-    def get_slider_value(self):
+    def get_slider_value(self) -> int:
         return self.slider_value
 
-    def update_progress_bar(self, value) -> None:
+    def update_progress_bar(self, value: int) -> None:
         # print(f"update_progress_bar called with value: {value}")  # Debugging statement
         self.progress_bar.setValue(value)
         QApplication.processEvents()  # Ensure the GUI updates
@@ -621,5 +636,5 @@ class PlotWidget(QWidget):
         QApplication.restoreOverrideCursor()  # Restore the cursor
         # print("Simulation finished. You can click again.")
 
-    def picked_x_y(self):
-        return [self.x, self.y]
+    def picked_x_y(self) -> tuple[float, float]:
+        return self.x, self.y

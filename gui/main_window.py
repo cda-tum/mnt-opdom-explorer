@@ -3,7 +3,7 @@ from pathlib import Path
 
 from mnt import pyfiction
 from PyQt6.QtCore import Qt, QUrl
-from PyQt6.QtGui import QColor, QDesktopServices, QPainter, QPen, QPixmap
+from PyQt6.QtGui import QColor, QDesktopServices, QKeyEvent, QPainter, QPaintEvent, QPen, QPixmap
 from PyQt6.QtWidgets import (
     QFileDialog,
     QHBoxLayout,
@@ -25,42 +25,42 @@ from gui.widgets.icon_loader import IconLoader
 
 # TODO: This is WIP code and we should probably put it in a separate file.
 class CustomizedSlider(QSlider):
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args: list, **kwargs: list) -> None:
         super().__init__(*args, **kwargs)
         self.checkmark_positions = []  # List to hold positions for checkmarks
         self.crossmark_positions = []  # List to hold positions for crossmarks
         self.checkmark_color = QColor("green")  # Default color for checkmarks
         self.crossmark_color = QColor("red")  # Default color for crossmarks
 
-    def set_checkmark_color(self, color) -> None:
+    def set_checkmark_color(self, color: QColor) -> None:
         """Set the color for checkmarks."""
         self.checkmark_color = QColor(color)
         self.update()  # Request a repaint to show the changes
 
-    def set_crossmark_color(self, color) -> None:
+    def set_crossmark_color(self, color: QColor) -> None:
         """Set the color for crossmarks."""
         self.crossmark_color = QColor(color)
         self.update()  # Request a repaint to show the changes
 
-    def add_checkmark(self, position) -> None:
+    def add_checkmark(self, position: int) -> None:
         """Add a checkmark at a specific position."""
         if position not in self.checkmark_positions:
             self.checkmark_positions.append(position)
             self.update()  # Request a repaint to show the changes
 
-    def remove_checkmark(self, position) -> None:
+    def remove_checkmark(self, position: int) -> None:
         """Remove a checkmark from a specific position."""
         if position in self.checkmark_positions:
             self.checkmark_positions.remove(position)
             self.update()  # Request a repaint to show the changes
 
-    def add_crossmark(self, position) -> None:
+    def add_crossmark(self, position: int) -> None:
         """Add a crossmark at a specific position."""
         if position not in self.crossmark_positions:
             self.crossmark_positions.append(position)
             self.update()  # Request a repaint to show the changes
 
-    def remove_crossmark(self, position) -> None:
+    def remove_crossmark(self, position: int) -> None:
         """Remove a crossmark from a specific position."""
         if position in self.crossmark_positions:
             self.crossmark_positions.remove(position)
@@ -72,7 +72,7 @@ class CustomizedSlider(QSlider):
         self.crossmark_positions.clear()  # Clear all crossmark positions
         self.update()  # Request a repaint to show the changes
 
-    def paintEvent(self, event) -> None:  # noqa: N802
+    def paintEvent(self, event: QPaintEvent) -> None:  # noqa: N802
         """Override paint event to draw checkmarks and crossmarks."""
         super().paintEvent(event)
         painter = QPainter(self)
@@ -85,7 +85,9 @@ class CustomizedSlider(QSlider):
         for pos in self.crossmark_positions:
             self.draw_mark(painter, pos, height, self.crossmark_color, is_checkmark=False)
 
-    def draw_mark(self, painter, position, height, color, is_checkmark=True) -> None:
+    def draw_mark(
+        self, painter: QPainter, position: int, height: int, color: QColor, is_checkmark: bool = True
+    ) -> None:
         """Draw a checkmark or crossmark at the given position."""
         pen = QPen(color, 3)  # Thicker line for better visibility
         painter.setPen(pen)
@@ -105,7 +107,7 @@ class CustomizedSlider(QSlider):
             painter.drawLine(x - 8, height - y_offset, x + 8, height - y_offset + 8)
             painter.drawLine(x - 8, height - y_offset + 8, x + 8, height - y_offset)
 
-    def tick_position(self, tick_value):
+    def tick_position(self, tick_value: int) -> int:
         """Calculate the x position of the tick based on the slider's range."""
         width = self.width()
         return int((tick_value - self.minimum()) / (self.maximum() - self.minimum()) * (width - 20)) + 10
@@ -138,13 +140,13 @@ class MainWindow(QMainWindow):
         # Set the stacked widget as the central widget
         self.setCentralWidget(self.stacked_widget)
 
-    def keyPressEvent(self, event) -> None:  # noqa: N802
+    def keyPressEvent(self, event: QKeyEvent) -> None:  # noqa: N802
         if event.key() == Qt.Key.Key_Escape:  # Check if the ESC key was pressed
             self.close()  # Close the application
         else:
             super().keyPressEvent(event)  # Call the parent class method to ensure default behavior
 
-    def file_parsed(self, file_path) -> None:
+    def file_parsed(self, file_path: Path) -> None:
         # Display the selected file name in the QLabel
         file_name = Path(file_path).name  # Extract the file name from the full path
         self.current_file_name_label.setText(f"{file_name}")
@@ -320,7 +322,7 @@ class MainWindow(QMainWindow):
         if file_path:
             self.file_parsed(file_path)
 
-    def update_slider_label(self, value) -> None:
+    def update_slider_label(self, value: int) -> None:
         self.plot.update_slider_value(value)
         # Assume self.bdl_input_iterator is already defined in your class
         value_diff = value - self.previous_slider_value
@@ -337,7 +339,7 @@ class MainWindow(QMainWindow):
 
                 self.pixmap = QPixmap(str(plot_image_path))
             else:
-                [x, y] = self.plot.picked_x_y()
+                x, y = self.plot.picked_x_y()
                 # Construct the full path to the file
                 plot_image_path = script_dir / "widgets" / "caching" / f"lyt_plot_{self.slider.value()}_x_{x}_y_{y}.svg"
 
