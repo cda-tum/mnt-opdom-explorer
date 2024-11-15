@@ -325,9 +325,6 @@ class MainWindow(QMainWindow):
         if value_diff != 0 or ((value & self.previous_slider_value) == 0):
             self.bdl_input_iterator += value_diff
 
-            # Convert value to a binary string
-            self.bin_value = f"{value:b}".zfill(self.bdl_input_iterator.num_input_pairs())
-
             self.previous_slider_value = value
 
             script_dir = Path(__file__).resolve().parent
@@ -401,6 +398,3 @@ class MainWindow(QMainWindow):
             self.desired_width, self.desired_height, Qt.KeepAspectRatio, Qt.SmoothTransformation
         )
         self.plot_label.setPixmap(self.pixmap)
-
-        # Update the slider label
-        self.bin_value = bin(self.slider.value())[2:].zfill(self.bdl_input_iterator.num_input_pairs())

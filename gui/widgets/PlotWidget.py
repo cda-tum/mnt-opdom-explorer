@@ -596,7 +596,7 @@ class PlotWidget(QWidget):
                 gs,
                 status,
                 parameter_point=(self.x, self.y),
-                bin_value=bin(self.get_slider_value())[2:].zfill(self.input_iterator.num_input_pairs()),
+                bin_value=f"{self.get_slider_value():0{self.input_iterator.num_input_pairs()}b}",
             )
 
             self.pixmap = QPixmap(str(plot_image_path))
