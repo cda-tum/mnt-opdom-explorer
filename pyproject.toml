@@ -78,7 +78,7 @@ extend-select = [
     "Q",           # flake8-quotes
     "RET",         # flake8-return
     "RSE",         # flake8-raise
-#    "RUF",         # Ruff-specific
+    "RUF",         # Ruff-specific
     "S",           # flake8-bandit
     "SLF",         # flake8-self
     "SLOT",        # flake8-slots
