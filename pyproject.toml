@@ -64,7 +64,7 @@ extend-select = [
     "FURB",        # refurb
     "I",           # isort
     "ICN",         # flake8-import-conventions
-#    "ISC",         # flake8-implicit-str-concat
+    "ISC",         # flake8-implicit-str-concat
     "LOG",         # flake8-logging-format
 #    "N",           # flake8-naming
     "NPY",         # numpy
