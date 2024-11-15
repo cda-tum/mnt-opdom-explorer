@@ -79,7 +79,7 @@ extend-select = [
     "RET",         # flake8-return
     "RSE",         # flake8-raise
 #    "RUF",         # Ruff-specific
-#    "S",           # flake8-bandit
+    "S",           # flake8-bandit
     "SLF",         # flake8-self
     "SLOT",        # flake8-slots
     "SIM",         # flake8-simplify
@@ -89,6 +89,13 @@ extend-select = [
     "TRY",         # tryceratops
     "UP",          # pyupgrade
     "YTT",         # flake8-2020
+]
+
+ignore = [
+    "ANN101",  # Missing type annotation for `self` in method
+    "ANN102",  # Missing type annotation for `cls` in classmethod
+#    "ISC001",  # Conflicts with formatter
+    "S101",    # Use of assert detected
 ]
 
 [tool.ruff.lint.pydocstyle]
