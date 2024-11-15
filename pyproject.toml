@@ -61,7 +61,7 @@ extend-select = [
     "EXE",         # flake8-executable
     "FA",          # flake8-future-annotations
     "FLY",         # flynt
-#    "FURB",        # refurb
+    "FURB",        # refurb
     "I",           # isort
     "ICN",         # flake8-import-conventions
 #    "ISC",         # flake8-implicit-str-concat
