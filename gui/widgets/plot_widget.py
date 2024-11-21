@@ -75,6 +75,7 @@ class PlotWidget(QWidget):
         min_pos_initial: pyfiction.offset_coordinate,
         qlabel: QLabel,
         slider_value: int | None = None,
+        plot_view_active: bool = True,
     ) -> None:
         super().__init__()
         self.settings_widget = settings_widget
@@ -82,6 +83,7 @@ class PlotWidget(QWidget):
         self.input_iterator = input_iterator
         self.previous_dot = None
         self.slider_value = slider_value
+        self.plot_view_active = plot_view_active
 
         self.layout = QVBoxLayout(self)
         self.fig = None
@@ -188,7 +190,16 @@ class PlotWidget(QWidget):
 
         self.rerun_button.clicked.connect(self.settings_widget.enable_run_button)
 
+        self.rerun_button.clicked.connect(self.on_rerun_clicked)
+
         self.setLayout(self.layout)
+
+    # Custom method to handle the 'Rerun' button click
+    def on_rerun_clicked(self) -> None:
+        """
+        Handle the 'Run Another Simulation' button click.
+        """
+        self.plot_view_active = True  # Update the member variable
 
     def set_pixmap(self, pixmap: QPixmap) -> None:
         self.pixmap = pixmap
@@ -442,6 +453,7 @@ class PlotWidget(QWidget):
         return None
 
     def on_click(self, event: matplotlib.backend_bases.MouseEvent) -> None:
+        self.plot_view_active = False
         # Check if the click was on the plot
         if event.inaxes is not None:
             # Check if a simulation is already running
@@ -643,3 +655,6 @@ class PlotWidget(QWidget):
 
     def picked_x_y(self) -> tuple[float, float]:
         return self.x, self.y
+
+    def get_layout_plot_view_active(self) -> bool:
+        return self.plot_view_active

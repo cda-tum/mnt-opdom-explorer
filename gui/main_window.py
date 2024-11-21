@@ -117,7 +117,7 @@ class MainWindow(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
         self._init_ui()
-        self.is_plot_view_active = True  # Start with the settings view
+        self.plot_view_active = True  # Start with the layout plot without charges
         self.current_file_name_label = QLabel(self)  # Label for displaying the file name
 
         self.desired_width = 600  # Example width in pixels
@@ -126,7 +126,7 @@ class MainWindow(QMainWindow):
         self.icon_loader = IconLoader()
 
     def _init_ui(self) -> None:
-        self.is_plot_view_active = True
+        self.plot_view_active = True
         self.setWindowTitle("Operational Domain Explorer")
         self.setGeometry(100, 100, 600, 400)
 
@@ -323,6 +323,8 @@ class MainWindow(QMainWindow):
             self.file_parsed(file_path)
 
     def update_slider_label(self, value: int) -> None:
+        self.plot_view_active = self.plot.get_layout_plot_view_active()
+
         self.plot.update_slider_value(value)
         # Assume self.bdl_input_iterator is already defined in your class
         value_diff = value - self.previous_slider_value
@@ -333,7 +335,7 @@ class MainWindow(QMainWindow):
 
             script_dir = Path(__file__).resolve().parent
 
-            if self.is_plot_view_active:
+            if self.plot_view_active:
                 # Construct the full path to the file
                 plot_image_path = script_dir / "widgets" / "caching" / f"lyt_plot_{self.slider.value()}.svg"
 
@@ -352,7 +354,7 @@ class MainWindow(QMainWindow):
             self.plot_label.setPixmap(self.pixmap)
 
     def plot_operational_domain(self) -> None:
-        self.is_plot_view_active = False
+        # self.is_plot_view_active = False
         # Create the plot view
         self.plot = PlotWidget(
             self.settings,
@@ -377,11 +379,11 @@ class MainWindow(QMainWindow):
         self.plot.rerun_button.clicked.connect(self.go_back_to_settings)
 
     def go_back_to_drag_and_drop(self) -> None:
-        self.is_plot_view_active = True
+        self.plot_view_active = True
         self.stacked_widget.setCurrentIndex(0)
 
     def go_back_to_settings(self) -> None:
-        self.is_plot_view_active = True
+        self.plot_view_active = True
         # Get the index of the PlotWidget in the QSplitter
         index = self.splitter.indexOf(self.plot)
 
