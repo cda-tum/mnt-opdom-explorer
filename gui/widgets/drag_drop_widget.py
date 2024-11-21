@@ -13,7 +13,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from gui.widgets.icon_loader import IconLoader
+from .icon_loader import IconLoader
 
 
 class FileLoaderThread(QThread):

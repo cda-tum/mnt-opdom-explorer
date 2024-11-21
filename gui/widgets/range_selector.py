@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import QCheckBox, QDoubleSpinBox, QHBoxLayout, QLabel, QSizePolicy, QVBoxLayout, QWidget
 
-from gui.widgets import InfoTag
+from .info_tag import InfoTag
 
 
 class RangeSelector(QWidget):

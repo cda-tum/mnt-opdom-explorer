@@ -2,7 +2,7 @@
 
 from PyQt6.QtWidgets import QLabel, QWidget
 
-from gui.widgets import IconLoader
+from .icon_loader import IconLoader
 
 
 class InfoTag(QLabel):

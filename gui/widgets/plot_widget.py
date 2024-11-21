@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import matplotlib.backend_bases
 import matplotlib.pyplot as plt
@@ -13,7 +14,11 @@ from PyQt6.QtGui import QCursor, QPixmap
 from PyQt6.QtWidgets import QApplication, QLabel, QMessageBox, QProgressBar, QPushButton, QVBoxLayout, QWidget
 
 from core import generate_plot
-from gui.widgets import IconLoader, SettingsWidget
+
+from .icon_loader import IconLoader
+
+if TYPE_CHECKING:
+    from .settings_widget import SettingsWidget
 
 
 class SimulationThread(QThread):

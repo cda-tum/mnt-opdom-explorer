@@ -30,8 +30,10 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from gui.widgets import IconLoader, InfoTag, RangeSelector
-from gui.widgets.icon_group_box import IconGroupBox
+from .icon_group_box import IconGroupBox
+from .icon_loader import IconLoader
+from .info_tag import InfoTag
+from .range_selector import RangeSelector
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
