@@ -19,7 +19,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from gui.widgets import DragDropWidget, PlotWidget, SettingsWidget
+from gui.widgets import DragDropWidget, PlotOperationalDomainWidget, SettingsWidget, LayoutVisualizer
 from gui.widgets.icon_loader import IconLoader
 
 
@@ -116,6 +116,7 @@ class CustomizedSlider(QSlider):
 class MainWindow(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
+        self.bdl_input_iterator = None
         self._init_ui()
         self.plot_view_active = True  # Start with the layout plot without charges
         self.current_file_name_label = QLabel(self)  # Label for displaying the file name
@@ -125,7 +126,10 @@ class MainWindow(QMainWindow):
 
         self.icon_loader = IconLoader()
 
+
     def _init_ui(self) -> None:
+
+        self.visualizer = LayoutVisualizer()
         self.plot_view_active = True
         self.setWindowTitle("Operational Domain Explorer")
         self.setGeometry(100, 100, 600, 400)
@@ -264,7 +268,7 @@ class MainWindow(QMainWindow):
         self.stacked_widget.setCurrentWidget(splitter)
 
         # Set up the plot and load the image into the QLabel
-        self.plot = PlotWidget(
+        self.plot = PlotOperationalDomainWidget(
             self.settings,
             self.lyt,
             self.bdl_input_iterator,
@@ -276,9 +280,9 @@ class MainWindow(QMainWindow):
 
         # Generate plots for each slider value
         for i in range(2 ** self.bdl_input_iterator.num_input_pairs()):
-            _ = self.plot.plot_layout(
-                self.lyt,
-                self.bdl_input_iterator.get_layout(),
+            _ = self.visualizer.visualize_layout(
+                lyt_original=self.lyt,
+                lyt=self.bdl_input_iterator.get_layout(), min_pos=self.min_pos, max_pos=self.max_pos,
                 slider_value=i,
                 bin_value=f"{i:b}".zfill(self.bdl_input_iterator.num_input_pairs()),
             )
@@ -356,7 +360,7 @@ class MainWindow(QMainWindow):
     def plot_operational_domain(self) -> None:
         # self.is_plot_view_active = False
         # Create the plot view
-        self.plot = PlotWidget(
+        self.plot = PlotOperationalDomainWidget(
             self.settings,
             self.lyt,
             self.bdl_input_iterator,

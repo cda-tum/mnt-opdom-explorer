@@ -4,16 +4,15 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import matplotlib.backend_bases
-import matplotlib.pyplot as plt
-import numpy as np
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.patches import Rectangle
 from mnt import pyfiction
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
 from PyQt6.QtGui import QCursor, QPixmap
 from PyQt6.QtWidgets import QApplication, QLabel, QMessageBox, QProgressBar, QPushButton, QVBoxLayout, QWidget
 
 from core import generate_plot
+
+from .layout_visualizer_widget import LayoutVisualizer
 
 from .icon_loader import IconLoader
 
@@ -65,7 +64,7 @@ class SimulationThread(QThread):
         self.finished.emit()  # Signal that the thread has finished
 
 
-class PlotWidget(QWidget):
+class PlotOperationalDomainWidget(QWidget):
     def __init__(
         self,
         settings_widget: SettingsWidget,
@@ -92,6 +91,7 @@ class PlotWidget(QWidget):
         self.max_pos = max_pos_initial
         self.min_pos = min_pos_initial
         self.plot_label = qlabel
+        self.visualizer = LayoutVisualizer()
 
         # Initialize the progress bar
         self.progress_bar = QProgressBar(self)
@@ -203,193 +203,6 @@ class PlotWidget(QWidget):
 
     def set_pixmap(self, pixmap: QPixmap) -> None:
         self.pixmap = pixmap
-
-    def plot_layout(
-        self,
-        lyt_original: pyfiction.charge_distribution_surface_100,
-        lyt: pyfiction.charge_distribution_surface_100,
-        slider_value: int,
-        charge_lyt: pyfiction.charge_distribution_surface_100 = None,
-        operation_status: pyfiction.operational_status = None,
-        parameter_point: tuple[float, float] | None = None,
-        bin_value: int | None = None,
-    ) -> Path:
-        # Generate the plot and return the path to the saved image
-        script_dir = Path(__file__).resolve().parent
-
-        # Define the plot path based on the script directory
-        if charge_lyt is not None:
-            plot_image_path = (
-                script_dir / "caching" / f"lyt_plot_{slider_value}_x_{parameter_point[0]}_y_{parameter_point[1]}.svg"
-            )
-        else:
-            plot_image_path = script_dir / "caching" / f"lyt_plot_{slider_value}.svg"
-
-        # Create the caching directory only if it does not exist
-        if not plot_image_path.parent.exists():
-            plot_image_path.parent.mkdir(parents=True, exist_ok=True)
-
-        # Proceed with generating the plot
-        all_cells = lyt.cells()
-
-        markersize = 10
-        markersize_grid = 2
-        edge_width = 1.5
-
-        # Custom colors and plot settings...
-        neutral_dot_color = "#6e7175"
-        highlight_border_color = "#e6e6e6"
-        highlight_fill_color = "#d0d0d0"
-        negative_color = "#00ADAE"
-        positive_color = "#E34857"
-
-        step_size = 1
-        alpha = 0.5
-
-        fig, ax = plt.subplots(figsize=(12, 12), dpi=500)
-        fig.patch.set_facecolor("#2d333b")
-        ax.set_facecolor("#2d333b")
-        ax.axis("off")
-
-        # Iterate through grid and plot positions...
-        for x in np.arange(self.min_pos.x, self.max_pos.x + 5, step_size):
-            for y in np.arange(self.min_pos.y, self.max_pos.y + 6, step_size):
-                nm_pos = pyfiction.sidb_nm_position(self.lyt, pyfiction.offset_coordinate(x, y))
-                ax.plot(
-                    nm_pos[0],
-                    -nm_pos[1],
-                    "o",
-                    color=neutral_dot_color,
-                    markersize=markersize_grid,
-                    markeredgewidth=0,
-                    alpha=alpha,
-                )
-
-        for cell in all_cells:
-            cell_original = pyfiction.offset_coordinate(cell)
-            cell.x += 2
-            cell.y += 2
-            nm_pos = pyfiction.sidb_nm_position(self.lyt, cell)
-
-            if charge_lyt is not None:
-                charge_state = charge_lyt.get_charge_state(cell_original)
-                if charge_state == pyfiction.sidb_charge_state.NEGATIVE:
-                    ax.plot(
-                        nm_pos[0],
-                        -nm_pos[1],
-                        "o",
-                        color=negative_color,
-                        markersize=markersize,
-                        markeredgewidth=edge_width,
-                    )
-                elif charge_state == pyfiction.sidb_charge_state.POSITIVE:
-                    ax.plot(
-                        nm_pos[0],
-                        -nm_pos[1],
-                        "o",
-                        color=positive_color,
-                        markersize=markersize,
-                        markeredgewidth=edge_width,
-                    )
-                elif charge_state == pyfiction.sidb_charge_state.NEUTRAL:
-                    ax.plot(
-                        nm_pos[0],
-                        -nm_pos[1],
-                        "o",
-                        color=highlight_border_color,
-                        markerfacecolor="None",
-                        markersize=markersize,
-                        markeredgewidth=edge_width,
-                    )
-            else:
-                ax.plot(
-                    nm_pos[0],
-                    -nm_pos[1],
-                    "o",
-                    markerfacecolor=highlight_fill_color,
-                    markeredgecolor=highlight_border_color,
-                    markersize=markersize,
-                    markeredgewidth=edge_width,
-                )
-
-        if bin_value is not None:
-            # Define input cells and add the binary value annotations
-            input_cells = pyfiction.detect_bdl_pairs(lyt_original, pyfiction.sidb_technology.cell_type.INPUT)
-
-            for idx, cell in enumerate(input_cells):
-                cell.upper.x += 2
-                cell.upper.y += 2
-
-                cell.lower.x += 2
-                cell.lower.y += 2
-
-                # Get the input cell's SiDB nm position
-                nm_pos_lower = pyfiction.sidb_nm_position(lyt, cell.lower)
-                nm_pos_upper = pyfiction.sidb_nm_position(lyt, cell.upper)
-
-                nm_pos_x = (nm_pos_lower[0] + nm_pos_upper[0]) / 2
-
-                # Plot the binary value corresponding to the input cell
-                bin_digit = bin_value[idx]  # Get the corresponding binary digit for this input cell
-
-                ax.text(
-                    nm_pos_x,
-                    -nm_pos_upper[1] + 1.0,
-                    bin_digit,
-                    color="gray",
-                    fontsize=40,
-                    fontweight="bold",
-                    horizontalalignment="center",
-                    verticalalignment="center",
-                )
-
-        if operation_status is not None:
-            output_cells = pyfiction.detect_bdl_pairs(lyt, pyfiction.sidb_technology.cell_type.OUTPUT)
-            for cell in output_cells:
-                cell.lower.x += 2
-                cell.lower.y += 2
-                cell.upper.x += 2
-                cell.upper.y += 2
-                nm_pos_upper = pyfiction.sidb_nm_position(lyt, cell.upper)
-                nm_pos_lower = pyfiction.sidb_nm_position(lyt, cell.lower)
-                box_x = nm_pos_upper[0]
-                box_y = nm_pos_upper[1]
-                width = abs(nm_pos_upper[0] - nm_pos_lower[0]) + 1
-                height = abs(nm_pos_lower[1] - nm_pos_upper[1]) + 1
-
-                box_x -= 0.5
-                box_y -= 0.5
-                box_color = "green" if operation_status == pyfiction.operational_status.OPERATIONAL else "red"
-                rect = Rectangle((box_x, -box_y), width, -height, linewidth=1.5, edgecolor=box_color, facecolor="none")
-                ax.add_patch(rect)
-
-                if operation_status == pyfiction.operational_status.OPERATIONAL:
-                    ax.text(
-                        box_x + 1.5 * width,
-                        -box_y - height / 2,
-                        "\u2713",
-                        color="green",
-                        fontsize=45,
-                        fontweight="bold",
-                        horizontalalignment="center",
-                        verticalalignment="center",
-                    )
-                else:
-                    ax.text(
-                        box_x + 1.5 * width,
-                        -box_y - height / 2,
-                        "X",
-                        color="red",
-                        fontsize=30,
-                        fontweight="bold",
-                        horizontalalignment="center",
-                        verticalalignment="center",
-                    )
-
-        plt.savefig(plot_image_path, bbox_inches="tight", dpi=500)
-        plt.close()
-
-        return plot_image_path
 
     def operational_domain_computation(self) -> pyfiction.operational_domain | None:
         self.sim_params = pyfiction.sidb_simulation_parameters()
@@ -611,9 +424,9 @@ class PlotWidget(QWidget):
             status = pyfiction.operational_status.OPERATIONAL
 
         # Plot the new layout and charge distribution
-        _ = self.plot_layout(
+        _ = self.visualizer.visualize_layout(
             self.lyt,
-            self.input_iterator_initial.get_layout(),
+            self.input_iterator_initial.get_layout(), self.min_pos, self.max_pos,
             iteration,
             gs,
             status,
@@ -623,9 +436,9 @@ class PlotWidget(QWidget):
 
         # Update the QLabel if this is the current slider value
         if iteration == self.get_slider_value():
-            plot_image_path = self.plot_layout(
+            plot_image_path = self.visualizer.visualize_layout(
                 self.lyt,
-                self.input_iterator_initial.get_layout(),
+                self.input_iterator_initial.get_layout(), self.min_pos, self.max_pos,
                 self.get_slider_value(),
                 gs,
                 status,
