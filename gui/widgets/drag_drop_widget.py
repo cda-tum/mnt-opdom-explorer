@@ -30,7 +30,7 @@ class FileLoaderThread(QThread):
             self.progress.emit(i)  # Emit progress value
             self.msleep(10)  # Sleep for 10 milliseconds (adjust as needed)
         # After progress reaches 100%, emit file_loaded
-        self.file_loaded.emit(self.file_path)
+        self.file_loaded.emit(str(self.file_path))
 
 
 class DragDropWidget(QWidget):
