@@ -97,6 +97,9 @@ class SettingsWidget(QWidget):
         centered_layout.addWidget(settings_icon_label)
         centered_layout.addWidget(title_label)
 
+        # Set the horizontal alignment of the title label and the icon within centered_layout
+        centered_layout.setAlignment(Qt.AlignHCenter)  # Align both icon and label to the center
+
         # Add stretch to the title_bar_layout to center the text horizontally
         title_bar_layout.addStretch(8)  # Push the content to the center
         title_bar_layout.addLayout(centered_layout)  # Add centered settings
