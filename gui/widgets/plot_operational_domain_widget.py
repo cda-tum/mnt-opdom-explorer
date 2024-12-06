@@ -12,11 +12,12 @@ from PyQt6.QtWidgets import QApplication, QLabel, QMessageBox, QProgressBar, QPu
 
 from core import generate_plot
 
+from .icon_loader import IconLoader
 from .layout_visualizer_widget import LayoutVisualizer
 
-from .icon_loader import IconLoader
-
 if TYPE_CHECKING:
+    import matplotlib.backend_bases
+
     from .settings_widget import SettingsWidget
 
 
@@ -426,7 +427,9 @@ class PlotOperationalDomainWidget(QWidget):
         # Plot the new layout and charge distribution
         _ = self.visualizer.visualize_layout(
             self.lyt,
-            self.input_iterator_initial.get_layout(), self.min_pos, self.max_pos,
+            self.input_iterator_initial.get_layout(),
+            self.min_pos,
+            self.max_pos,
             iteration,
             gs,
             status,
@@ -438,7 +441,9 @@ class PlotOperationalDomainWidget(QWidget):
         if iteration == self.get_slider_value():
             plot_image_path = self.visualizer.visualize_layout(
                 self.lyt,
-                self.input_iterator_initial.get_layout(), self.min_pos, self.max_pos,
+                self.input_iterator_initial.get_layout(),
+                self.min_pos,
+                self.max_pos,
                 self.get_slider_value(),
                 gs,
                 status,

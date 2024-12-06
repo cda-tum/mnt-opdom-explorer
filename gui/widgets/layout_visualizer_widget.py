@@ -10,11 +10,11 @@ from PyQt6.QtWidgets import QWidget
 
 
 class LayoutVisualizer(QWidget):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
+    @staticmethod
     def visualize_layout(
-        self,
         lyt_original: pyfiction.charge_distribution_surface_100,
         lyt: pyfiction.charge_distribution_surface_100,
         min_pos: pyfiction.offset_coordinate,

@@ -235,7 +235,7 @@ class SettingsWidget(QWidget):
         Returns:
             IconGroupBox: The group box containing all physical simulation settings.
         """
-        physical_simulation_group = IconGroupBox("Physical Simulation", self.icon_loader.load_atom_icon())
+        physical_simulation_group = IconGroupBox(title="Physical Simulation", icon=self.icon_loader.load_atom_icon())
         # Physical simulation engine
         physical_simulation_group.add_layout(self._create_engine_dropdown())
         # epsilon_r value selector
@@ -298,7 +298,7 @@ class SettingsWidget(QWidget):
         Returns:
             IconGroupBox: The group box containing the gate function settings.
         """
-        gate_function_group = IconGroupBox("Gate Function", self.icon_loader.load_function_icon())
+        gate_function_group = IconGroupBox(title="Gate Function", icon=self.icon_loader.load_function_icon())
         # Boolean function drop-down
         gate_function_group.add_layout(self._create_boolean_function_drop_down())
 
@@ -564,7 +564,7 @@ class SettingsWidget(QWidget):
         Returns:
             IconGroupBox: The group box containing all operational domain settings.
         """
-        operational_domain_group = IconGroupBox("Operational Domain", self.icon_loader.load_chart_icon())
+        operational_domain_group = IconGroupBox(title="Operational Domain", icon=self.icon_loader.load_chart_icon())
         # Operational domain algorithm drop-down
         operational_domain_group.add_layout(self._create_algorithm_drop_down())
         # Random samples spinbox

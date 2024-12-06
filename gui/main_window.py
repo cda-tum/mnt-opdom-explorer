@@ -19,7 +19,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from gui.widgets import DragDropWidget, PlotOperationalDomainWidget, SettingsWidget, LayoutVisualizer
+from gui.widgets import DragDropWidget, LayoutVisualizer, PlotOperationalDomainWidget, SettingsWidget
 from gui.widgets.icon_loader import IconLoader
 
 
@@ -126,9 +126,14 @@ class MainWindow(QMainWindow):
 
         self.icon_loader = IconLoader()
 
+        self.script_dir = Path(__file__).resolve().parent
+        self.caching_dir = self.script_dir / "widgets" / "caching"
+
+        # Remove the caching directory if it exists
+        if self.caching_dir.exists() and self.caching_dir.is_dir():
+            shutil.rmtree(self.caching_dir)  # This will delete the entire caching directory and its contents
 
     def _init_ui(self) -> None:
-
         self.visualizer = LayoutVisualizer()
         self.plot_view_active = True
         self.setWindowTitle("Operational Domain Explorer")
@@ -154,14 +159,6 @@ class MainWindow(QMainWindow):
         # Display the selected file name in the QLabel
         file_name = Path(file_path).name  # Extract the file name from the full path
         self.current_file_name_label.setText(f"{file_name}")
-
-        # Get the current script directory
-        script_dir = Path(__file__).resolve().parent
-        caching_dir = script_dir / "widgets" / "caching"
-
-        # Remove the caching directory if it exists
-        if caching_dir.exists() and caching_dir.is_dir():
-            shutil.rmtree(caching_dir)  # This will delete the entire caching directory and its contents
 
         # Parse the layout file and initialize the BDL input iterator
         self.lyt = pyfiction.read_sqd_layout_100(file_path)
@@ -282,7 +279,9 @@ class MainWindow(QMainWindow):
         for i in range(2 ** self.bdl_input_iterator.num_input_pairs()):
             _ = self.visualizer.visualize_layout(
                 lyt_original=self.lyt,
-                lyt=self.bdl_input_iterator.get_layout(), min_pos=self.min_pos, max_pos=self.max_pos,
+                lyt=self.bdl_input_iterator.get_layout(),
+                min_pos=self.min_pos,
+                max_pos=self.max_pos,
                 slider_value=i,
                 bin_value=f"{i:b}".zfill(self.bdl_input_iterator.num_input_pairs()),
             )
@@ -290,11 +289,8 @@ class MainWindow(QMainWindow):
 
         self.bdl_input_iterator = pyfiction.bdl_input_iterator_100(self.lyt)  # Reset the iterator
 
-        # Get the current script directory
-        script_dir = Path(__file__).resolve().parent
-
         # Construct the full path to the file
-        plot_image_path = script_dir / "widgets" / "caching" / f"lyt_plot_{self.slider.value()}.svg"
+        plot_image_path = self.caching_dir / f"lyt_plot_{self.slider.value()}.svg"
 
         # Load the image using QPixmap
         pixmap = QPixmap(str(plot_image_path))  # Convert Path object to string
@@ -337,17 +333,15 @@ class MainWindow(QMainWindow):
 
             self.previous_slider_value = value
 
-            script_dir = Path(__file__).resolve().parent
-
             if self.plot_view_active:
                 # Construct the full path to the file
-                plot_image_path = script_dir / "widgets" / "caching" / f"lyt_plot_{self.slider.value()}.svg"
+                plot_image_path = self.caching_dir / f"lyt_plot_{self.slider.value()}.svg"
 
                 self.pixmap = QPixmap(str(plot_image_path))
             else:
                 x, y = self.plot.picked_x_y()
                 # Construct the full path to the file
-                plot_image_path = script_dir / "widgets" / "caching" / f"lyt_plot_{self.slider.value()}_x_{x}_y_{y}.svg"
+                plot_image_path = self.caching_dir / f"lyt_plot_{self.slider.value()}_x_{x}_y_{y}.svg"
 
                 # Load the image using QPixmap
                 self.pixmap = QPixmap(str(plot_image_path))
@@ -394,11 +388,8 @@ class MainWindow(QMainWindow):
         # Replace the PlotWidget with the ContentSettingsWidget in the QSplitter
         self.splitter.replaceWidget(index, self.settings)
 
-        # Get the current script directory
-        script_dir = Path(__file__).resolve().parent
-
         # Construct the full path to the plot image file based on the slider value
-        plot_image_path = script_dir / "widgets" / "caching" / f"lyt_plot_{self.slider.value()}.svg"
+        plot_image_path = self.caching_dir / f"lyt_plot_{self.slider.value()}.svg"
 
         # Load the image using QPixmap
         self.pixmap = QPixmap(str(plot_image_path))

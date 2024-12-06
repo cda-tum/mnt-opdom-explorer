@@ -1,9 +1,19 @@
+"""Custom group box with an icon and a title."""
+
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QGroupBox, QHBoxLayout, QLabel, QLayout, QVBoxLayout, QWidget
 
 
 class IconGroupBox(QGroupBox):
+    """An IconGroupBox is a QGroupBox that displays an icon (on the left) and a title (on the right)."""
+
     def __init__(self, title: str, icon: QIcon) -> None:
+        """Initialize the IconGroupBox.
+
+        Args:
+            title (str): The title of the group box.
+            icon (QIcon): The icon to display.
+        """
         super().__init__()
 
         # Main layout for the custom group box
@@ -40,9 +50,18 @@ class IconGroupBox(QGroupBox):
         layout.addWidget(self.group_box)
 
     def add_widget(self, widget: QWidget) -> None:
-        # Add widgets to the group box's layout
+        """Add a widget to the group box's layout.
+
+        Args:
+            widget (QWidget): The widget to add.
+        """
         self.group_box.layout().addWidget(widget)
 
     def add_layout(self, layout: QLayout) -> None:
-        # Add a layout to the group box's layout
+        """
+        Add a layout to the group box's layout.
+
+        Args:
+            layout (QLayout): The layout to add.
+        """
         self.group_box.layout().addLayout(layout)
