@@ -3,7 +3,7 @@ from pathlib import Path
 
 from mnt import pyfiction
 from PyQt6.QtCore import Qt, QUrl
-from PyQt6.QtGui import QColor, QDesktopServices, QKeyEvent, QPainter, QPaintEvent, QPen, QPixmap
+from PyQt6.QtGui import QDesktopServices, QKeyEvent, QPixmap
 from PyQt6.QtWidgets import (
     QFileDialog,
     QHBoxLayout,
@@ -100,7 +100,7 @@ class MainWindow(QMainWindow):
         grouped_layout.addWidget(self.plot_label)
 
         # Create and configure QSlider
-        self.slider = CustomizedSlider(Qt.Horizontal, self)
+        self.slider = QSlider(Qt.Horizontal, self)
         self.slider.setRange(0, 2 ** self.bdl_input_iterator.num_input_pairs() - 1)
         self.slider.setTickInterval(1)  # Ticks at each integer position
         self.slider.setTickPosition(QSlider.TicksBelow)
