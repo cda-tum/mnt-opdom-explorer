@@ -148,7 +148,7 @@ class TestPlotFunctions(unittest.TestCase):
         """Test generate_plot function including both operational and non-operational data."""
         csv_files = [self.csv_file_path]
         fig, _ax = generate_plot(
-            csv_files, "epsilon_r", "lambda_tf", title="op_and_non_op_plot", include_non_operational=True
+            csv_files, "epsilon_r", "lambda_tf", include_non_operational=True
         )
 
         assert compare_images(fig, dir_path / Path("../resources/op_and_non_op_plot.png"))
@@ -157,7 +157,7 @@ class TestPlotFunctions(unittest.TestCase):
         """Test generate_plot function including only operational data."""
         csv_files = [self.csv_file_path]
         fig, ax = generate_plot(
-            csv_files, "epsilon_r", "lambda_tf", title="only_op_plot", include_non_operational=False
+            csv_files, "epsilon_r", "lambda_tf", include_non_operational=False
         )
 
         assert all(coll.get_alpha() == 1 for coll in ax.collections)
