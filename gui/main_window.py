@@ -104,8 +104,7 @@ class MainWindow(QMainWindow):
         self.slider.setRange(0, 2 ** self.bdl_input_iterator.num_input_pairs() - 1)
         self.slider.setTickInterval(1)  # Ticks at each integer position
         self.slider.setTickPosition(QSlider.TicksBelow)
-        # self.slider.add_checkmark(0)  # Set tick 0 to red
-        # self.slider.add_crossmark(2)  # Set tick 2 to blue
+
         self.slider.setValue(0)  # Set the initial slider value to 0
         grouped_layout.addWidget(self.slider)  # Add the slider to your layout
 
