@@ -12,16 +12,12 @@ on:
 
 jobs:
   test:
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        python_version: [ '3.9.x', '3.10.x', '3.11.x', '3.12.x' ]
-        include:
-          - os: ubuntu-latest
-            python_version: '3.12.x'
-
-    name: 🐍 Python CI on ${{ matrix.os }} with Python ${{ matrix.python_version }}
+    name: 🐍 Python CI on ${{ matrix.os }}}
     runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        runs-on: [ubuntu-latest, macos-13, macos-14, windows-latest]
 
     steps:
       - name: Checkout Repository
@@ -47,28 +43,23 @@ jobs:
       - name: Setup ccache
         uses: hendrikmuhs/ccache-action@v1.2
         with:
-          key: '${{ matrix.os }}-pyfiction'
+          key: "${{ matrix.os }}-pyfiction"
           variant: ccache
           save: true
           max-size: 10G
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python_version }}
-          cache: 'pip'
 
       - name: Setup mold (Linux only)
         if: runner.os == 'Linux'
         uses: rui314/setup-mold@v1
 
-      - name: Install Python Dependencies
-        run: |
-          pip install --upgrade pip
-          pip install '.[test]'
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+          enable-cache: true
 
-      - name: Run Unit Tests
-        env:
-          DISPLAY: ":99"
-          QT_QPA_PLATFORM: offscreen
-        run: python -m unittest discover --verbose
+      - name: Setup nox
+        uses: wntrblm/nox@2024.10.09
+
+      - name: 🐍 Test
+        run: nox -s tests --verbose
