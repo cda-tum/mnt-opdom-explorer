@@ -39,7 +39,7 @@ physical simulations—one for each possible input pattern of *L*.
 
 Before you get started, make sure you have the following installed:
 
-- **Python 3.8 or newer**: This project requires Python 3.8+ to run.
+- **Python 3.9 or newer**: This project requires Python 3.8+ to run.
 - **Git**: To clone the repository.
 
 ### Step 1: Clone the Repository
@@ -53,14 +53,16 @@ cd opdom-explore
 
 ### Step 2: Set Up a Virtual Environment (Recommended)
 
-It's a good practice to use a virtual environment to manage dependencies. You can set up a virtual environment by running:
+It's a good practice to use a virtual environment to manage dependencies. You can set up a virtual environment by
+running:
 
 ```bash
 python -m venv venv
 source venv/bin/activate  # On Windows, use 'venv\Scripts\activate'
 ```
 
-   Using `uv` as a package manager? Set up the virtual environment with:  
+Using `uv` as a package manager? Set up the virtual environment with:
+
    ```bash
    uv venv 
    source .venv/bin/activate
@@ -68,12 +70,15 @@ source venv/bin/activate  # On Windows, use 'venv\Scripts\activate'
 
 ### Step 3: Install Dependencies
 
-   With the virtual environment active:  
+With the virtual environment active:
+
    ```bash
    pip install --upgrade pip
    pip install .
    ```
-   For `uv`, use:  
+
+For `uv`, use:
+
    ```bash
    uv run
    ```
@@ -86,35 +91,45 @@ To start the Operational Domain Explorer, you can run the application as follows
 python -m main 
 ```
 
-
 ### Step 5: Running Tests
 
-   To verify functionality:  
-   ```bash
-   pytest test
-   ```
-   Or, if using `nox`:  
+To verify functionality:
+
+```bash
+pytest test
+```
+
+[`nox`](https://nox.thea.codes/en/stable/index.html) can be used to conveniently run many development tasks like
+testing the bindings on multiple Python installations.
+Here’s the command split into individual steps for clarity:
+
+1. Install `nox` using the `uv` tool:  
    ```bash
    uv tool install nox
+   ```
+
+2. Run the tests using `nox`:  
+   ```bash
    nox -s tests
    ```
 
 ### Step 6: Contributing
 
-If you're interested in contributing, feel free to fork the repository and submit pull requests. Make sure to follow the coding guidelines and run tests before submitting your PR.
+If you're interested in contributing, feel free to fork the repository and submit pull requests. Make sure to follow the
+coding guidelines and run tests before submitting your PR.
 
 For more details, check the [repository](https://github.com/cda-tum/opdom-explore).
 
-
 ## Reference
 
-If you use the *Operational Domain Explorer* for academic purposes, we would be thankful if you referred to it by citing the following publication:
+If you use the *Operational Domain Explorer* for academic purposes, we would be thankful if you referred to it by citing
+the following publication:
 
 ```bibtex
 @inproceedings{walter2023opdom,
-    title={{Reducing the Complexity of Operational Domain Computation in Silicon Dangling Bond Logic}},
-    author={Walter, Marcel and Drewniok, Jan and Ng, Samuel Sze Hang and Walus, Konrad and Wille, Robert},
-    booktitle={International Symposium on Nanoscale Architectures (NANOARCH)},
+    title = {{Reducing the Complexity of Operational Domain Computation in Silicon Dangling Bond Logic}},
+    author = {Walter, Marcel and Drewniok, Jan and Ng, Samuel Sze Hang and Walus, Konrad and Wille, Robert},
+    booktitle = {International Symposium on Nanoscale Architectures (NANOARCH)},
 }
 ```
 
@@ -125,11 +140,14 @@ If you use the *Operational Domain Explorer* for academic purposes, we would be 
 This project is licensed under the [Prosperity Public License 3.0.0](https://prosperitylicense.com/versions/3.0.0).
 
 - **Permitted Use:** You are free to use this software for personal, academic, and other non-commercial purposes.
-- **Prohibited Use:** Commercial use of this software is not permitted under this license. Any form of direct or indirect commercial exploitation is strictly prohibited without obtaining a commercial license first.
+- **Prohibited Use:** Commercial use of this software is not permitted under this license. Any form of direct or
+  indirect commercial exploitation is strictly prohibited without obtaining a commercial license first.
 
-If you would like to obtain a commercial license to use this project in a business, product, or any profit-driven environment, please reach out directly for licensing terms.
+If you would like to obtain a commercial license to use this project in a business, product, or any profit-driven
+environment, please reach out directly for licensing terms.
 
-For further details, please refer to the [LICENSE.md](https://github.com/cda-tum/mnt-opdom-explorer/blob/main/LICENSE.md) file in this repository.
+For further details, please refer to
+the [LICENSE.md](https://github.com/cda-tum/mnt-opdom-explorer/blob/main/LICENSE.md) file in this repository.
 
 ---
 
