@@ -77,7 +77,7 @@ With the virtual environment active:
    pip install .
    ```
 
-For `uv`, use:
+When using `uv`:
 
    ```bash
    uv run
