@@ -85,7 +85,7 @@ When using `uv`:
 
 ### Step 4: Running the Application
 
-To start the Operational Domain Explorer, you can run the application as follows:
+To start the *Operational Domain Explorer*, you can run the application as follows:
 
 ```bash
 python -m main 
