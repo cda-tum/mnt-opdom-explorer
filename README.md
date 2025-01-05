@@ -6,7 +6,7 @@
 [![Release](https://img.shields.io/github/v/release/cda-tum/mnt-opdom-explorer?label=Release&style=flat-square)](https://github.com/cda-tum/mnt-opdom-explorer/releases)
 [![IEEEXplore](https://img.shields.io/static/v1?label=ACM&message=Paper&color=informational&style=flat-square)](https://dl.acm.org/doi/10.1145/3611315.3633246)
 
-# Operational Domain Explorer
+# **Operational Domain Explorer**
 
 <p align="center">
   <picture>
@@ -60,16 +60,23 @@ python -m venv venv
 source venv/bin/activate  # On Windows, use 'venv\Scripts\activate'
 ```
 
+   Using `uv` as a package manager? Set up the virtual environment with:  
+   ```bash
+   uv venv 
+   source .venv/bin/activate
+   ```
+
 ### Step 3: Install Dependencies
 
-With the virtual environment activated (if you chose to use one), install the project dependencies:
-
-```bash
-pip install --upgrade pip
-pip install .
-```
-
-This will install the dependencies defined in the `pyproject.toml` file, including `PyQt6`, `matplotlib`, and `pandas`.
+   With the virtual environment active:  
+   ```bash
+   pip install --upgrade pip
+   pip install .
+   ```
+   For `uv`, use:  
+   ```bash
+   uv run
+   ```
 
 ### Step 4: Running the Application
 
@@ -78,6 +85,19 @@ To start the Operational Domain Explorer, you can run the application as follows
 ```bash
 python -m main 
 ```
+
+
+### Step 5: Running Tests
+
+   To verify functionality:  
+   ```bash
+   pytest test
+   ```
+   Or, if using `nox`:  
+   ```bash
+   uv tool install nox
+   nox -s tests
+   ```
 
 ### Step 6: Contributing
 
