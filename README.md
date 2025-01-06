@@ -77,11 +77,13 @@ With the virtual environment active:
    pip install .
    ```
 
-When using `uv`:
+<details>
+<summary><strong>When using uv:</strong> (<em>click to expand</em>)</summary>
 
    ```bash
    uv run
    ```
+</details>
 
 ### Step 4: Running the Application
 
@@ -99,9 +101,8 @@ To verify functionality:
 pytest test
 ```
 
-[`nox`](https://nox.thea.codes/en/stable/index.html) can be used to conveniently run many development tasks like
-testing the bindings on multiple Python installations.
-Here’s the command split into individual steps for clarity:
+<details>
+<summary><strong>When using nox: </strong> (<em>click to expand</em>)</summary>
 
 1. Install `nox` using the `uv` tool:  
    ```bash
@@ -112,6 +113,8 @@ Here’s the command split into individual steps for clarity:
    ```bash
    nox -s tests
    ```
+</details>
+
 
 ### Step 6: Contributing
 
