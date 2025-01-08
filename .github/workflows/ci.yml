@@ -15,10 +15,10 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        python_version: [ '3.9.x', '3.10.x', '3.11.x', '3.12.x' ]
+        python_version: ["3.9.x", "3.10.x", "3.11.x", "3.12.x"]
         include:
           - os: ubuntu-latest
-            python_version: '3.12.x'
+            python_version: "3.12.x"
 
     name: 🐍 Python CI on ${{ matrix.os }} with Python ${{ matrix.python_version }}
     runs-on: ${{ matrix.os }}
@@ -47,7 +47,7 @@ jobs:
       - name: Setup ccache
         uses: hendrikmuhs/ccache-action@v1.2
         with:
-          key: '${{ matrix.os }}-pyfiction'
+          key: "${{ matrix.os }}-pyfiction"
           variant: ccache
           save: true
           max-size: 10G
@@ -56,7 +56,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python_version }}
-          cache: 'pip'
+          cache: "pip"
 
       - name: Setup mold (Linux only)
         if: runner.os == 'Linux'
