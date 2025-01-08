@@ -6,24 +6,26 @@ requires = [
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "opdom-explore"
-description = "Explore Operational Domains of SiDB gates"
+name = "mnt-opdom-explorer"
+description = "Explore Operational Domains of SiDB logic gates"
 readme = "README.md"
 authors = [
     { name = "Marcel Walter", email = "marcel.walter@tum.de" },
+    { name = "Jan Drewniok", email = "jan.drewniok@tum.de" }
 ]
-keywords = ["MNT", "field-coupled nanocomputing", "GUI"]
-license = { file = "LICENSE" }
+keywords = ["MNT", "field-coupled nanocomputing", "silicon dangling-bonds", "logic", "physical simulation", "design automation", "operational domain", "GUI"]
+license = { file = "LICENSE.md" }
 requires-python = ">=3.9"
 version = "0.1.0"
 
 dependencies = [
-    "PyQt6>=6.0",
+    "PyQt6==6.7.1",
     "matplotlib==3.9.0",
-    "mnt.pyfiction==0.6.3",
+    "mnt.pyfiction==0.6.6",
     "pandas==2.2.2",
     "PyQt6==6.7.1",
-    "qtawesome==1.3.1"
+    "qtawesome==1.3.1",
+    "scikit-learn==1.5.2",
 ]
 
 [project.optional-dependencies]
@@ -33,9 +35,10 @@ test = [
 ]
 
 [project.urls]
-Source = 'https://github.com/cda-tum/opdom-explore'
-Tracker = 'https://github.com/cda-tum/opdom-explore/issues'
-Research = 'https://www.cda.cit.tum.de/research/fcn/'
+Repository = "https://github.com/cda-tum/mnt-opdom-explorer"
+Homepage = "https://www.cda.cit.tum.de/research/nanotech/"
+Issues = "https://github.com/cda-tum/mnt-opdom-explorer/issues"
+Discussions = "https://github.com/cda-tum/mnt-opdom-explorer/discussions"
 
 [tool.setuptools.packages.find]
 include = ["core", "gui", "widgets"]

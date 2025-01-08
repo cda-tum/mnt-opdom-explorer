@@ -24,12 +24,12 @@ the [Technical University of Munich](https://www.tum.de/).
 
 ## Operational Domain Analysis
 
-The *Operational Domain* was proposed as a methodology to evaluate the extent of physical parameter variations that an
+The _Operational Domain_ was proposed as a methodology to evaluate the extent of physical parameter variations that an
 SiDB logic gate can tolerate by plotting the logical correctness of that gate's behavior across a predetermined range of
-physical parameters. Given an SiDB layout *L* and a Boolean function *f : 𝔹ⁿ ⟶ 𝔹ᵐ*, the operational domain of *L* given
-*f* is defined in the parameter space as the set of coordinate points for which *L* implements *f*. To determine whether
-*L* implements *f* at any given coordinate point *(x, y, z)*, this point can be sampled, i.e., by conducting *2ⁿ*
-physical simulations—one for each possible input pattern of *L*.
+physical parameters. Given an SiDB layout _L_ and a Boolean function _f : 𝔹ⁿ ⟶ 𝔹ᵐ_, the operational domain of _L_ given
+_f_ is defined in the parameter space as the set of coordinate points for which _L_ implements _f_. To determine whether
+_L_ implements _f_ at any given coordinate point _(x, y, z)_, this point can be sampled, i.e., by conducting _2ⁿ_
+physical simulations—one for each possible input pattern of _L_.
 
 ## Getting Started
 
@@ -90,7 +90,7 @@ With the virtual environment active:
 To start the *Operational Domain Explorer*, you can run the application as follows:
 
 ```bash
-python -m main 
+python -m main
 ```
 
 ### Step 5: Running Tests
@@ -125,8 +125,7 @@ For more details, check the [repository](https://github.com/cda-tum/opdom-explor
 
 ## Reference
 
-If you use the *Operational Domain Explorer* for academic purposes, we would be thankful if you referred to it by citing
-the following publication:
+If you use the _Operational Domain Explorer_ for academic purposes, we would be thankful if you referred to it by citing the following publication:
 
 ```bibtex
 @inproceedings{walter2023opdom,
