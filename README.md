@@ -53,8 +53,7 @@ cd opdom-explore
 
 ### Step 2: Set Up a Virtual Environment (Recommended)
 
-It's a good practice to use a virtual environment to manage dependencies. You can set up a virtual environment by
-running:
+It's a good practice to use a virtual environment to manage dependencies. You can set up a virtual environment by running:
 
 ```bash
 python -m venv venv
@@ -70,7 +69,7 @@ Using `uv` as a package manager? Set up the virtual environment with:
 
 ### Step 3: Install Dependencies
 
-With the virtual environment active:
+With the virtual environment activated (if you chose to use one), install the project dependencies:
 
    ```bash
    pip install --upgrade pip
@@ -87,7 +86,7 @@ With the virtual environment active:
 
 ### Step 4: Running the Application
 
-To start the *Operational Domain Explorer*, you can run the application as follows:
+To start the _Operational Domain Explorer_, you can run the application as follows:
 
 ```bash
 python -m main
@@ -118,8 +117,7 @@ pytest test
 
 ### Step 6: Contributing
 
-If you're interested in contributing, feel free to fork the repository and submit pull requests. Make sure to follow the
-coding guidelines and run tests before submitting your PR.
+If you're interested in contributing, feel free to fork the repository and submit pull requests. Make sure to follow the coding guidelines and run tests before submitting your PR.
 
 For more details, check the [repository](https://github.com/cda-tum/opdom-explore).
 
@@ -129,9 +127,9 @@ If you use the _Operational Domain Explorer_ for academic purposes, we would be 
 
 ```bibtex
 @inproceedings{walter2023opdom,
-    title = {{Reducing the Complexity of Operational Domain Computation in Silicon Dangling Bond Logic}},
-    author = {Walter, Marcel and Drewniok, Jan and Ng, Samuel Sze Hang and Walus, Konrad and Wille, Robert},
-    booktitle = {International Symposium on Nanoscale Architectures (NANOARCH)},
+    title={{Reducing the Complexity of Operational Domain Computation in Silicon Dangling Bond Logic}},
+    author={Walter, Marcel and Drewniok, Jan and Ng, Samuel Sze Hang and Walus, Konrad and Wille, Robert},
+    booktitle={International Symposium on Nanoscale Architectures (NANOARCH)},
 }
 ```
 
