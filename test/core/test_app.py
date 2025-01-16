@@ -1,6 +1,6 @@
 import unittest
 
-from core.app import Application
+from mnt.opdom_explorer.core.app import Application
 from PyQt6.QtWidgets import QApplication
 
 

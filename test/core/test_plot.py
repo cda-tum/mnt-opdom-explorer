@@ -9,6 +9,11 @@ import pandas as pd
 from core.plot import calculate_colors, extract_parameters, generate_plot, load_data, plot_data
 from PIL import Image
 
+from mnt.opdom_explorer.core.plot import calculate_colors, extract_parameters, generate_plot, load_data, plot_data
+
+if TYPE_CHECKING:
+    from matplotlib.figure import Figure
+
 # Directly manipulate sys.path
 sys.path.append(str(Path(__file__).parent.parent.parent.resolve()))
 
