@@ -1,5 +1,6 @@
 """A module that provides standardized access to icons and logos for the application."""
 
+from pathlib import Path
 from typing import Any
 
 import qtawesome as qta
@@ -24,6 +25,9 @@ class IconLoader:
         self.is_dark_mode = self._detect_dark_mode()  # Automatically determine if dark mode is active
         self._color_light_mode = QColor("#000000")  # Black for light mode
         self._color_dark_mode = QColor("#ffffff")  # White for dark mode
+
+        # Dynamically resolve the resources directory
+        self.resources_dir = Path(__file__).resolve().parent.parent.parent / "resources"
 
     @staticmethod
     def _detect_dark_mode() -> bool:
@@ -68,20 +72,29 @@ class IconLoader:
         Returns:
             QSvgWidget: The SVG widget containing the MNT logo.
         """
-        logo_path = f"resources/logos/mnt/nanotech-toolkit-{'dark' if self.is_dark_mode else 'light'}-mode.svg"
+        # Construct the path based on the dark mode setting
+        logo_filename = f"nanotech-toolkit-{'dark' if self.is_dark_mode else 'light'}-mode.svg"
+        logo_path = self.resources_dir / "logos" / "mnt" / logo_filename
 
-        return QSvgWidget(logo_path)
+        if not logo_path.exists():
+            msg = f"MNT logo not found at {logo_path}"
+            raise FileNotFoundError(msg)
 
-    @staticmethod
-    def load_tum_logo() -> QSvgWidget:
+        return QSvgWidget(str(logo_path))
+
+    def load_tum_logo(self) -> QSvgWidget:
         """Loads the TUM logo from an SVG file in the resources folder.
 
         Returns:
             QSvgWidget: The SVG widget containing the TUM logo.
         """
-        logo_path = "resources/logos/tum/tum.svg"
+        logo_path = self.resources_dir / "logos" / "tum" / "tum.svg"
 
-        return QSvgWidget(logo_path)
+        if not logo_path.exists():
+            msg = f"TUM logo not found at {logo_path}"
+            raise FileNotFoundError(msg)
+
+        return QSvgWidget(str(logo_path))
 
     def load_settings_icon(self, color: QColor = None) -> QIcon:
         """Loads the settings icon.

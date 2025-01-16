@@ -5,8 +5,9 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.patches import Rectangle
-from mnt import pyfiction
 from PyQt6.QtWidgets import QWidget
+
+from mnt import pyfiction
 
 
 class LayoutVisualizer(QWidget):
