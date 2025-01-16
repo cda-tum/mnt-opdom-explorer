@@ -4,13 +4,13 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import matplotlib.backend_bases
+from core import generate_plot
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
-from mnt import pyfiction
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
 from PyQt6.QtGui import QCursor, QPixmap
 from PyQt6.QtWidgets import QApplication, QLabel, QMessageBox, QProgressBar, QPushButton, QVBoxLayout, QWidget
 
-from core import generate_plot
+from mnt import pyfiction
 
 from .icon_loader import IconLoader
 from .layout_visualizer_widget import LayoutVisualizer

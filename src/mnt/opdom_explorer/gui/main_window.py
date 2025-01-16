@@ -1,7 +1,8 @@
 import shutil
 from pathlib import Path
 
-from mnt import pyfiction
+from gui.widgets import DragDropWidget, LayoutVisualizer, PlotOperationalDomainWidget, SettingsWidget
+from gui.widgets.icon_loader import IconLoader
 from PyQt6.QtCore import Qt, QUrl
 from PyQt6.QtGui import QDesktopServices, QKeyEvent, QPixmap
 from PyQt6.QtWidgets import (
@@ -19,8 +20,8 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from gui.widgets import DragDropWidget, LayoutVisualizer, PlotOperationalDomainWidget, SettingsWidget
-from gui.widgets.icon_loader import IconLoader
+from mnt import pyfiction
+
 
 class MainWindow(QMainWindow):
     def __init__(self) -> None:

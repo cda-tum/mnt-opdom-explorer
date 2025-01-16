@@ -6,9 +6,8 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from PIL import Image
-
 from core.plot import calculate_colors, extract_parameters, generate_plot, load_data, plot_data
+from PIL import Image
 
 # Directly manipulate sys.path
 sys.path.append((Path(__file__).parent.parent.parent).resolve())

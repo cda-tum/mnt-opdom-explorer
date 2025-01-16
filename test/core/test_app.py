@@ -1,8 +1,7 @@
 import unittest
 
-from PyQt6.QtWidgets import QApplication
-
 from core.app import Application
+from PyQt6.QtWidgets import QApplication
 
 
 class TestApplication(unittest.TestCase):
