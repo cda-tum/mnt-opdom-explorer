@@ -10,13 +10,13 @@ from core.plot import calculate_colors, extract_parameters, generate_plot, load_
 from PIL import Image
 
 # Directly manipulate sys.path
-sys.path.append((Path(__file__).parent.parent.parent).resolve())
+sys.path.append(str(Path(__file__).parent.parent.parent.resolve()))
 
 # Define the directory path for accessing files
 dir_path = Path(__file__).parent.resolve()
 
 
-def compare_images(fig, img2_path):
+def compare_images(fig: Figure, img2_path: str) -> bool:
     """Compare a Matplotlib figure and an image pixel-by-pixel to determine if they are identical.
 
     Args:
