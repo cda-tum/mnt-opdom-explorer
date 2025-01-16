@@ -175,3 +175,6 @@ out/build
 
 node_modules/
 wheelhouse/
+
+# Project specific
+src/mnt/opdom_explorer/**/caching/**
