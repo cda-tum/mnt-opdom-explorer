@@ -116,6 +116,10 @@ isort.required-imports = ["from __future__ import annotations"]
 convention = "google"
 
 
+[tool.uv]
+reinstall-package = ["mqsc-lumina"]
+
+
 [dependency-groups]
 build = [
     "hatchling>=1.27.0",
