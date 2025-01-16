@@ -1,10 +1,3 @@
-[build-system]
-requires = [
-    "setuptools>=61",
-    "setuptools_scm>=7",
-]
-build-backend = "setuptools.build_meta"
-
 [project]
 name = "mnt-opdom-explorer"
 description = "Explore Operational Domains of SiDB logic gates"
@@ -16,22 +9,26 @@ authors = [
 keywords = ["MNT", "field-coupled nanocomputing", "silicon dangling-bonds", "logic", "physical simulation", "design automation", "operational domain", "GUI"]
 license = { file = "LICENSE.md" }
 requires-python = ">=3.9"
-version = "0.1.0"
+dynamic = ["version"]
 
-dependencies = [
-    "PyQt6==6.7.1",
-    "matplotlib==3.9.0",
-    "mnt.pyfiction==0.6.6",
-    "pandas==2.2.2",
-    "PyQt6==6.7.1",
-    "qtawesome==1.3.1",
-    "scikit-learn==1.5.2",
-]
 
-[project.optional-dependencies]
-test = [
-    "coverage>=6.0", # Ensure coverage is included for testing
+[build-system]
+requires = [
+    "hatchling>=1.27.0",
+    "hatch-vcs>=0.4.0"
 ]
+build-backend = "hatchling.build"
+
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/mnt"]
+
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.build.hooks.vcs]
+version-file = "src/mnt/opdom_explorer/_version.py"
+
 
 [project.urls]
 Repository = "https://github.com/cda-tum/mnt-opdom-explorer"
@@ -113,3 +110,38 @@ ignore = [
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
+
+
+[dependency-groups]
+build = [
+    "hatchling>=1.27.0",
+    "hatch-vcs>=0.4.0",
+]
+docs = [
+    # docs dependencies go here
+
+    "PyQt6==6.7.1",
+    "matplotlib==3.9.0",
+    "mnt.pyfiction==0.6.6",
+    "pandas==2.2.2",
+    "qtawesome==1.3.1",
+    "scikit-learn==1.5.2",
+]
+test = [
+    "pytest>=8.3.3",
+    "pytest-console-scripts>=1.4.1",
+    "pytest-cov>=6",
+
+    "PyQt6==6.7.1",
+    "matplotlib==3.9.0",
+    "mnt.pyfiction==0.6.6",
+    "pandas==2.2.2",
+    "qtawesome==1.3.1",
+    "scikit-learn==1.5.2",
+]
+dev = [
+    { include-group = "build" },
+    { include-group = "docs" },
+    { include-group = "test" },
+    "pre-commit==4.0.1",
+]
