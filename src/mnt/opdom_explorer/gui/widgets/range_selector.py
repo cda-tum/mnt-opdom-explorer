@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from PyQt6.QtWidgets import QCheckBox, QDoubleSpinBox, QHBoxLayout, QLabel, QSizePolicy, QVBoxLayout, QWidget
 
 from .info_tag import InfoTag

@@ -1,7 +1,13 @@
 """Custom group box with an icon and a title."""
 
-from PyQt6.QtGui import QIcon
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from PyQt6.QtWidgets import QGroupBox, QHBoxLayout, QLabel, QLayout, QVBoxLayout, QWidget
+
+if TYPE_CHECKING:
+    from PyQt6.QtGui import QIcon
 
 
 class IconGroupBox(QGroupBox):
@@ -58,8 +64,7 @@ class IconGroupBox(QGroupBox):
         self.group_box.layout().addWidget(widget)
 
     def add_layout(self, layout: QLayout) -> None:
-        """
-        Add a layout to the group box's layout.
+        """Add a layout to the group box's layout.
 
         Args:
             layout (QLayout): The layout to add.

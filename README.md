@@ -62,26 +62,27 @@ source venv/bin/activate  # On Windows, use 'venv\Scripts\activate'
 
 Using `uv` as a package manager? Set up the virtual environment with:
 
-   ```bash
-   uv venv 
-   source .venv/bin/activate
-   ```
+```bash
+uv venv
+source .venv/bin/activate
+```
 
 ### Step 3: Install Dependencies
 
 With the virtual environment activated (if you chose to use one), install the project dependencies:
 
-   ```bash
-   pip install --upgrade pip
-   pip install .
-   ```
+```bash
+pip install --upgrade pip
+pip install .
+```
 
 <details>
 <summary><strong>When using uv:</strong> (<em>click to expand</em>)</summary>
 
-   ```bash
-   uv run
-   ```
+```bash
+uv run
+```
+
 </details>
 
 ### Step 4: Running the Application
@@ -103,17 +104,17 @@ pytest test
 <details>
 <summary><strong>When using nox: </strong> (<em>click to expand</em>)</summary>
 
-1. Install `nox` using the `uv` tool:  
+1. Install `nox` using the `uv` tool:
+
    ```bash
    uv tool install nox
    ```
 
-2. Run the tests using `nox`:  
+2. Run the tests using `nox`:
    ```bash
    nox -s tests
    ```
-</details>
-
+   </details>
 
 ### Step 6: Contributing
 

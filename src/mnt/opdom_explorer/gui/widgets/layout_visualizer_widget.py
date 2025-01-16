@@ -26,8 +26,7 @@ class LayoutVisualizer(QWidget):
         parameter_point: tuple[float, float] | None = None,
         bin_value: list[int] | None = None,
     ) -> Path:
-        """
-        Generates a plot based on the charge distribution layout.
+        """Generates a plot based on the charge distribution layout.
 
         Args:
             lyt_original: Original charge distribution layout.

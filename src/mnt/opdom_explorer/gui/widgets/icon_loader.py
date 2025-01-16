@@ -1,5 +1,7 @@
 """A module that provides standardized access to icons and logos for the application."""
 
+from __future__ import annotations
+
 from pathlib import Path
 from typing import Any
 

@@ -1,4 +1,6 @@
-"""MNT - Operational Domain Explorer"""
+"""MNT - Operational Domain Explorer."""
+
+from __future__ import annotations
 
 import core
 import gui

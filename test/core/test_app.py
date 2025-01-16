@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import unittest
 
 from mnt.opdom_explorer.core.app import Application

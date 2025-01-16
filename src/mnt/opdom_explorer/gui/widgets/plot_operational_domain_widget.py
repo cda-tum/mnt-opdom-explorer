@@ -197,9 +197,7 @@ class PlotOperationalDomainWidget(QWidget):
 
     # Custom method to handle the 'Rerun' button click
     def on_rerun_clicked(self) -> None:
-        """
-        Handle the 'Run Another Simulation' button click.
-        """
+        """Handle the 'Run Another Simulation' button click."""
         self.plot_view_active = True  # Update the member variable
 
     def set_pixmap(self, pixmap: QPixmap) -> None:

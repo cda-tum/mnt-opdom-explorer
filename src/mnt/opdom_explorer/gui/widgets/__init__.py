@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from .drag_drop_widget import DragDropWidget
 from .icon_loader import IconLoader
 from .info_tag import InfoTag

@@ -1,12 +1,14 @@
+from __future__ import annotations
+
 import io
 import sys
 import unittest
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from core.plot import calculate_colors, extract_parameters, generate_plot, load_data, plot_data
 from PIL import Image
 
 from mnt.opdom_explorer.core.plot import calculate_colors, extract_parameters, generate_plot, load_data, plot_data
