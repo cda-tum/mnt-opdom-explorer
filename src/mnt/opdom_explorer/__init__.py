@@ -1,7 +1,9 @@
-"""MNT - Operational Domain Explorer"""
+"""MNT - Operational Domain Explorer."""
 
-import core
-import gui
+from __future__ import annotations
+
+from .core import *
+from .gui import *
 
 # Combine the __all__ lists from each submodule
 __all__ = []

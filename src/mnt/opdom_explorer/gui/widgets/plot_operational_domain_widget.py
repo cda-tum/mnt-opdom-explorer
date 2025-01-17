@@ -4,13 +4,13 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import matplotlib.backend_bases
-from core import generate_plot
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
 from PyQt6.QtGui import QCursor, QPixmap
 from PyQt6.QtWidgets import QApplication, QLabel, QMessageBox, QProgressBar, QPushButton, QVBoxLayout, QWidget
 
 from mnt import pyfiction
+from mnt.opdom_explorer.core import generate_plot
 
 from .icon_loader import IconLoader
 from .layout_visualizer_widget import LayoutVisualizer
@@ -197,9 +197,7 @@ class PlotOperationalDomainWidget(QWidget):
 
     # Custom method to handle the 'Rerun' button click
     def on_rerun_clicked(self) -> None:
-        """
-        Handle the 'Run Another Simulation' button click.
-        """
+        """Handle the 'Run Another Simulation' button click."""
         self.plot_view_active = True  # Update the member variable
 
     def set_pixmap(self, pixmap: QPixmap) -> None:

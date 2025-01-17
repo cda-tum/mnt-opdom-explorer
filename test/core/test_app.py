@@ -1,7 +1,10 @@
+from __future__ import annotations
+
 import unittest
 
-from core.app import Application
 from PyQt6.QtWidgets import QApplication
+
+from mnt.opdom_explorer import Application
 
 
 class TestApplication(unittest.TestCase):

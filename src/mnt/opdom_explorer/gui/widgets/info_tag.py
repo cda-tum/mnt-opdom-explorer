@@ -1,5 +1,7 @@
 """A module that provides a custom QLabel widget that displays a help icon and provides a tooltip when hovered over."""
 
+from __future__ import annotations
+
 from PyQt6.QtWidgets import QLabel, QWidget
 
 from .icon_loader import IconLoader

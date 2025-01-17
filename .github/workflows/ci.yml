@@ -52,23 +52,18 @@ jobs:
           save: true
           max-size: 10G
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python_version }}
-          cache: "pip"
-
       - name: Setup mold (Linux only)
         if: runner.os == 'Linux'
         uses: rui314/setup-mold@v1
 
-      - name: Install Python Dependencies
-        run: |
-          pip install --upgrade pip
-          pip install '.[test]'
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+          enable-cache: true
 
-      - name: Run Unit Tests
-        env:
-          DISPLAY: ":99"
-          QT_QPA_PLATFORM: offscreen
-        run: python -m unittest discover --verbose
+      - name: Setup nox
+        uses: wntrblm/nox@2024.10.09
+
+      - name: 🐍 Test
+        run: nox -s tests --verbose

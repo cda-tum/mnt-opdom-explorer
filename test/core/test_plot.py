@@ -1,22 +1,29 @@
+from __future__ import annotations
+
 import io
 import sys
 import unittest
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from core.plot import calculate_colors, extract_parameters, generate_plot, load_data, plot_data
 from PIL import Image
 
+from mnt.opdom_explorer.core.plot import calculate_colors, extract_parameters, generate_plot, load_data, plot_data
+
+if TYPE_CHECKING:
+    from matplotlib.figure import Figure
+
 # Directly manipulate sys.path
-sys.path.append((Path(__file__).parent.parent.parent).resolve())
+sys.path.append(str(Path(__file__).parent.parent.parent.resolve()))
 
 # Define the directory path for accessing files
 dir_path = Path(__file__).parent.resolve()
 
 
-def compare_images(fig, img2_path):
+def compare_images(fig: Figure, img2_path: str) -> bool:
     """Compare a Matplotlib figure and an image pixel-by-pixel to determine if they are identical.
 
     Args:
