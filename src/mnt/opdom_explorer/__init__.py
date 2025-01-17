@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-import core
-import gui
+from .core import *
+from .gui import *
 
 # Combine the __all__ lists from each submodule
 __all__ = []

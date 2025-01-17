@@ -105,6 +105,10 @@ flake8-unused-arguments.ignore-variadic-names = true
 isort.required-imports = ["from __future__ import annotations"]
 
 [tool.ruff.lint.per-file-ignores]
+"src/mnt/opdom_explorer/__init__.py" = [
+    "F403",  # Allow * imports on the top level
+    "F405",  # Allow names from * imports on the top level
+]
 "*.pyi" = ["D"]  # pydocstyle
 "*.ipynb" = [
     "D",    # pydocstyle
@@ -126,7 +130,7 @@ build = [
     "hatch-vcs>=0.4.0",
 ]
 docs = [
-    # docs dependencies go here
+    "nox>=2024.10.9",
 
     "PyQt6==6.7.1",
     "matplotlib==3.9.0",
@@ -136,6 +140,7 @@ docs = [
     "scikit-learn==1.5.2",
 ]
 test = [
+    "nox>=2024.10.9",
     "pytest>=8.3.3",
     "pytest-console-scripts>=1.4.1",
     "pytest-cov>=6",
