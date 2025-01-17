@@ -8,6 +8,15 @@ resolution-markers = [
 ]
 
 [[package]]
+name = "argcomplete"
+version = "3.5.3"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/0c/be/6c23d80cb966fb8f83fb1ebfb988351ae6b0554d0c3a613ee4531c026597/argcomplete-3.5.3.tar.gz", hash = "sha256:c12bf50eded8aebb298c7b7da7a5ff3ee24dffd9f5281867dfe1424b58c55392", size = 72999 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/c4/08/2a4db06ec3d203124c967fc89295e85a202e5cbbcdc08fd6a64b65217d1e/argcomplete-3.5.3-py3-none-any.whl", hash = "sha256:2ab2c4a215c59fd6caaff41a869480a23e8f6a5f910b266c1808037f4e375b61", size = 43569 },
+]
+
+[[package]]
 name = "cfgv"
 version = "3.4.0"
 source = { registry = "https://pypi.org/simple" }
@@ -23,6 +32,18 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/d8/53/6f443c9a4a8358a93a6792e2acffb9d9d5cb0a5cfd8802644b7b1c9a02e4/colorama-0.4.6.tar.gz", hash = "sha256:08695f5cb7ed6e0531a20572697297273c47b8cae5a63ffc6d6ed5c201be6e44", size = 27697 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/d1/d6/3965ed04c63042e047cb6a3e6ed1a63a35087b6a609aa3a15ed8ac56c221/colorama-0.4.6-py2.py3-none-any.whl", hash = "sha256:4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6", size = 25335 },
+]
+
+[[package]]
+name = "colorlog"
+version = "6.9.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "colorama", marker = "sys_platform == 'win32'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/d3/7a/359f4d5df2353f26172b3cc39ea32daa39af8de522205f512f458923e677/colorlog-6.9.0.tar.gz", hash = "sha256:bfba54a1b93b94f54e1f4fe48395725a3d92fd2a4af702f6bd70946bdc0c6ac2", size = 16624 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/e3/51/9b208e85196941db2f0654ad0357ca6388ab3ed67efdbfc799f35d1f83aa/colorlog-6.9.0-py3-none-any.whl", hash = "sha256:5906e71acd67cb07a71e779c47c4bcb45fb8c2993eebe9e5adcd6a6f1b283eff", size = 11424 },
 ]
 
 [[package]]
@@ -489,7 +510,7 @@ wheels = [
 
 [[package]]
 name = "mnt-opdom-explorer"
-version = "0.1.dev72+gadee72e.d20250116"
+version = "0.1.dev73+g852b21b.d20250116"
 source = { editable = "." }
 
 [package.dev-dependencies]
@@ -502,6 +523,7 @@ dev = [
     { name = "hatchling" },
     { name = "matplotlib" },
     { name = "mnt-pyfiction" },
+    { name = "nox" },
     { name = "pandas" },
     { name = "pre-commit" },
     { name = "pyqt6" },
@@ -514,6 +536,7 @@ dev = [
 docs = [
     { name = "matplotlib" },
     { name = "mnt-pyfiction" },
+    { name = "nox" },
     { name = "pandas" },
     { name = "pyqt6" },
     { name = "qtawesome" },
@@ -522,6 +545,7 @@ docs = [
 test = [
     { name = "matplotlib" },
     { name = "mnt-pyfiction" },
+    { name = "nox" },
     { name = "pandas" },
     { name = "pyqt6" },
     { name = "pytest" },
@@ -543,6 +567,7 @@ dev = [
     { name = "hatchling", specifier = ">=1.27.0" },
     { name = "matplotlib", specifier = "==3.9.0" },
     { name = "mnt-pyfiction", specifier = "==0.6.6" },
+    { name = "nox", specifier = ">=2024.10.9" },
     { name = "pandas", specifier = "==2.2.2" },
     { name = "pre-commit", specifier = "==4.0.1" },
     { name = "pyqt6", specifier = "==6.7.1" },
@@ -555,6 +580,7 @@ dev = [
 docs = [
     { name = "matplotlib", specifier = "==3.9.0" },
     { name = "mnt-pyfiction", specifier = "==0.6.6" },
+    { name = "nox", specifier = ">=2024.10.9" },
     { name = "pandas", specifier = "==2.2.2" },
     { name = "pyqt6", specifier = "==6.7.1" },
     { name = "qtawesome", specifier = "==1.3.1" },
@@ -563,6 +589,7 @@ docs = [
 test = [
     { name = "matplotlib", specifier = "==3.9.0" },
     { name = "mnt-pyfiction", specifier = "==0.6.6" },
+    { name = "nox", specifier = ">=2024.10.9" },
     { name = "pandas", specifier = "==2.2.2" },
     { name = "pyqt6", specifier = "==6.7.1" },
     { name = "pytest", specifier = ">=8.3.3" },
@@ -607,6 +634,22 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/43/16/fc88b08840de0e0a72a2f9d8c6bae36be573e475a6326ae854bcc549fc45/nodeenv-1.9.1.tar.gz", hash = "sha256:6ec12890a2dab7946721edbfbcd91f3319c6ccc9aec47be7c7e6b7011ee6645f", size = 47437 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/d2/1d/1b658dbd2b9fa9c4c9f32accbfc0205d532c8c6194dc0f2a4c0428e7128a/nodeenv-1.9.1-py2.py3-none-any.whl", hash = "sha256:ba11c9782d29c27c70ffbdda2d7415098754709be8a7056d79a737cd901155c9", size = 22314 },
+]
+
+[[package]]
+name = "nox"
+version = "2024.10.9"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "argcomplete" },
+    { name = "colorlog" },
+    { name = "packaging" },
+    { name = "tomli", marker = "python_full_version < '3.11'" },
+    { name = "virtualenv" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/08/93/4df547afcd56e0b2bbaa99bc2637deb218a01802ed62d80f763189be802c/nox-2024.10.9.tar.gz", hash = "sha256:7aa9dc8d1c27e9f45ab046ffd1c3b2c4f7c91755304769df231308849ebded95", size = 4003197 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/66/00/981f0dcaddf111b6caf6e03d7f7f01b07fd4af117316a7eb1c22039d9e37/nox-2024.10.9-py3-none-any.whl", hash = "sha256:1d36f309a0a2a853e9bccb76bbef6bb118ba92fa92674d15604ca99adeb29eab", size = 61210 },
 ]
 
 [[package]]
