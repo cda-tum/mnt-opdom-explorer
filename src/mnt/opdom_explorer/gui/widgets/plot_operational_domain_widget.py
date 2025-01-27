@@ -427,7 +427,7 @@ class PlotOperationalDomainWidget(QWidget):
         if iteration in self.operational_patterns:
             status = pyfiction.operational_status.OPERATIONAL
 
-        # check is kinks induce the layout to become non-operational
+        # check if kinks induce the layout to become non-operational
         kink_induced_operational_status = None
         if self.kink_induced_non_op_patterns is not None:
             if iteration in self.kink_induced_non_op_patterns:
