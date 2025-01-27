@@ -121,7 +121,7 @@ convention = "google"
 
 
 [tool.uv]
-reinstall-package = ["mqsc-lumina"]
+reinstall-package = ["mnt-opdom-explorer"]
 
 
 [dependency-groups]
