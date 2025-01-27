@@ -232,7 +232,7 @@ class LayoutVisualizer(QWidget):
                                 ax,
                                 (bb_min_shifted_nm[0] + bb_max_shifted_nm[0]) * 0.5,
                                 -(bb_min_shifted_nm[1] + bb_max_shifted_nm[1]) * 0.1,
-                                "kinks or \n over-oopulation detected",
+                                "kinks or \n over-population detected",
                                 "red",
                                 20,
                             )
