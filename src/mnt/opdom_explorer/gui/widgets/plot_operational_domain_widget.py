@@ -413,7 +413,7 @@ class PlotOperationalDomainWidget(QWidget):
             )
             return
 
-        gs = pyfiction.determine_groundstate_from_simulation_results(sim_result)[0]
+        gs = pyfiction.groundstate_from_simulation_result(sim_result)[0]
 
         # Determine operational status
         status = pyfiction.operational_status.NON_OPERATIONAL
