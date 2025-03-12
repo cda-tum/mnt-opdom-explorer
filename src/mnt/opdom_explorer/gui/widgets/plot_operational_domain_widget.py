@@ -4,13 +4,13 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import matplotlib.backend_bases
+from core import generate_plot
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
 from PyQt6.QtGui import QCursor, QPixmap
 from PyQt6.QtWidgets import QApplication, QLabel, QMessageBox, QProgressBar, QPushButton, QVBoxLayout, QWidget
 
 from mnt import pyfiction
-from mnt.opdom_explorer.core import generate_plot
 
 from .icon_loader import IconLoader
 from .layout_visualizer_widget import LayoutVisualizer
@@ -319,8 +319,6 @@ class PlotOperationalDomainWidget(QWidget):
 
             # Start the simulation in a separate thread
             self.start_simulation_thread()
-        else:
-            pass
 
     def start_simulation_thread(self) -> None:
         # Set up simulation parameters
@@ -420,7 +418,7 @@ class PlotOperationalDomainWidget(QWidget):
             )
             return
 
-        gs = pyfiction.determine_groundstate_from_simulation_results(sim_result)[0]
+        gs = pyfiction.groundstate_from_simulation_result(sim_result)[0]
 
         # Determine operational status
         status = pyfiction.operational_status.NON_OPERATIONAL

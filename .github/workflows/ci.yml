@@ -59,11 +59,7 @@ jobs:
       - name: Install the latest version of uv
         uses: astral-sh/setup-uv@v5
         with:
-          version: "latest"
           enable-cache: true
 
-      - name: Setup nox
-        uses: wntrblm/nox@2024.10.09
-
       - name: 🐍 Test
-        run: nox -s tests --verbose
+        run: uvx nox -s tests --verbose
