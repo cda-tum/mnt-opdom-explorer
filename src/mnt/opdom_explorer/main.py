@@ -3,6 +3,7 @@ from __future__ import annotations
 import sys
 
 from core import Application
+
 from gui import MainWindow
 from gui.widgets import IconLoader
 
