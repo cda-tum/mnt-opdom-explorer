@@ -449,7 +449,7 @@ class PlotOperationalDomainWidget(QWidget):
             status,
             parameter_point=(self.x, self.y),
             bin_value=f"{iteration:b}".zfill(self.input_iterator.num_input_pairs()),
-            operational_status_kinks=kink_induced_operational_status,
+            kink_induced_operational_status=kink_induced_operational_status,
         )
 
         # Update the QLabel if this is the current slider value
@@ -464,7 +464,7 @@ class PlotOperationalDomainWidget(QWidget):
                 status,
                 parameter_point=(self.x, self.y),
                 bin_value=f"{self.get_slider_value():0{self.input_iterator.num_input_pairs()}b}",
-                operational_status_kinks=kink_induced_operational_status,
+                kink_induced_operational_status=kink_induced_operational_status,
             )
 
             self.pixmap = QPixmap(str(plot_image_path))

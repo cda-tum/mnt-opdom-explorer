@@ -29,7 +29,7 @@ class LayoutVisualizer(QWidget):
         operation_status: pyfiction.operational_status = None,
         parameter_point: tuple[float, float] | None = None,
         bin_value: list[int] | None = None,
-        operational_status_kinks: pyfiction.operational_status | None = None,
+        kink_induced_operational_status: pyfiction.operational_status | None = None,
     ) -> Path:
         """Generates a plot based on the charge distribution layout.
 
@@ -43,7 +43,7 @@ class LayoutVisualizer(QWidget):
             operation_status: Optional operational status (e.g., OPERATIONAL).
             parameter_point: Optional tuple for parameter coordinates.
             bin_value: Optional list of binary values to annotate the plot.
-            operational_status_kinks: Optional information to specify if kinks induce the layout to become non-operational.
+            kink_induced_operational_status: Optional information to specify if kinks induce the layout to become non-operational.
 
         Returns:
             Path to the saved plot image.
@@ -224,11 +224,11 @@ class LayoutVisualizer(QWidget):
                         verticalalignment="center",
                     )
 
-                if operational_status_kinks is not None:
-                    if operational_status_kinks == pyfiction.operational_status.OPERATIONAL:
+                if kink_induced_operational_status is not None:
+                    if kink_induced_operational_status == pyfiction.operational_status.OPERATIONAL:
                         draw_rectangle(ax, box_x, box_y, width, height, "green")
 
-                    elif operational_status_kinks == pyfiction.operational_status.NON_OPERATIONAL:
+                    elif kink_induced_operational_status == pyfiction.operational_status.NON_OPERATIONAL:
                         if operation_status == pyfiction.operational_status.OPERATIONAL:
                             add_status_text(
                                 ax,
