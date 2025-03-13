@@ -142,7 +142,7 @@ docs = [
 
     "PyQt6==6.8.1",
     "matplotlib==3.10.1",
-    "mnt.pyfiction==0.6.8",
+    "mnt.pyfiction==0.6.10",
     "pandas==2.2.3",
     "qtawesome==1.4.0",
     "scikit-learn==1.6.1",
