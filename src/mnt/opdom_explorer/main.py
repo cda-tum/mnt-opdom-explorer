@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import sys
 
 from core import Application
@@ -5,7 +7,7 @@ from gui import MainWindow
 from gui.widgets import IconLoader
 
 
-def main():
+def main() -> None:
     app = Application(sys.argv)
     app_icon = IconLoader().load_mnt_app_icon()
 
@@ -18,5 +20,5 @@ def main():
     sys.exit(app.exec())
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

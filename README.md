@@ -6,7 +6,7 @@
 [![Release](https://img.shields.io/github/v/release/cda-tum/mnt-opdom-explorer?label=Release&style=flat-square)](https://github.com/cda-tum/mnt-opdom-explorer/releases)
 [![IEEEXplore](https://img.shields.io/static/v1?label=ACM&message=Paper&color=informational&style=flat-square)](https://dl.acm.org/doi/10.1145/3611315.3633246)
 
-# Operational Domain Explorer
+# **Operational Domain Explorer**
 
 <p align="center">
   <picture>
@@ -24,12 +24,12 @@ the [Technical University of Munich](https://www.tum.de/).
 
 ## Operational Domain Analysis
 
-The *Operational Domain* was proposed as a methodology to evaluate the extent of physical parameter variations that an
+The _Operational Domain_ was proposed as a methodology to evaluate the extent of physical parameter variations that an
 SiDB logic gate can tolerate by plotting the logical correctness of that gate's behavior across a predetermined range of
-physical parameters. Given an SiDB layout *L* and a Boolean function *f : 𝔹ⁿ ⟶ 𝔹ᵐ*, the operational domain of *L* given
-*f* is defined in the parameter space as the set of coordinate points for which *L* implements *f*. To determine whether
-*L* implements *f* at any given coordinate point *(x, y, z)*, this point can be sampled, i.e., by conducting *2ⁿ*
-physical simulations—one for each possible input pattern of *L*.
+physical parameters. Given an SiDB layout _L_ and a Boolean function _f : 𝔹ⁿ ⟶ 𝔹ᵐ_, the operational domain of _L_ given
+_f_ is defined in the parameter space as the set of coordinate points for which _L_ implements _f_. To determine whether
+_L_ implements _f_ at any given coordinate point _(x, y, z)_, this point can be sampled, i.e., by conducting _2ⁿ_
+physical simulations—one for each possible input pattern of _L_.
 
 ## Getting Started
 
@@ -39,7 +39,7 @@ physical simulations—one for each possible input pattern of *L*.
 
 Before you get started, make sure you have the following installed:
 
-- **Python 3.8 or newer**: This project requires Python 3.8+ to run.
+- **Python 3.9 or newer**: This project requires Python 3.8+ to run.
 - **Git**: To clone the repository.
 
 ### Step 1: Clone the Repository
@@ -60,6 +60,13 @@ python -m venv venv
 source venv/bin/activate  # On Windows, use 'venv\Scripts\activate'
 ```
 
+Using `uv` as a package manager? Set up the virtual environment with:
+
+```bash
+uv venv
+source .venv/bin/activate
+```
+
 ### Step 3: Install Dependencies
 
 With the virtual environment activated (if you chose to use one), install the project dependencies:
@@ -69,15 +76,45 @@ pip install --upgrade pip
 pip install .
 ```
 
-This will install the dependencies defined in the `pyproject.toml` file, including `PyQt6`, `matplotlib`, and `pandas`.
+<details>
+<summary><strong>When using uv:</strong> (<em>click to expand</em>)</summary>
+
+```bash
+uv run
+```
+
+</details>
 
 ### Step 4: Running the Application
 
-To start the Operational Domain Explorer, you can run the application as follows:
+To start the _Operational Domain Explorer_, you can run the application as follows:
 
 ```bash
-python -m main 
+python -m main
 ```
+
+### Step 5: Running Tests
+
+To verify functionality:
+
+```bash
+pytest test
+```
+
+<details>
+<summary><strong>When using nox: </strong> (<em>click to expand</em>)</summary>
+
+1. Install `nox` using the `uv` tool:
+
+   ```bash
+   uv tool install nox
+   ```
+
+2. Run the tests using `nox`:
+   ```bash
+   nox -s tests
+   ```
+   </details>
 
 ### Step 6: Contributing
 
@@ -85,10 +122,9 @@ If you're interested in contributing, feel free to fork the repository and submi
 
 For more details, check the [repository](https://github.com/cda-tum/opdom-explore).
 
-
 ## Reference
 
-If you use the *Operational Domain Explorer* for academic purposes, we would be thankful if you referred to it by citing the following publication:
+If you use the _Operational Domain Explorer_ for academic purposes, we would be thankful if you referred to it by citing the following publication:
 
 ```bibtex
 @inproceedings{walter2023opdom,
@@ -105,11 +141,14 @@ If you use the *Operational Domain Explorer* for academic purposes, we would be 
 This project is licensed under the [Prosperity Public License 3.0.0](https://prosperitylicense.com/versions/3.0.0).
 
 - **Permitted Use:** You are free to use this software for personal, academic, and other non-commercial purposes.
-- **Prohibited Use:** Commercial use of this software is not permitted under this license. Any form of direct or indirect commercial exploitation is strictly prohibited without obtaining a commercial license first.
+- **Prohibited Use:** Commercial use of this software is not permitted under this license. Any form of direct or
+  indirect commercial exploitation is strictly prohibited without obtaining a commercial license first.
 
-If you would like to obtain a commercial license to use this project in a business, product, or any profit-driven environment, please reach out directly for licensing terms.
+If you would like to obtain a commercial license to use this project in a business, product, or any profit-driven
+environment, please reach out directly for licensing terms.
 
-For further details, please refer to the [LICENSE.md](https://github.com/cda-tum/mnt-opdom-explorer/blob/main/LICENSE.md) file in this repository.
+For further details, please refer to
+the [LICENSE.md](https://github.com/cda-tum/mnt-opdom-explorer/blob/main/LICENSE.md) file in this repository.
 
 ---
 

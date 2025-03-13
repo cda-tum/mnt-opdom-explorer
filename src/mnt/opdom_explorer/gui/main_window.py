@@ -1,124 +1,37 @@
-from pathlib import Path
-import shutil
+from __future__ import annotations
 
-from PyQt6.QtCore import QUrl
-from PyQt6.QtGui import QPixmap, QDesktopServices, QColor
+import shutil
+from pathlib import Path
+
+from PyQt6.QtCore import Qt, QUrl
+from PyQt6.QtGui import QDesktopServices, QKeyEvent, QPixmap
 from PyQt6.QtWidgets import (
     QFileDialog,
+    QHBoxLayout,
+    QLabel,
     QMainWindow,
+    QPushButton,
+    QSizePolicy,
+    QSlider,
+    QSpacerItem,
     QSplitter,
     QStackedWidget,
-    QPushButton,
     QVBoxLayout,
-    QLabel,
-    QSizePolicy,
     QWidget,
-    QSpacerItem,
-    QHBoxLayout
 )
 
-from gui.widgets import DragDropWidget, PlotWidget, SettingsWidget
-import mnt.pyfiction as pyfiction
-from gui.widgets.IconLoader import IconLoader
+from mnt import pyfiction
 
-from PyQt6.QtWidgets import QSlider
-from PyQt6.QtGui import QPainter, QPen
-from PyQt6.QtCore import Qt
-
-
-# TODO: This is WIP code and we should probably put it in a separate file.
-class customized_slider(QSlider):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.checkmark_positions = []  # List to hold positions for checkmarks
-        self.crossmark_positions = []  # List to hold positions for crossmarks
-        self.checkmark_color = QColor("green")  # Default color for checkmarks
-        self.crossmark_color = QColor("red")  # Default color for crossmarks
-
-    def set_checkmark_color(self, color):
-        """Set the color for checkmarks."""
-        self.checkmark_color = QColor(color)
-        self.update()  # Request a repaint to show the changes
-
-    def set_crossmark_color(self, color):
-        """Set the color for crossmarks."""
-        self.crossmark_color = QColor(color)
-        self.update()  # Request a repaint to show the changes
-
-    def add_checkmark(self, position):
-        """Add a checkmark at a specific position."""
-        if position not in self.checkmark_positions:
-            self.checkmark_positions.append(position)
-            self.update()  # Request a repaint to show the changes
-
-    def remove_checkmark(self, position):
-        """Remove a checkmark from a specific position."""
-        if position in self.checkmark_positions:
-            self.checkmark_positions.remove(position)
-            self.update()  # Request a repaint to show the changes
-
-    def add_crossmark(self, position):
-        """Add a crossmark at a specific position."""
-        if position not in self.crossmark_positions:
-            self.crossmark_positions.append(position)
-            self.update()  # Request a repaint to show the changes
-
-    def remove_crossmark(self, position):
-        """Remove a crossmark from a specific position."""
-        if position in self.crossmark_positions:
-            self.crossmark_positions.remove(position)
-            self.update()  # Request a repaint to show the changes
-
-    def remove_all_marks(self):
-        """Remove all checkmarks and crossmarks."""
-        self.checkmark_positions.clear()  # Clear all checkmark positions
-        self.crossmark_positions.clear()  # Clear all crossmark positions
-        self.update()  # Request a repaint to show the changes
-
-    def paintEvent(self, event):
-        """Override paint event to draw checkmarks and crossmarks."""
-        super().paintEvent(event)
-        painter = QPainter(self)
-
-        height = self.height()
-
-        # Draw checkmarks and crossmarks
-        for pos in self.checkmark_positions:
-            self.draw_mark(painter, pos, height, self.checkmark_color, is_checkmark=True)
-        for pos in self.crossmark_positions:
-            self.draw_mark(painter, pos, height, self.crossmark_color, is_checkmark=False)
-
-    def draw_mark(self, painter, position, height, color, is_checkmark=True):
-        """Draw a checkmark or crossmark at the given position."""
-        pen = QPen(color, 3)  # Thicker line for better visibility
-        painter.setPen(pen)
-
-        # Calculate x position of the mark
-        x = self.tick_position(position)
-
-        # Increase the y-offset for better separation from the slider
-        y_offset = 15  # Increased vertical offset
-
-        if is_checkmark:
-            # Draw checkmark (V shape)
-            painter.drawLine(x - 8, height - y_offset, x, height - y_offset + 5)
-            painter.drawLine(x, height - y_offset + 5, x + 8, height - y_offset)
-        else:
-            # Draw crossmark (X shape)
-            painter.drawLine(x - 8, height - y_offset, x + 8, height - y_offset + 8)
-            painter.drawLine(x - 8, height - y_offset + 8, x + 8, height - y_offset)
-
-    def tick_position(self, tick_value):
-        """Calculate the x position of the tick based on the slider's range."""
-        width = self.width()
-        return int((tick_value - self.minimum()) / (self.maximum() - self.minimum()) * (width - 20)) + 10
+from .widgets import DragDropWidget, LayoutVisualizer, PlotOperationalDomainWidget, SettingsWidget
+from .widgets.icon_loader import IconLoader
 
 
 class MainWindow(QMainWindow):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
-        self.initUI()
-        self.is_plot_view_active = True  # Start with the settings view
+        self.bdl_input_iterator = None
+        self._init_ui()
+        self.plot_view_active = True  # Start with the layout plot without charges
         self.current_file_name_label = QLabel(self)  # Label for displaying the file name
 
         self.desired_width = 600  # Example width in pixels
@@ -126,9 +39,17 @@ class MainWindow(QMainWindow):
 
         self.icon_loader = IconLoader()
 
-    def initUI(self):
-        self.is_plot_view_active = True
-        self.setWindowTitle('Operational Domain Explorer')
+        self.script_dir = Path(__file__).resolve().parent
+        self.caching_dir = self.script_dir / "widgets" / "caching"
+
+        # Remove the caching directory if it exists
+        if self.caching_dir.exists() and self.caching_dir.is_dir():
+            shutil.rmtree(self.caching_dir)  # This will delete the entire caching directory and its contents
+
+    def _init_ui(self) -> None:
+        self.visualizer = LayoutVisualizer()
+        self.plot_view_active = True
+        self.setWindowTitle("Operational Domain Explorer")
         self.setGeometry(100, 100, 600, 400)
 
         # Initialize the QStackedWidget
@@ -141,24 +62,16 @@ class MainWindow(QMainWindow):
         # Set the stacked widget as the central widget
         self.setCentralWidget(self.stacked_widget)
 
-    def keyPressEvent(self, event):
+    def keyPressEvent(self, event: QKeyEvent) -> None:  # noqa: N802
         if event.key() == Qt.Key.Key_Escape:  # Check if the ESC key was pressed
             self.close()  # Close the application
         else:
             super().keyPressEvent(event)  # Call the parent class method to ensure default behavior
 
-    def file_parsed(self, file_path):
+    def file_parsed(self, file_path: Path) -> None:
         # Display the selected file name in the QLabel
         file_name = Path(file_path).name  # Extract the file name from the full path
         self.current_file_name_label.setText(f"{file_name}")
-
-        # Get the current script directory
-        script_dir = Path(__file__).resolve().parent
-        caching_dir = script_dir / 'widgets' / 'caching'
-
-        # Remove the caching directory if it exists
-        if caching_dir.exists() and caching_dir.is_dir():
-            shutil.rmtree(caching_dir)  # This will delete the entire caching directory and its contents
 
         # Parse the layout file and initialize the BDL input iterator
         self.lyt = pyfiction.read_sqd_layout_100(file_path)
@@ -191,12 +104,11 @@ class MainWindow(QMainWindow):
         grouped_layout.addWidget(self.plot_label)
 
         # Create and configure QSlider
-        self.slider = customized_slider(Qt.Horizontal, self)
+        self.slider = QSlider(Qt.Horizontal, self)
         self.slider.setRange(0, 2 ** self.bdl_input_iterator.num_input_pairs() - 1)
         self.slider.setTickInterval(1)  # Ticks at each integer position
         self.slider.setTickPosition(QSlider.TicksBelow)
-        # self.slider.add_checkmark(0)  # Set tick 0 to red
-        # self.slider.add_crossmark(2)  # Set tick 2 to blue
+
         self.slider.setValue(0)  # Set the initial slider value to 0
         grouped_layout.addWidget(self.slider)  # Add the slider to your layout
 
@@ -227,7 +139,7 @@ class MainWindow(QMainWindow):
         email_button = QPushButton("Email Support", self)
         email_button.setIcon(email_icon)
         email_button.setFixedSize(120, 30)  # Set a fixed size for the button
-        email_button.clicked.connect(lambda: self.open_email())  # Connect to the open email function
+        email_button.clicked.connect(self.open_email)  # Connect to the open email function
         button_layout.addWidget(email_button)  # Add to horizontal layout
 
         # Create button for Reporting Issues
@@ -235,7 +147,7 @@ class MainWindow(QMainWindow):
         issue_button = QPushButton("Report an Issue", self)
         issue_button.setIcon(issue_icon)
         issue_button.setFixedSize(120, 30)  # Set a fixed size for the button
-        issue_button.clicked.connect(lambda: self.open_issue_report())  # Connect to the open issue report function
+        issue_button.clicked.connect(self.open_issue_report)  # Connect to the open issue report function
         # TODO: Activate when repo is set to public
         # button_layout.addWidget(issue_button)  # Add to horizontal layout
 
@@ -265,26 +177,32 @@ class MainWindow(QMainWindow):
         self.stacked_widget.setCurrentWidget(splitter)
 
         # Set up the plot and load the image into the QLabel
-        self.plot = PlotWidget(
-            self.settings, self.lyt, self.bdl_input_iterator, self.max_pos, self.min_pos,
-            self.plot_label, self.slider.value())
+        self.plot = PlotOperationalDomainWidget(
+            self.settings,
+            self.lyt,
+            self.bdl_input_iterator,
+            self.max_pos,
+            self.min_pos,
+            self.plot_label,
+            self.slider.value(),
+        )
 
         # Generate plots for each slider value
         for i in range(2 ** self.bdl_input_iterator.num_input_pairs()):
-            _ = self.plot.plot_layout(
-                self.lyt,
-                self.bdl_input_iterator.get_layout(),
+            _ = self.visualizer.visualize_layout(
+                lyt_original=self.lyt,
+                lyt=self.bdl_input_iterator.get_layout(),
+                min_pos=self.min_pos,
+                max_pos=self.max_pos,
                 slider_value=i,
-                bin_value=bin(i)[2:].zfill(self.bdl_input_iterator.num_input_pairs()))
+                bin_value=f"{i:b}".zfill(self.bdl_input_iterator.num_input_pairs()),
+            )
             self.bdl_input_iterator += 1
 
         self.bdl_input_iterator = pyfiction.bdl_input_iterator_100(self.lyt)  # Reset the iterator
 
-        # Get the current script directory
-        script_dir = Path(__file__).resolve().parent
-
         # Construct the full path to the file
-        plot_image_path = script_dir / 'widgets' / 'caching' / f'lyt_plot_{self.slider.value()}.svg'
+        plot_image_path = self.caching_dir / f"lyt_plot_{self.slider.value()}.svg"
 
         # Load the image using QPixmap
         pixmap = QPixmap(str(plot_image_path))  # Convert Path object to string
@@ -300,58 +218,63 @@ class MainWindow(QMainWindow):
         self.plot_label.setFixedSize(pixmap.size())  # Set fixed size based on original pixmap size
         self.update_slider_label(self.slider.value())
 
-    def open_email(self):
+    @staticmethod
+    def open_email() -> None:
         """Open the default email client with pre-filled addresses."""
         QDesktopServices.openUrl(QUrl("mailto:marcel.walter@tum.de?cc=jan.drewniok@tum.de"))
 
-    def open_issue_report(self):
+    @staticmethod
+    def open_issue_report() -> None:
         """Open the issue report page in the default web browser."""
         QDesktopServices.openUrl(QUrl("https://github.com/cda-tum/mnt-opdom-explorer/issues"))
 
-    def load_new_file(self):
+    def load_new_file(self) -> None:
         # Open file dialog to select a new file
-        file_path, _ = QFileDialog.getOpenFileName(self, 'Open Layout File', '', 'Layout Files (*.sqd *.json)')
+        file_path, _ = QFileDialog.getOpenFileName(self, "Open Layout File", "", "Layout Files (*.sqd *.json)")
         if file_path:
             self.file_parsed(file_path)
 
-    def update_slider_label(self, value):
+    def update_slider_label(self, value: int) -> None:
+        self.plot_view_active = self.plot.get_layout_plot_view_active()
+
         self.plot.update_slider_value(value)
         # Assume self.bdl_input_iterator is already defined in your class
         value_diff = value - self.previous_slider_value
         if value_diff != 0 or ((value & self.previous_slider_value) == 0):
             self.bdl_input_iterator += value_diff
 
-            # Convert value to a binary string
-            self.bin_value = bin(value)[2:].zfill(self.bdl_input_iterator.num_input_pairs())
-
             self.previous_slider_value = value
 
-            script_dir = Path(__file__).resolve().parent
-
-            if self.is_plot_view_active:
-                print(script_dir)
+            if self.plot_view_active:
                 # Construct the full path to the file
-                plot_image_path = script_dir / 'widgets' / 'caching' / f'lyt_plot_{self.slider.value()}.svg'
+                plot_image_path = self.caching_dir / f"lyt_plot_{self.slider.value()}.svg"
 
                 self.pixmap = QPixmap(str(plot_image_path))
             else:
-                [x, y] = self.plot.picked_x_y()
+                x, y = self.plot.picked_x_y()
                 # Construct the full path to the file
-                plot_image_path = script_dir / 'widgets' / 'caching' / f'lyt_plot_{self.slider.value()}_x_{x}_y_{y}.svg'
+                plot_image_path = self.caching_dir / f"lyt_plot_{self.slider.value()}_x_{x}_y_{y}.svg"
 
                 # Load the image using QPixmap
                 self.pixmap = QPixmap(str(plot_image_path))
 
-            self.pixmap = self.pixmap.scaled(self.desired_width, self.desired_height, Qt.KeepAspectRatio,
-                                             Qt.SmoothTransformation)
+            self.pixmap = self.pixmap.scaled(
+                self.desired_width, self.desired_height, Qt.KeepAspectRatio, Qt.SmoothTransformation
+            )
             self.plot_label.setPixmap(self.pixmap)
 
-    def plot_operational_domain(self):
-        self.is_plot_view_active = False
+    def plot_operational_domain(self) -> None:
+        # self.is_plot_view_active = False
         # Create the plot view
-        self.plot = PlotWidget(self.settings, self.lyt, self.bdl_input_iterator, self.max_pos, self.min_pos,
-                               self.plot_label, self.slider.value())
-        self.plot.initUI()
+        self.plot = PlotOperationalDomainWidget(
+            self.settings,
+            self.lyt,
+            self.bdl_input_iterator,
+            self.max_pos,
+            self.min_pos,
+            self.plot_label,
+            self.slider.value(),
+        )
 
         # Store the QSplitter widget in a class variable
         self.splitter = self.stacked_widget.currentWidget()
@@ -365,30 +288,25 @@ class MainWindow(QMainWindow):
         # Connect the 'Back' button's clicked signal to the go_back_to_settings method
         self.plot.rerun_button.clicked.connect(self.go_back_to_settings)
 
-    def go_back_to_drag_and_drop(self):
-        self.is_plot_view_active = True
+    def go_back_to_drag_and_drop(self) -> None:
+        self.plot_view_active = True
         self.stacked_widget.setCurrentIndex(0)
 
-    def go_back_to_settings(self):
-        self.is_plot_view_active = True
+    def go_back_to_settings(self) -> None:
+        self.plot_view_active = True
         # Get the index of the PlotWidget in the QSplitter
         index = self.splitter.indexOf(self.plot)
 
         # Replace the PlotWidget with the ContentSettingsWidget in the QSplitter
         self.splitter.replaceWidget(index, self.settings)
 
-        # Get the current script directory
-        script_dir = Path(__file__).resolve().parent
-
         # Construct the full path to the plot image file based on the slider value
-        plot_image_path = script_dir / 'widgets' / 'caching' / f'lyt_plot_{self.slider.value()}.svg'
+        plot_image_path = self.caching_dir / f"lyt_plot_{self.slider.value()}.svg"
 
         # Load the image using QPixmap
         self.pixmap = QPixmap(str(plot_image_path))
 
-        self.pixmap = self.pixmap.scaled(self.desired_width, self.desired_height, Qt.KeepAspectRatio,
-                                         Qt.SmoothTransformation)
+        self.pixmap = self.pixmap.scaled(
+            self.desired_width, self.desired_height, Qt.KeepAspectRatio, Qt.SmoothTransformation
+        )
         self.plot_label.setPixmap(self.pixmap)
-
-        # Update the slider label
-        self.bin_value = bin(self.slider.value())[2:].zfill(self.bdl_input_iterator.num_input_pairs())
