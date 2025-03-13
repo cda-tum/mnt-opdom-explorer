@@ -210,10 +210,18 @@ class PlotOperationalDomainWidget(QWidget):
         self.sim_params.mu_minus = self.settings_widget.get_mu_minus()
         self.sim_params.lambda_tf = self.settings_widget.get_lambda_tf()
 
+        bdl_input_params = pyfiction.bdl_input_iterator_params()
+        bdl_input_params.input_bdl_config = (
+            pyfiction.input_bdl_configuration.PERTURBER_DISTANCE_ENCODED
+            if self.settings_widget.get_input_signal_encoding() == "Distance Encoding"
+            else pyfiction.input_bdl_configuration.PERTURBER_ABSENCE_ENCODED
+        )
+
         is_op_params = pyfiction.is_operational_params()
+        is_op_params.input_bdl_iterator_params = bdl_input_params
+        is_op_params.op_condition = self.op_condition_map[self.settings_widget.get_operational_condition()]
         is_op_params.simulation_parameters = self.sim_params
         is_op_params.sim_engine = self.engine_map[self.settings_widget.get_simulation_engine()]
-        is_op_params.op_condition = self.op_condition_map[self.settings_widget.get_operational_condition()]
 
         op_dom_params = pyfiction.operational_domain_params()
         op_dom_params.operational_params = is_op_params
