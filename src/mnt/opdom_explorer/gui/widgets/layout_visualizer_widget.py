@@ -220,9 +220,6 @@ class LayoutVisualizer(QWidget):
                     )
 
                 if operational_status_kinks is not None:
-                    print("Operational status kinks: ", operational_status_kinks)
-                    print("Operation status: ", operation_status)
-
                     if operational_status_kinks == pyfiction.operational_status.OPERATIONAL:
                         draw_rectangle(ax, box_x, box_y, width, height, "green")
 
@@ -232,9 +229,9 @@ class LayoutVisualizer(QWidget):
                                 ax,
                                 (bb_min_shifted_nm[0] + bb_max_shifted_nm[0]) * 0.5,
                                 -(bb_min_shifted_nm[1] + bb_max_shifted_nm[1]) * 0.1,
-                                "kinks or \n over-population detected",
+                                "⚡",
                                 "red",
-                                20,
+                                40,
                             )
                         elif operation_status == pyfiction.operational_status.NON_OPERATIONAL:
                             draw_rectangle(ax, box_x, box_y, width, height, "red")
