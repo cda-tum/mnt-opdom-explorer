@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -8,6 +9,9 @@ from matplotlib.patches import Rectangle
 from PyQt6.QtWidgets import QWidget
 
 from mnt import pyfiction
+
+if TYPE_CHECKING:
+    from matplotlib.axes import Axes
 
 
 class LayoutVisualizer(QWidget):
@@ -39,6 +43,7 @@ class LayoutVisualizer(QWidget):
             operation_status: Optional operational status (e.g., OPERATIONAL).
             parameter_point: Optional tuple for parameter coordinates.
             bin_value: Optional list of binary values to annotate the plot.
+            operational_status_kinks: Optional information to specify if kinks induce the layout to become non-operational.
 
         Returns:
             Path to the saved plot image.
@@ -95,8 +100,8 @@ class LayoutVisualizer(QWidget):
         bb_max_shifted_nm = pyfiction.sidb_nm_position(lyt, bb_max_shifted)
 
         # Iterate through grid and plot positions
-        for x in np.arange(bb_min.x, bb_max.x + padding_x*2+1, step_size):
-            for y in np.arange(bb_min.y, bb_max.y + padding_y*3, step_size):
+        for x in np.arange(bb_min.x, bb_max.x + padding_x * 2 + 1, step_size):
+            for y in np.arange(bb_min.y, bb_max.y + padding_y * 3, step_size):
                 nm_pos = pyfiction.sidb_nm_position(lyt, pyfiction.offset_coordinate(x, y))
                 ax.plot(
                     nm_pos[0],
@@ -203,11 +208,11 @@ class LayoutVisualizer(QWidget):
                 box_x -= 0.5
                 box_y -= 0.5
 
-                def draw_rectangle(ax, x, y, width, height, color):
+                def draw_rectangle(ax: Axes, x: float, y: float, width: float, height: float, color: str) -> None:
                     rect = Rectangle((x, -y), width, -height, linewidth=1.5, edgecolor=color, facecolor="none")
                     ax.add_patch(rect)
 
-                def add_status_text(ax, x, y, text, color, fontsize):
+                def add_status_text(ax: Axes, x: float, y: float, text: str, color: str, fontsize: int) -> None:
                     ax.text(
                         x,
                         y,
