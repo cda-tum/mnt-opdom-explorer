@@ -219,12 +219,6 @@ class MainWindow(QMainWindow):
             )
             self.bdl_input_iterator_distance_encoding += 1
 
-        # self.bdl_input_iterator_distance_encoding += 1
-        # assert self.bdl_input_iterator_distance_encoding == 0
-
-        # self.bdl_input_iterator_distance_encoding = pyfiction.bdl_input_iterator_100(self.lyt)  # Reset the iterator
-        # self.bdl_input_iterator_distance_encoding = 0
-
         for i in range(2 ** self.bdl_input_iterator_presence_encoding.num_input_pairs()):
             _ = self.visualizer.visualize_layout(
                 lyt_original=self.lyt,
@@ -236,12 +230,6 @@ class MainWindow(QMainWindow):
                 bin_value=f"{i:b}".zfill(self.bdl_input_iterator_presence_encoding.num_input_pairs()),
             )
             self.bdl_input_iterator_presence_encoding += 1
-
-        # self.bdl_input_iterator_presence_encoding = pyfiction.bdl_input_iterator_100(self.lyt)  # Reset the iterator
-        # self.bdl_input_iterator_presence_encoding = 0
-
-        # self.bdl_input_iterator_presence_encoding += 1
-        # assert self.bdl_input_iterator_presence_encoding == 0
 
         # Construct the full path to the file
         plot_image_path = self.caching_dir / f"lyt_plot_distance_{self.slider.value()}.svg"
