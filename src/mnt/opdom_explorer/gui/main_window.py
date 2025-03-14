@@ -192,8 +192,8 @@ class MainWindow(QMainWindow):
             _ = self.visualizer.visualize_layout(
                 lyt_original=self.lyt,
                 lyt=self.bdl_input_iterator.get_layout(),
-                min_pos=self.min_pos,
-                max_pos=self.max_pos,
+                bb_min=self.min_pos,
+                bb_max=self.max_pos,
                 slider_value=i,
                 bin_value=f"{i:b}".zfill(self.bdl_input_iterator.num_input_pairs()),
             )
