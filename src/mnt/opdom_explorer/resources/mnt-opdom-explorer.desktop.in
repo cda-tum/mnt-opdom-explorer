@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Name=MNT Operational Domain Explorer
+Comment=Explore Operational Domains of SiDB logic gates
+Exec={exec_path}
+Icon={icon_path}
+Terminal=false
+Type=Application
+Categories=Science;
