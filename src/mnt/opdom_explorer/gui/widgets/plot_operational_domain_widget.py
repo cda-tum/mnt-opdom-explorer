@@ -103,6 +103,10 @@ class PlotOperationalDomainWidget(QWidget):
 
         # Initialize the simulation running flag
         self.simulation_running = False  # Flag to track simulation status
+        # input combinations for which kinks induce
+        # the SiDB layout to become non-operational.
+        # This means that the layout is operational if kinks would be accepted.
+        self.kink_induced_non_op_patterns = None
 
         # Map the Boolean function string to the corresponding pyfiction function
         self.boolean_function_map = {
@@ -394,6 +398,15 @@ class PlotOperationalDomainWidget(QWidget):
         gate_func = self.boolean_function_map[self.settings_widget.get_boolean_function()]
         is_op_params = pyfiction.is_operational_params()
         is_op_params.simulation_parameters = self.qe_sim_params
+
+        if (
+            self.op_condition_map[self.settings_widget.get_operational_condition()]
+            == pyfiction.operational_condition.REJECT_KINKS
+        ):
+            self.kink_induced_non_op_patterns = pyfiction.kink_induced_non_operational_input_patterns(
+                self.lyt, gate_func, is_op_params
+            )
+
         self.operational_patterns = pyfiction.operational_input_patterns(self.lyt, gate_func, is_op_params)
 
         # Calculate number of input pairs
@@ -428,6 +441,11 @@ class PlotOperationalDomainWidget(QWidget):
         if iteration in self.operational_patterns:
             status = pyfiction.operational_status.OPERATIONAL
 
+        # check if kinks induce the layout to become non-operational
+        kink_induced_operational_status = None
+        if self.kink_induced_non_op_patterns is not None and iteration in self.kink_induced_non_op_patterns:
+            kink_induced_operational_status = pyfiction.operational_status.NON_OPERATIONAL
+
         # Plot the new layout and charge distribution
         _ = self.visualizer.visualize_layout(
             self.lyt,
@@ -439,6 +457,7 @@ class PlotOperationalDomainWidget(QWidget):
             status,
             parameter_point=(self.x, self.y),
             bin_value=f"{iteration:b}".zfill(self.input_iterator.num_input_pairs()),
+            kink_induced_operational_status=kink_induced_operational_status,
         )
 
         # Update the QLabel if this is the current slider value
@@ -453,6 +472,7 @@ class PlotOperationalDomainWidget(QWidget):
                 status,
                 parameter_point=(self.x, self.y),
                 bin_value=f"{self.get_slider_value():0{self.input_iterator.num_input_pairs()}b}",
+                kink_induced_operational_status=kink_induced_operational_status,
             )
 
             self.pixmap = QPixmap(str(plot_image_path))
