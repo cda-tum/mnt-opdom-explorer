@@ -7,6 +7,9 @@
 
 # **Operational Domain Explorer**
 
+> [!Important]
+> This project is still in the early stages of development. We appreciate your patience and understanding as work to improve the GUI continues.
+
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/cda-tum/fiction/main/docs/_static/mnt_light.svg" width="60%">
