@@ -147,7 +147,10 @@ class PlotOperationalDomainWidget(QWidget):
         write_op_dom_params.operational_tag = "1"
         write_op_dom_params.non_operational_tag = "0"
 
-        pyfiction.write_operational_domain(op_dom, "op_dom.csv", write_op_dom_params)
+        if self.settings_widget.is_fom_selected():
+            pyfiction.write_critical_temperature_domain(op_dom, "op_dom.csv", write_op_dom_params)
+        else:
+            pyfiction.write_operational_domain(op_dom, "op_dom.csv", write_op_dom_params)
 
         self.three_dimensional_plot = self.settings_widget.get_z_dimension() != "NONE"
 
@@ -157,6 +160,7 @@ class PlotOperationalDomainWidget(QWidget):
             x_param=self.column_map[self.settings_widget.get_x_dimension()],
             y_param=self.column_map[self.settings_widget.get_y_dimension()],
             z_param=self.column_map[self.settings_widget.get_z_dimension()] if self.three_dimensional_plot else None,
+            is_temperature_domain_selected=self.settings_widget.is_fom_selected(),
             xlog=self.settings_widget.get_x_log_scale(),
             ylog=self.settings_widget.get_y_log_scale(),
             zlog=self.settings_widget.get_z_log_scale(),
@@ -203,7 +207,9 @@ class PlotOperationalDomainWidget(QWidget):
     def set_pixmap(self, pixmap: QPixmap) -> None:
         self.pixmap = pixmap
 
-    def operational_domain_computation(self) -> pyfiction.operational_domain | None:
+    def operational_domain_computation(
+        self,
+    ) -> pyfiction.operational_domain | pyfiction.critical_temperature_domain | None:
         self.sim_params = pyfiction.sidb_simulation_parameters()
         self.sim_params.base = 2
         self.sim_params.epsilon_r = self.settings_widget.get_epsilon_r()
@@ -247,21 +253,40 @@ class PlotOperationalDomainWidget(QWidget):
         gate_func = self.boolean_function_map[self.settings_widget.get_boolean_function()]
 
         algo = self.settings_widget.get_algorithm()
+        fom = self.settings_widget.get_fom()
 
-        if algo == "Grid Search":
-            return pyfiction.operational_domain_grid_search(self.lyt, gate_func, op_dom_params)
-        if algo == "Random Sampling":
-            return pyfiction.operational_domain_random_sampling(
-                self.lyt, gate_func, self.settings_widget.get_random_samples(), op_dom_params
-            )
-        if algo == "Flood Fill":
-            return pyfiction.operational_domain_flood_fill(
-                self.lyt, gate_func, self.settings_widget.get_random_samples(), op_dom_params
-            )
-        if algo == "Contour Tracing":
-            return pyfiction.operational_domain_contour_tracing(
-                self.lyt, gate_func, self.settings_widget.get_random_samples(), op_dom_params
-            )
+        if fom is None:
+            if algo == "Grid Search":
+                return pyfiction.operational_domain_grid_search(self.lyt, gate_func, op_dom_params)
+            if algo == "Random Sampling":
+                return pyfiction.operational_domain_random_sampling(
+                    self.lyt, gate_func, self.settings_widget.get_random_samples(), op_dom_params
+                )
+            if algo == "Flood Fill":
+                return pyfiction.operational_domain_flood_fill(
+                    self.lyt, gate_func, self.settings_widget.get_random_samples(), op_dom_params
+                )
+            if algo == "Contour Tracing":
+                return pyfiction.operational_domain_contour_tracing(
+                    self.lyt, gate_func, self.settings_widget.get_random_samples(), op_dom_params
+                )
+            return None
+
+        if fom == "Critical Temperature":
+            if algo == "Grid Search":
+                return pyfiction.critical_temperature_domain_grid_search(self.lyt, gate_func, op_dom_params)
+            if algo == "Random Sampling":
+                return pyfiction.critical_temperature_domain_random_sampling(
+                    self.lyt, gate_func, self.settings_widget.get_random_samples(), op_dom_params
+                )
+            if algo == "Flood Fill":
+                return pyfiction.critical_temperature_domain_flood_fill(
+                    self.lyt, gate_func, self.settings_widget.get_random_samples(), op_dom_params
+                )
+            if algo == "Contour Tracing":
+                return pyfiction.critical_temperature_domain_contour_tracing(
+                    self.lyt, gate_func, self.settings_widget.get_random_samples(), op_dom_params
+                )
         return None
 
     def on_click(self, event: matplotlib.backend_bases.MouseEvent) -> None:

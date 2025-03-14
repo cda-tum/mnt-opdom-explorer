@@ -519,7 +519,7 @@ test = [
 [package.metadata]
 requires-dist = [
     { name = "matplotlib", specifier = "==3.10.1" },
-    { name = "mnt-pyfiction", specifier = "==0.6.8" },
+    { name = "mnt-pyfiction", specifier = "==0.6.10" },
     { name = "pandas", specifier = "==2.2.3" },
     { name = "pyqt6", specifier = "==6.8.1" },
     { name = "qtawesome", specifier = "==1.4.0" },
@@ -535,7 +535,7 @@ dev = [
     { name = "hatch-vcs", specifier = ">=0.4.0" },
     { name = "hatchling", specifier = ">=1.27.0" },
     { name = "matplotlib", specifier = "==3.10.1" },
-    { name = "mnt-pyfiction", specifier = "==0.6.8" },
+    { name = "mnt-pyfiction", specifier = "==0.6.10" },
     { name = "nox", specifier = ">=2024.10.9" },
     { name = "pandas", specifier = "==2.2.3" },
     { name = "pre-commit", specifier = "==4.1.0" },
@@ -548,7 +548,7 @@ dev = [
 ]
 docs = [
     { name = "matplotlib", specifier = "==3.10.1" },
-    { name = "mnt-pyfiction", specifier = "==0.6.8" },
+    { name = "mnt-pyfiction", specifier = "==0.6.10" },
     { name = "nox", specifier = ">=2024.10.9" },
     { name = "pandas", specifier = "==2.2.3" },
     { name = "pyqt6", specifier = "==6.8.1" },
@@ -564,38 +564,38 @@ test = [
 
 [[package]]
 name = "mnt-pyfiction"
-version = "0.6.8"
+version = "0.6.10"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "z3-solver" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/49/7c/40007f2601fc0cd4fb468f68b01a8a90bea966e68daa04b15f3469859e6b/mnt_pyfiction-0.6.8.tar.gz", hash = "sha256:0dfe76fcb197b35e518627de4596e1c8f1028a3f8ae3b8bbac591acd7a063449", size = 74296 }
+sdist = { url = "https://files.pythonhosted.org/packages/c4/98/c1416913e11ff5e28a7385116f952876db604a142e115d6645176a5b1bc9/mnt_pyfiction-0.6.10.tar.gz", hash = "sha256:e643eece978e29d15f8a80ade9a505e25534bf465a4e319ca5eca10606a5ab1e", size = 76087 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/e7/95/c387d8f0950d7033a81ec9da83ba31e317c319fed5fa3f776c14b4a7d80c/mnt_pyfiction-0.6.8-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:b32b2e1d4a4f6c37a60ef2dc62e438d89ccc82262d7d9fdf2d9137286f0db78f", size = 11893574 },
-    { url = "https://files.pythonhosted.org/packages/ef/af/b19782c6755e5be5b0d09b68831fe0a7881e562d2de1247643416107aa4e/mnt_pyfiction-0.6.8-cp310-cp310-macosx_11_0_x86_64.whl", hash = "sha256:cadce93c6a5131f86a80e89918951973ef298ac839feb1f592c433c077c2e55b", size = 13626312 },
-    { url = "https://files.pythonhosted.org/packages/bb/ff/ce10af5aaf7c76ef196171c97a5c9952cd05994bd1438aa20106fb8aff98/mnt_pyfiction-0.6.8-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:cef10e6accb9973b3cc91631e13ba889ccd45271be993e1d26f37748334c06f7", size = 11661602 },
-    { url = "https://files.pythonhosted.org/packages/55/9e/d1aec0374f43e9a9c80c51adb2f5b1d960310656c68d0b7d053945e3a80b/mnt_pyfiction-0.6.8-cp310-cp310-manylinux_2_28_x86_64.whl", hash = "sha256:6435ca0af7e9d36c6a75c97e7f33079a4115339b28c447365363701f99c59095", size = 12444680 },
-    { url = "https://files.pythonhosted.org/packages/7e/6a/a8d553d2553a19f973431b8a5ed82e8a9869de8f4c34b9983a0d0eba6686/mnt_pyfiction-0.6.8-cp310-cp310-win_amd64.whl", hash = "sha256:123ef73a3a45e45b46e62361c7b107075158ba381a61339695a14a6e38fff5b2", size = 9319338 },
-    { url = "https://files.pythonhosted.org/packages/81/01/391cb325de9f3dd269d4d562199fb859373544e0a94a09cef3d819247ed1/mnt_pyfiction-0.6.8-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:be5a7dbf617b2581c4333a1aa10cfc975ee1b24dc0ead9e5919b6a9893cc3d5d", size = 11894791 },
-    { url = "https://files.pythonhosted.org/packages/c8/1b/28a51580c34bb815f5d192fdc4fb2026f4e4f28fc691cb838b2c658d8fb7/mnt_pyfiction-0.6.8-cp311-cp311-macosx_11_0_x86_64.whl", hash = "sha256:7943945c5f2f93b9a9bacbe3e9d0034e58d6b185b1012381d79910efe6cb2ed0", size = 13628450 },
-    { url = "https://files.pythonhosted.org/packages/85/0a/1ad9569419145f7203c9838b96961d056cdb6c2090337a1533175619757c/mnt_pyfiction-0.6.8-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:2e052fe24d3342a5764457abe6da275ead810b30ad9c89e029e2c7ddc2a2d709", size = 11661723 },
-    { url = "https://files.pythonhosted.org/packages/8c/12/9627672d737c29eba2d581283e0ea8661dfd46d9f6acbf23d45dce91cd6b/mnt_pyfiction-0.6.8-cp311-cp311-manylinux_2_28_x86_64.whl", hash = "sha256:728f4640ac6ed16e3fa3f8df7e4d0479e3de80048600a334bb1654cb3efd8eec", size = 12436200 },
-    { url = "https://files.pythonhosted.org/packages/3e/b9/46a12cb339a43740b6825f184779f94f316786a3dd37b98a0b3457ed6d1d/mnt_pyfiction-0.6.8-cp311-cp311-win_amd64.whl", hash = "sha256:d1fdb95dd6f753fcf31b2e1cbdba7cd848286a17f80a65b00d8545b1dddd0492", size = 9320457 },
-    { url = "https://files.pythonhosted.org/packages/41/28/6e2ec3c150327d27262bb62d7de712fe92a81101d0aa50563b9441aaa62b/mnt_pyfiction-0.6.8-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:02a5c2489bb2d926626455fadee34b0f12bc26791b400032b51a09f2f5fe3120", size = 11905705 },
-    { url = "https://files.pythonhosted.org/packages/8b/2b/ba2113266ccc986c1618352449b61a9004ed84a06b510860dc1bacd81bcf/mnt_pyfiction-0.6.8-cp312-cp312-macosx_11_0_x86_64.whl", hash = "sha256:ca09d02eaa25501754ff55f1e6e53723e11cd0d896d09ec309dbaacfdb30d0ec", size = 13674123 },
-    { url = "https://files.pythonhosted.org/packages/f7/72/31ff6e3e8346df1cd914f2aa106ec1877f612ccf1c6207479dd73431f37c/mnt_pyfiction-0.6.8-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:f80c734fbc66cc160e445086c6aaca57aacfd95265d2c153d705bd3fba938efb", size = 11672948 },
-    { url = "https://files.pythonhosted.org/packages/9c/6b/4ad74e86b22e74016505fd62c935dffb450183db452348b920ea86583b71/mnt_pyfiction-0.6.8-cp312-cp312-manylinux_2_28_x86_64.whl", hash = "sha256:23bf708e39f48b993165a3564e5fdd49db7fa6b9ecf22a6ecac2de2e3b6463c7", size = 12422104 },
-    { url = "https://files.pythonhosted.org/packages/4f/cd/37829ab977f062cd5c506f4e5a3e3de52c3b3d37f879981274825514b165/mnt_pyfiction-0.6.8-cp312-cp312-win_amd64.whl", hash = "sha256:5838924dff34763a3e2e277d39543b9b0d3dafbb3fa913d6c821ae7ee7511f3b", size = 9324043 },
-    { url = "https://files.pythonhosted.org/packages/55/ae/e89e4dbe32b67fc0a701d4bdf1c4b46e2beca2e61befc1799be2582eb8d4/mnt_pyfiction-0.6.8-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:878a6b7595edd3443ad02405e78e710fa2c1b64847054e183f6d6f34f0ef842b", size = 11905640 },
-    { url = "https://files.pythonhosted.org/packages/7c/45/8b4cdb6b8ebc464838e07a1a648124847b1368a454736c2c58920bccbf8a/mnt_pyfiction-0.6.8-cp313-cp313-macosx_11_0_x86_64.whl", hash = "sha256:aa9fbacbdf9d5add9926d1eb962b2926a4c5e7243e1810c0cc59044639a53f8c", size = 13674114 },
-    { url = "https://files.pythonhosted.org/packages/f4/10/fcd2176a26b8eeabb0b53b1ed4e2ae6a4f3f72834b5ccca5ec9b98d33acb/mnt_pyfiction-0.6.8-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:660a5451029f9853b541a5f7e516e72a39af399cff5b08275bb646259e4a2947", size = 11670613 },
-    { url = "https://files.pythonhosted.org/packages/60/d0/eab3ef005151c0df3c88402e1ebca613903c3dcdb79d2ac15e15f8d47dd1/mnt_pyfiction-0.6.8-cp313-cp313-manylinux_2_28_x86_64.whl", hash = "sha256:9a98bacfc476b283acce0b0e77ae0a7058b44642c2c22fb91c0e5a5b7d780187", size = 12426744 },
-    { url = "https://files.pythonhosted.org/packages/74/d7/69bbe248e714010a214e2b8987471526292d77e962404c8233ed54cc386b/mnt_pyfiction-0.6.8-cp313-cp313-win_amd64.whl", hash = "sha256:31d5467439686aa6ea16b7d22c1a13b1389304b734a495ff1b7c0ebf3f9cc75d", size = 9323983 },
-    { url = "https://files.pythonhosted.org/packages/83/95/6d58a665b4a0ba0ea279b2485c342a33c63ac5161ef1704776e379b34e4c/mnt_pyfiction-0.6.8-cp313-cp313t-macosx_11_0_arm64.whl", hash = "sha256:a9d9f2d18ab71085252d3ce1494766bf246646c7adbb163565702b75c3584885", size = 12056985 },
-    { url = "https://files.pythonhosted.org/packages/4a/eb/49225d54cb0f985139adcd7f2964de039f6d29d9e443f08ab0411d83cc42/mnt_pyfiction-0.6.8-cp313-cp313t-macosx_11_0_x86_64.whl", hash = "sha256:da22da72f0fcef2dff87ad13d7b688f0fd5ee59c92ca7112104cd28b92383e5c", size = 13770648 },
-    { url = "https://files.pythonhosted.org/packages/40/e8/4eeb6db0d764534912c4530ba1e8feefaea08745ec7f6dcc5a99e238389f/mnt_pyfiction-0.6.8-cp313-cp313t-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:babf97eb77f4a331ab80c42a8d4f6ae18a75c8f62783dfcc87024e86825652ee", size = 11677064 },
-    { url = "https://files.pythonhosted.org/packages/85/fe/97b7a86c0e72514aac3810867b2cb5118f9c89bb2cedb2ec13bed2717815/mnt_pyfiction-0.6.8-cp313-cp313t-manylinux_2_28_x86_64.whl", hash = "sha256:0d8203d53a87cf6bdf1f554fff12d79a9c9b21465c023b65e36a76328ecd990d", size = 12449917 },
-    { url = "https://files.pythonhosted.org/packages/2a/40/76900009d0e809964d48fd40e7395c5b87c3a9179dbae7448c5bb72c64ae/mnt_pyfiction-0.6.8-cp313-cp313t-win_amd64.whl", hash = "sha256:dbe9d1148c9ee40624e2c84c2e0c27b7f0a5962c4447873f7e6477fcb75cfba5", size = 9414146 },
+    { url = "https://files.pythonhosted.org/packages/97/f6/1227928acea920f405a4aff811931f046f86cfec9cdb07623e007b4bc6d7/mnt_pyfiction-0.6.10-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:32ee463e1050ab5e9c8c4ed752500e8ac6c436be699dd6be8c9170e1129b7361", size = 12087561 },
+    { url = "https://files.pythonhosted.org/packages/17/d4/910f5eb128dbc0461f6e73614cdf2bb0ecdaf1076576488074189eaf36b9/mnt_pyfiction-0.6.10-cp310-cp310-macosx_11_0_x86_64.whl", hash = "sha256:351d63da6414bb029cdb0115daab0bc3418baeba2a5808ec850b5da92c5e50cc", size = 13857516 },
+    { url = "https://files.pythonhosted.org/packages/9d/91/765e60dba65d37871dab1cd75aaf502b06edff2b627b3532039f839699ff/mnt_pyfiction-0.6.10-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:1efea18565dece1a4e3052372f732186184e1b7ffca9b96914d21df23d332cc5", size = 11987203 },
+    { url = "https://files.pythonhosted.org/packages/5f/29/8bded2c5d69a6f0eb9812369c835e7963d1bfcc7d49fc80c238b034327a8/mnt_pyfiction-0.6.10-cp310-cp310-manylinux_2_28_x86_64.whl", hash = "sha256:abbe976ba13a9f61509cf7b3772b8bbf4547dc7eec6e7e91c8652ccfcfdac91c", size = 12772697 },
+    { url = "https://files.pythonhosted.org/packages/96/45/5afc3aad53252053d0cf8765c9b7af4177e60c8d47d5e9daf1ef202f9d05/mnt_pyfiction-0.6.10-cp310-cp310-win_amd64.whl", hash = "sha256:8d9b5d0e6474b70f64e0859f18e050d5c97b6c56bb62e98f5d67be4ee1ea4352", size = 9433235 },
+    { url = "https://files.pythonhosted.org/packages/8f/46/e5767670e77dc581acf931dc9bbf85f4025e5721155e560af5773a115c6b/mnt_pyfiction-0.6.10-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:00e7f40d782aa6d26a15664cc1cea7ee9eb9d5b258ac794570647aa53db4af78", size = 12090163 },
+    { url = "https://files.pythonhosted.org/packages/d0/10/1cead0540f509ab97580a1550bc349ce1d54909bb400c5083018b6b4cc57/mnt_pyfiction-0.6.10-cp311-cp311-macosx_11_0_x86_64.whl", hash = "sha256:041a349000a981db4f7f12e360006ca44ba4416e759f9e2ab8d2304cb281180f", size = 13858843 },
+    { url = "https://files.pythonhosted.org/packages/d9/10/b3a9eafdb5a5fe1ec901467c138cb3955569bbf767df1f0d72a51864d71a/mnt_pyfiction-0.6.10-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:bcc589cf7fb355ddee3de87bb5bdcae50f9cbe9b17558deaa3bfac503ce479bc", size = 11990256 },
+    { url = "https://files.pythonhosted.org/packages/6f/5d/f12772b818321b564062225f40bc7ca1904fd168924cb8bdc1e1fdb8bbcf/mnt_pyfiction-0.6.10-cp311-cp311-manylinux_2_28_x86_64.whl", hash = "sha256:a77f8c62eb26f7925cd408ba9314f2ffa01a0aeaa6bbf2dccc02fac4259f28e7", size = 12769222 },
+    { url = "https://files.pythonhosted.org/packages/1b/7b/82eb6ca77a3235c40e37ba1a820e81f2fd80319ef88164163546cc5a0f3b/mnt_pyfiction-0.6.10-cp311-cp311-win_amd64.whl", hash = "sha256:9d7a3b7c704aa112904512c73a67692a6db2cd290b539aadfc50d8911128bc75", size = 9434671 },
+    { url = "https://files.pythonhosted.org/packages/b2/af/2cf9b99baf5b515a1c372ef2e9c690ea4fe1287c067e18e573d2857e9372/mnt_pyfiction-0.6.10-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:d94c52ab8bdd80269dfda0f89c384e94e7e1dc0e62cffb5bec1fce74d8802a45", size = 12103904 },
+    { url = "https://files.pythonhosted.org/packages/b7/fe/e4ca02b877d9ee9befb7cc06ec888b9c575ca0639b2789f19b4a433d326a/mnt_pyfiction-0.6.10-cp312-cp312-macosx_11_0_x86_64.whl", hash = "sha256:392dfa9b5f50799e5b06448cac6c5004e0d2ea704d22f5b2c96bf34c6f644840", size = 13904569 },
+    { url = "https://files.pythonhosted.org/packages/d9/0d/ac2269ad6e9251cfad97ab317504db25ced92a5bcf834ee6b056930bfa4c/mnt_pyfiction-0.6.10-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:b5474639f1cf0283b31a847933eb110cc07060a343b84693811aeaf968011f35", size = 11989989 },
+    { url = "https://files.pythonhosted.org/packages/61/37/e1052f4538169f74a8a06c1566b5c8bd37042a69df420cb588e75468afbe/mnt_pyfiction-0.6.10-cp312-cp312-manylinux_2_28_x86_64.whl", hash = "sha256:e08c9c0379347efc1225e509779ac5e44be602c38ceb6974535fdb9645677dbb", size = 12764392 },
+    { url = "https://files.pythonhosted.org/packages/3b/fe/590067c21d62d0d864251003b66f47202fd495f6672b0597acb53c3d8d1a/mnt_pyfiction-0.6.10-cp312-cp312-win_amd64.whl", hash = "sha256:7825cd02a569289faa0d076a2e32e78f17310bfad6b16d243bc7e441717c773d", size = 9436980 },
+    { url = "https://files.pythonhosted.org/packages/9f/0e/4074869e9558aa8ca6b60437983097c483990481838113caac1c328bc890/mnt_pyfiction-0.6.10-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:65e60918c35acdf17288b17be67404584d14da712c76ab7bdb65b96ee37de9e8", size = 12104199 },
+    { url = "https://files.pythonhosted.org/packages/71/08/3df9d712e0340a81f99ac59e00624cbed04252b02589ce395dfd4ddf40c4/mnt_pyfiction-0.6.10-cp313-cp313-macosx_11_0_x86_64.whl", hash = "sha256:7ec8bdfa678452fc7bf4bb559a99517e03d56c46f1d49252fc9718ed28eafaa3", size = 13904821 },
+    { url = "https://files.pythonhosted.org/packages/0f/18/cefceba2efa593ece3345109200867332bbe593f77a0b717b32256fac1f4/mnt_pyfiction-0.6.10-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:6e78d91ea21fe3adc783829c04214f0bd6695c302b0f54751eeebcc80a2f4744", size = 11986507 },
+    { url = "https://files.pythonhosted.org/packages/2b/7a/a5b9ce1856df22be2969829c81bbd3ae56e180c366639fb3cb1a72b2537c/mnt_pyfiction-0.6.10-cp313-cp313-manylinux_2_28_x86_64.whl", hash = "sha256:3ea63b36383e1cb960e4abb7b2980d60648dce4a7573b18ff1b2230cd3de9ff0", size = 12766160 },
+    { url = "https://files.pythonhosted.org/packages/bd/ca/6a7d9bdc687f1cd7fdc5054bc6205cdc24ed3181ce8435f2941ae085125e/mnt_pyfiction-0.6.10-cp313-cp313-win_amd64.whl", hash = "sha256:3e3d2218a88ecefe1a94097425f7e1354e1e3a444d78910ed1550d21143dcce2", size = 9437168 },
+    { url = "https://files.pythonhosted.org/packages/54/53/e4fe4cab938b19129599125522bc9ba136823cf4e1cd245c67c5b5498643/mnt_pyfiction-0.6.10-cp313-cp313t-macosx_11_0_arm64.whl", hash = "sha256:a9fc7b63d6065735ba6f628fddbbdc3d3b7ad42f4d119bd1941182c22579641e", size = 12231479 },
+    { url = "https://files.pythonhosted.org/packages/7d/14/b527aaeddf9efee5feaaff1b804368f9b6cb512deac4ef3e894fb597d7be/mnt_pyfiction-0.6.10-cp313-cp313t-macosx_11_0_x86_64.whl", hash = "sha256:9ba8fb6a41f26c82f22d9d28bc694085904cc6de746088d117ad43b4006a8f64", size = 13995959 },
+    { url = "https://files.pythonhosted.org/packages/92/0b/0bf42348f6af742df4d5b15ad154e2e23e49dd4e5f455c9cd9919e2fbecc/mnt_pyfiction-0.6.10-cp313-cp313t-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:0dac4135dd979250b7010f0ed65e935f8e07c001f34d9a79d7050683a601d5f7", size = 12002864 },
+    { url = "https://files.pythonhosted.org/packages/3e/d1/07c407aaf58e990fe721216e6c6341a0ff89b6a463fca38b4fe4aea75c93/mnt_pyfiction-0.6.10-cp313-cp313t-manylinux_2_28_x86_64.whl", hash = "sha256:270c61646e96db6b37ca6a96217369e6cb07edee6fb5a5e7c7f32ac408dfa615", size = 12802433 },
+    { url = "https://files.pythonhosted.org/packages/48/ea/85fd18cfb450eee0c54445e1e6635ed2f9020c0d863594afde3a51ce8203/mnt_pyfiction-0.6.10-cp313-cp313t-win_amd64.whl", hash = "sha256:c0fa9c498ba7cedf310ee5c0ae82383be0688def18c5ea3a956c6a9150d0d15d", size = 9533708 },
 ]
 
 [[package]]
