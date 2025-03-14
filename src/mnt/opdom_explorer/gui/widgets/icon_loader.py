@@ -6,7 +6,9 @@ from pathlib import Path
 from typing import Any
 
 import qtawesome as qta
-from PyQt6.QtGui import QColor, QIcon
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QColor, QIcon, QPainter, QPixmap
+from PyQt6.QtSvg import QSvgRenderer
 from PyQt6.QtSvgWidgets import QSvgWidget
 from PyQt6.QtWidgets import QApplication
 
@@ -67,6 +69,28 @@ class IconLoader:
         """
         color = color or self.get_icon_color()
         return qta.icon(icon_name, color=color, **kwargs)
+
+    def svg_to_icon(self, svg_path: Path, size: tuple[int, int] = (128, 128)) -> QIcon:
+        """Converts an SVG file to a QIcon."""
+        renderer = QSvgRenderer(str(svg_path))
+        pixmap = QPixmap(size[0], size[1])
+        pixmap.fill(Qt.GlobalColor.transparent)  # Transparent background
+        painter = QPainter(pixmap)
+        renderer.render(painter)
+        painter.end()
+
+        return QIcon(pixmap)
+
+    def load_mnt_app_icon(self, size: tuple[int, int] = (128, 128)) -> QIcon:
+        """Loads the MNT application icon from the resources folder."""
+        logo_filename = "mnt-app-icon.svg"
+        logo_path = self.resources_dir / "icons" / logo_filename
+
+        if not logo_path.exists():
+            msg = f"MNT app icon not found at {logo_path}"
+            raise FileNotFoundError(msg)
+
+        return self.svg_to_icon(logo_path, size)
 
     def load_mnt_logo(self) -> QSvgWidget:
         """Loads the MNT logo from an SVG file in the resources folder.
