@@ -276,7 +276,6 @@ def generate_plot(
        - Log scaling on each axis can be controlled individually with `xlog`, `ylog`, and `zlog` arguments.
        - The non-operational data points, if included, are displayed in a lighter color with reduced opacity.
 
-    // todo needs to be updated
     Example:
        ```python
        fig, ax = generate_plot(
