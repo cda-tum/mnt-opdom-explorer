@@ -35,13 +35,6 @@ physical simulations—one for each possible input pattern of _L_.
 
 ## Getting Started
 
-### Prerequisites
-
-Before you get started, make sure you have the following installed:
-
-- **Python 3.9 or newer**: This project requires Python 3.8+ to run.
-- **Git**: To clone the repository.
-
 ### Step 1: Clone the Repository
 
 First, clone the repository to your local machine using Git:
@@ -62,13 +55,12 @@ uv run main.py
 
 ### Step 3: Running Tests
 
-1. Install [nox](https://nox.thea.codes/en/stable/):
+1. Install [nox](https://nox.thea.codes/en/stable/) and run the tests:
 
    ```bash
    uv tool install nox
    ```
 
-2. Run the tests:
    ```bash
    uvx nox -s tests --verbose
    ```
@@ -102,8 +94,6 @@ uv run main.py
 ### Step 5: Contributing
 
 If you're interested in contributing, feel free to fork the repository and submit pull requests. Make sure to follow the coding guidelines and run tests before submitting your PR.
-
-For more details, check the [repository](https://github.com/cda-tum/opdom-explore).
 
 ## Reference
 
