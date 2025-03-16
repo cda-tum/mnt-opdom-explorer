@@ -46,7 +46,7 @@ cd opdom-explore
 
 ### 🖥️ Step 2: Running the Application
 
-First, make sure [uv](https://github.com/astral-sh/uv) is installed. Second, to start the _Operational Domain Explorer_, run the application as follows:
+First, make sure that [uv](https://github.com/astral-sh/uv) is installed. Second, to start the _Operational Domain Explorer_, run the application as follows:
 
 ```bash
 cd src/mnt/opdom_explorer/
