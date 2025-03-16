@@ -65,7 +65,7 @@ uv run main.py
    uvx nox -s tests --verbose
    ```
 
-### 🌌 Step 4: How to explore your first Operational Domain 🎉
+### 🌌 Step 4: How to explore your first Operational Domain
 
 <p align="center">
   <picture>
