@@ -53,83 +53,29 @@ git clone https://github.com/cda-tum/opdom-explore.git
 cd opdom-explore
 ```
 
-### Step 2: Set Up a Virtual Environment (Recommended)
+### Step 2: Running the Application
 
-It's a good practice to use a virtual environment to manage dependencies. You can set up a virtual environment by running:
-
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows, use 'venv\Scripts\activate'
-```
-
-Using `uv` as a package manager? Set up the virtual environment with:
-
-```bash
-uv venv
-source .venv/bin/activate
-```
-
-### Step 3: Install Dependencies
-
-With the virtual environment activated (if you chose to use one), install the project dependencies:
-
-```bash
-pip install --upgrade pip
-pip install .
-```
-
-<details>
-<summary><strong>When using uv:</strong> (<em>click to expand</em>)</summary>
-
-```bash
-uv sync
-```
-
-</details>
-
-### Step 4: Running the Application
-
-To start the _Operational Domain Explorer_, you can run the application as follows:
+First, make sure [uv](https://github.com/astral-sh/uv) is installed. Second, to start the _Operational Domain Explorer_, run the application as follows:
 
 ```bash
 cd src/mnt/opdom_explorer/
-python -m main
+uv run main.py
 ```
 
-<details>
-<summary><strong>When using uv: </strong> (<em>click to expand</em>)</summary>
+### Step 3: Running Tests
 
-```bash
-cd src/mnt/opdom_explorer/
-python main.py
-```
-
-</details>
-
-### Step 5: Running Tests
-
-To verify functionality:
-
-```bash
-pytest test
-```
-
-<details>
-<summary><strong>When using nox: </strong> (<em>click to expand</em>)</summary>
-
-1. Install `nox` using the `uv` tool:
+1. Install [nox](https://nox.thea.codes/en/stable/):
 
    ```bash
    uv tool install nox
    ```
 
-2. Run the tests using `nox`:
+2. Run the tests:
    ```bash
-   nox -s tests
+   uvx nox -s tests --verbose
    ```
-   </details>
 
-### Step 6: How to explore your first Operational Domain 🎉
+### Step 4: How to explore your first Operational Domain 🎉
 
 <p align="center">
   <picture>
@@ -139,23 +85,23 @@ pytest test
 
 ### Workflow Overview
 
-1. **Load SQD File**
+1. **Load SQD File:**
    Begin by loading an SiDB gate as an SQD file. Extensive gate libraries are available in the open-source project [_fiction_](https://github.com/cda-tum/fiction/tree/main/experiments/sidb_gate_libraries). Alternatively, you can use gates designed in tools like [_SiQAD_](https://github.com/siqad/siqad). It is crucial to ensure that the input and output cells are correctly specified in the SQD file.
 
-2. **Configure the Operational Domain Simulation**
+2. **Configure the Operational Domain Simulation:**
    The _Operational Domain Explorer_ offers a wide range of parameters and settings to simulate operational domains for various scenarios. This step is divided into three sections: _Physical Simulation_, _Gate Function_, and _Operational Domain_.
 
    - **Physical Simulation**: Select a simulation engine. Currently, [_ExGS_](https://fiction.readthedocs.io/en/latest/algorithms/sidb_simulation.html#exhaustive-ground-state-simulation), [_QuickSim_](https://fiction.readthedocs.io/en/latest/algorithms/sidb_simulation.html#exhaustive-ground-state-simulation), and [_QuickExact_](https://fiction.readthedocs.io/en/latest/algorithms/sidb_simulation.html#exhaustive-ground-state-simulation) are available, with faster simulators in development.
    - **Gate Function**: Specify the Boolean function the gate is designed to implement. Supported functions include AND, OR, NAND, NOR, XOR, and XNOR, with more to be added soon.
    - **Operational Domain**: Define how the operational domain is simulated. Choose from Grid Search, Random Sampling, Flood Fill, or Contour Tracing algorithms. Additionally, set the dimensions, range, and resolution of the operational domain. You can also configure whether to tolerate or reject kinks in the operational domain.
 
-3. **Run the Operational Domain Simulation**
+3. **Run the Operational Domain Simulation:**
    Once the settings are configured, start the operational domain simulation. Note that simulation time can vary, taking several minutes for high resolution. After simulation is finished, the settings widget is replaced with a visual representation of the operational domain.
 
-4. **Analyze the Results**
+4. **Analyze the Results:**
    Analyze the operational domain to gain insights into charge distribution at any parameter point and understand why the gate is operational or not. Use the slider below the layout plot to explore charge distributions for different input patterns. Keep in mind: if the gate is non-operational for any input pattern, it is considered non-operational overall.
 
-### Step 7: Contributing
+### Step 5: Contributing
 
 If you're interested in contributing, feel free to fork the repository and submit pull requests. Make sure to follow the coding guidelines and run tests before submitting your PR.
 
