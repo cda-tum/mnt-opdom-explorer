@@ -5,7 +5,7 @@
 [![License](https://img.shields.io/github/license/cda-tum/mnt-opdom-explorer?label=License&style=flat-square)](https://github.com/cda-tum/mnt-opdom-explorer/blob/main/LICENSE)
 [![IEEEXplore](https://img.shields.io/static/v1?label=ACM&message=Paper&color=informational&style=flat-square)](https://dl.acm.org/doi/10.1145/3611315.3633246)
 
-# **Operational Domain Explorer**
+# 💻 **Operational Domain Explorer**
 
 > [!Important]
 > This project is still in the early stages of development. We appreciate your patience and understanding as work to improve the GUI continues.
