@@ -35,8 +35,6 @@ physical simulations—one for each possible input pattern of _L_.
 
 ## Getting Started
 
----
-
 ### Prerequisites
 
 Before you get started, make sure you have the following installed:
