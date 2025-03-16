@@ -24,18 +24,18 @@ Domain Explorer is developed as part of the _Munich Nanotech Toolkit_ (_MNT_) by
 the [Chair for Design Automation](https://www.cda.cit.tum.de/) at
 the [Technical University of Munich](https://www.tum.de/).
 
-## Operational Domain Analysis
+## 📊 **Operational Domain Analysis**
 
 The _Operational Domain_ was proposed as a methodology to evaluate the extent of physical parameter variations that an
 SiDB logic gate can tolerate by plotting the logical correctness of that gate's behavior across a predetermined range of
-physical parameters. Given an SiDB layout _L_ and a Boolean function _f : 𝔹ⁿ ⟶ 𝔹ᵐ_, the operational domain of _L_ given
+physical parameters. Given an SiDB layout _L_ and a Boolean function _f : 𝗟ⁿ ⟼ 𝗟ᵐ_, the operational domain of _L_ given
 _f_ is defined in the parameter space as the set of coordinate points for which _L_ implements _f_. To determine whether
 _L_ implements _f_ at any given coordinate point _(x, y, z)_, this point can be sampled, i.e., by conducting _2ⁿ_
 physical simulations—one for each possible input pattern of _L_.
 
-## Getting Started
+## 🚀 **Getting Started**
 
-### Step 1: Clone the Repository
+### 📥 Step 1: Clone the Repository
 
 First, clone the repository to your local machine using Git:
 
@@ -44,7 +44,7 @@ git clone https://github.com/cda-tum/opdom-explore.git
 cd opdom-explore
 ```
 
-### Step 2: Running the Application
+### 🖥️ Step 2: Running the Application
 
 First, make sure [uv](https://github.com/astral-sh/uv) is installed. Second, to start the _Operational Domain Explorer_, run the application as follows:
 
@@ -53,7 +53,7 @@ cd src/mnt/opdom_explorer/
 uv run main.py
 ```
 
-### Step 3: Running Tests
+### ✅ Step 3: Running Tests
 
 1. Install [nox](https://nox.thea.codes/en/stable/) and run the tests:
 
@@ -65,7 +65,7 @@ uv run main.py
    uvx nox -s tests --verbose
    ```
 
-### Step 4: How to explore your first Operational Domain 🎉
+### 🌌 Step 4: How to explore your first Operational Domain 🎉
 
 <p align="center">
   <picture>
@@ -73,29 +73,29 @@ uv run main.py
   </picture>
 </p>
 
-### Workflow Overview
+### 📜 **Workflow Overview**
 
-1. **Load SQD File:**
+1. **📂 Load SQD File:**
    Begin by loading an SiDB gate as an SQD file. Extensive gate libraries are available in the open-source project [_fiction_](https://github.com/cda-tum/fiction/tree/main/experiments/sidb_gate_libraries). Alternatively, you can use gates designed in tools like [_SiQAD_](https://github.com/siqad/siqad). It is crucial to ensure that the input and output cells are correctly specified in the SQD file.
 
-2. **Configure the Operational Domain Simulation:**
+2. **⚙️ Configure the Operational Domain Simulation:**
    The _Operational Domain Explorer_ offers a wide range of parameters and settings to simulate operational domains for various scenarios. This step is divided into three sections: _Physical Simulation_, _Gate Function_, and _Operational Domain_.
 
    - **Physical Simulation**: Select a simulation engine. Currently, [_ExGS_](https://fiction.readthedocs.io/en/latest/algorithms/sidb_simulation.html#exhaustive-ground-state-simulation), [_QuickSim_](https://fiction.readthedocs.io/en/latest/algorithms/sidb_simulation.html#exhaustive-ground-state-simulation), and [_QuickExact_](https://fiction.readthedocs.io/en/latest/algorithms/sidb_simulation.html#exhaustive-ground-state-simulation) are available, with faster simulators in development.
    - **Gate Function**: Specify the Boolean function the gate is designed to implement. Supported functions include AND, OR, NAND, NOR, XOR, and XNOR, with more to be added soon.
    - **Operational Domain**: Define how the operational domain is simulated. Choose from Grid Search, Random Sampling, Flood Fill, or Contour Tracing algorithms. Additionally, set the dimensions, range, and resolution of the operational domain. You can also configure whether to tolerate or reject kinks in the operational domain.
 
-3. **Run the Operational Domain Simulation:**
+3. **▶️ Run the Operational Domain Simulation:**
    Once the settings are configured, start the operational domain simulation. Note that simulation time can vary, taking several minutes for high resolution. After simulation is finished, the settings widget is replaced with a visual representation of the operational domain.
 
-4. **Analyze the Results:**
+4. **🔍 Analyze the Results:**
    Analyze the operational domain to gain insights into charge distribution at any parameter point and understand why the gate is operational or not. Use the slider below the layout plot to explore charge distributions for different input patterns. Keep in mind: if the gate is non-operational for any input pattern, it is considered non-operational overall.
 
-### Step 5: Contributing
+## 🤝 **Contributing**
 
 If you're interested in contributing, feel free to fork the repository and submit pull requests. Make sure to follow the coding guidelines and run tests before submitting your PR.
 
-## Reference
+## 📖 **Reference**
 
 If you use the _Operational Domain Explorer_ for academic purposes, we would be thankful if you referred to it by citing the following publication:
 
@@ -109,7 +109,7 @@ If you use the _Operational Domain Explorer_ for academic purposes, we would be 
 
 ---
 
-## License
+## 📜 **License**
 
 This project is licensed under the [Prosperity Public License 3.0.0](https://prosperitylicense.com/versions/3.0.0).
 
@@ -125,7 +125,7 @@ the [LICENSE.md](https://github.com/cda-tum/mnt-opdom-explorer/blob/main/LICENSE
 
 ---
 
-## Acknowledgements
+## 🙏 **Acknowledgements**
 
 The Munich Nanotech Toolkit has been supported by the Bavarian State Ministry for Science and Arts through the
 Distinguished Professorship Program.
