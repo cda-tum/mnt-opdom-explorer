@@ -1,11 +1,11 @@
 ![OS](https://img.shields.io/badge/OS-Linux%20%7C%20macOS%20%7C%20Windows-blue?style=flat-square)
-[![Python](https://img.shields.io/badge/Python-%20%203.8%20|%203.9%20|%203.10%20|%203.11-blue?logo=python&style=flat-square)](https://github.com/cda-tum/mnt-opdom-explorer/actions)
+[![Python](https://img.shields.io/badge/Python-%20%203.10%20|%203.11%20|%203.12%20|%203.13-blue?logo=python&style=flat-square)](https://github.com/cda-tum/mnt-opdom-explorer/actions)
 [![CI](https://img.shields.io/github/actions/workflow/status/cda-tum/mnt-opdom-explorer/ci.yml?style=flat-square&logo=github&label=CI)](https://github.com/cda-tum/mnt-opdom-explorer/actions/workflows/ci.yml)
 [![Coverage](https://img.shields.io/codecov/c/github/cda-tum/mnt-opdom-explorer?label=Coverage&logo=codecov&style=flat-square)](https://codecov.io/gh/cda-tum/mnt-opdom-explorer)
 [![License](https://img.shields.io/github/license/cda-tum/mnt-opdom-explorer?label=License&style=flat-square)](https://github.com/cda-tum/mnt-opdom-explorer/blob/main/LICENSE)
 [![IEEEXplore](https://img.shields.io/static/v1?label=ACM&message=Paper&color=informational&style=flat-square)](https://dl.acm.org/doi/10.1145/3611315.3633246)
 
-# 💻 **Operational Domain Explorer**
+# **Operational Domain Explorer**
 
 > [!Important]
 > This project is still in the early stages of development. We appreciate your patience and understanding as work to improve the GUI continues.
@@ -28,7 +28,7 @@ the [Technical University of Munich](https://www.tum.de/).
 
 The _Operational Domain_ was proposed as a methodology to evaluate the extent of physical parameter variations that an
 SiDB logic gate can tolerate by plotting the logical correctness of that gate's behavior across a predetermined range of
-physical parameters. Given an SiDB layout _L_ and a Boolean function _f : 𝗟ⁿ ⟼ 𝗟ᵐ_, the operational domain of _L_ given
+physical parameters. Given an SiDB layout _L_ and a Boolean function $f : \mathbb{B}^{n} ⟼ \mathbb{B}^{m}$, the operational domain of _L_ given
 _f_ is defined in the parameter space as the set of coordinate points for which _L_ implements _f_. To determine whether
 _L_ implements _f_ at any given coordinate point _(x, y, z)_, this point can be sampled, i.e., by conducting _2ⁿ_
 physical simulations—one for each possible input pattern of _L_.
@@ -46,7 +46,13 @@ cd opdom-explore
 
 ### 🖥️ Step 2: Running the Application
 
-First, make sure that [uv](https://github.com/astral-sh/uv) is installed. Second, to start the _Operational Domain Explorer_, run the application as follows:
+First, make sure to install [uv](https://github.com/astral-sh/uv).
+
+```bash
+pip install uv
+```
+
+Second, to start the _Operational Domain Explorer_, run the application as follows:
 
 ```bash
 cd src/mnt/opdom_explorer/
@@ -55,11 +61,7 @@ uv run main.py
 
 ### ✅ Step 3: Running Tests
 
-1. Install [nox](https://nox.thea.codes/en/stable/) and run the tests:
-
-   ```bash
-   uv tool install nox
-   ```
+1. Run the tests:
 
    ```bash
    uvx nox -s tests --verbose
@@ -76,20 +78,22 @@ uv run main.py
 ### 📜 **Workflow Overview**
 
 1. **📂 Load SQD File:**
-   Begin by loading an SiDB gate as an SQD file. Extensive gate libraries are available in the open-source project [_fiction_](https://github.com/cda-tum/fiction/tree/main/experiments/sidb_gate_libraries). Alternatively, you can use gates designed in tools like [_SiQAD_](https://github.com/siqad/siqad). It is crucial to ensure that the input and output cells are correctly specified in the SQD file.
+   Begin by loading an SiDB gate as an SQD file. Extensive gate libraries are available in the open-source project [_fiction_](https://github.com/cda-tum/fiction/tree/main/experiments/sidb_gate_libraries). Alternatively, you can use gates designed in tools like [_SiQAD_](https://github.com/siqad/siqad). It is crucial to ensure that the input and output cells are correctly specified in the SQD file. To be precise, `<type>input</type>` for input cells and `<type>output</type>` for output cells must be present in the SQD file directly below the `<latcoord n="..." m="..." l="..."/>` tag of the respective SiDBs.
 
 2. **⚙️ Configure the Operational Domain Simulation:**
    The _Operational Domain Explorer_ offers a wide range of parameters and settings to simulate operational domains for various scenarios. This step is divided into three sections: _Physical Simulation_, _Gate Function_, and _Operational Domain_.
 
    - **Physical Simulation**: Select a simulation engine. Currently, [_ExGS_](https://fiction.readthedocs.io/en/latest/algorithms/sidb_simulation.html#exhaustive-ground-state-simulation), [_QuickSim_](https://fiction.readthedocs.io/en/latest/algorithms/sidb_simulation.html#exhaustive-ground-state-simulation), and [_QuickExact_](https://fiction.readthedocs.io/en/latest/algorithms/sidb_simulation.html#exhaustive-ground-state-simulation) are available, with faster simulators in development.
-   - **Gate Function**: Specify the Boolean function the gate is designed to implement. Supported functions include AND, OR, NAND, NOR, XOR, and XNOR, with more to be added soon.
-   - **Operational Domain**: Define how the operational domain is simulated. Choose from Grid Search, Random Sampling, Flood Fill, or Contour Tracing algorithms. Additionally, set the dimensions, range, and resolution of the operational domain. You can also configure whether to tolerate or reject kinks in the operational domain.
+   - **Gate Function**: Specify the Boolean function the gate is intended to implement. Supported functions include AND, OR, NAND, NOR, XOR, and XNOR, with more to be added soon.
+   - **Operational Domain**: Define how the operational domain is simulated. Choose from _Grid Search_, _Random Sampling_, _Flood Fill_, or _Contour Tracing_ algorithms. Additionally, set the dimensions, range, and resolution of the operational domain. You can also configure whether to tolerate or reject kinks in the operational domain.
+
+   Users can hover over the help icons to get more information.
 
 3. **▶️ Run the Operational Domain Simulation:**
-   Once the settings are configured, start the operational domain simulation. Note that simulation time can vary, taking several minutes for high resolution. After simulation is finished, the settings widget is replaced with a visual representation of the operational domain.
+   Once the settings are configured, start the operational domain simulation. Note that simulation time can vary depending on the simulation engine, reconstruction algorithm, resolution, etc. High-effort simulation may take several minutes, whereas lower resolutions can be explored almost instantaneously. After the simulation is finished, the settings widget is replaced with a visual representation of the operational domain.
 
 4. **🔍 Analyze the Results:**
-   Analyze the operational domain to gain insights into charge distribution at any parameter point and understand why the gate is operational or not. Use the slider below the layout plot to explore charge distributions for different input patterns. Keep in mind: if the gate is non-operational for any input pattern, it is considered non-operational overall.
+   Analyze the operational domain by clicking the plot to gain insights into charge distribution at any parameter point and understand why the gate is operational or not. Blue, gray, and red represent negatively, neutrally, and positively charged SiDBs, respectively. Use the slider below the layout plot to explore the charge distribution for different input patterns. Note that if the gate is inoperable for any input pattern, it is considered inoperable overall. To aid in the analysis, the output binary-dot logic (BDL) pair is framed with a green or red rectangle to represent operational or non-operational behavior, respectively. In addition, if the gate is non-operational due to the presence of kinks, a red `⚡` symbol is displayed.
 
 ## 🤝 **Contributing**
 
