@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -25,6 +25,7 @@ class LayoutVisualizer(QWidget):
         bb_min: pyfiction.offset_coordinate,
         bb_max: pyfiction.offset_coordinate,
         slider_value: int,
+        input_encoding: Literal["distance", "presence"] | None = None,
         charge_lyt: pyfiction.charge_distribution_surface_100 = None,
         operation_status: pyfiction.operational_status = None,
         parameter_point: tuple[float, float] | None = None,
@@ -39,6 +40,7 @@ class LayoutVisualizer(QWidget):
             bb_min: Minimum grid position for plotting.
             bb_max: Maximum grid position for plotting.
             slider_value: Value of the slider to include in the plot filename.
+            input_encoding: Optional input signal encoding type for the layout (e.g., "distance", "presence").
             charge_lyt: Optional charge distribution layout for charges.
             operation_status: Optional operational status (e.g., OPERATIONAL).
             parameter_point: Optional tuple for parameter coordinates.
@@ -56,6 +58,8 @@ class LayoutVisualizer(QWidget):
             plot_image_path = (
                 script_dir / "caching" / f"lyt_plot_{slider_value}_x_{parameter_point[0]}_y_{parameter_point[1]}.svg"
             )
+        elif input_encoding is not None:
+            plot_image_path = script_dir / "caching" / f"lyt_plot_{input_encoding}_{slider_value}.svg"
         else:
             plot_image_path = script_dir / "caching" / f"lyt_plot_{slider_value}.svg"
 

@@ -30,23 +30,23 @@ class SimulationThread(QThread):
     def __init__(
         self,
         lyt: pyfiction.charge_distribution_surface_100,
+        input_iterator: pyfiction.bdl_input_iterator_100,
         qe_params: pyfiction.quickexact_params,
-        num_input_pairs: int,
     ) -> None:
         super().__init__()
         self.lyt = lyt
+        self.input_iterator = input_iterator
         self.qe_params = qe_params
-        self.num_input_pairs = num_input_pairs
+        self.num_input_pairs = self.input_iterator.num_input_pairs()
 
     def run(self) -> None:
-        input_iterator = pyfiction.bdl_input_iterator_100(self.lyt)
         total_steps = 2**self.num_input_pairs  # Calculate total steps
 
         for i in range(total_steps):
             # print(f"Running simulation for iteration {i}")  # Debugging statement
 
             # Proceed with the simulation for the current input pattern
-            sim_result = pyfiction.quickexact(input_iterator.get_layout(), self.qe_params)
+            sim_result = pyfiction.quickexact(self.input_iterator.get_layout(), self.qe_params)
 
             # Emit the simulation result for this iteration
             self.simulation_result_ready.emit(i, sim_result)
@@ -57,7 +57,7 @@ class SimulationThread(QThread):
             self.progress.emit(progress_value)  # Update progress (0-100)
 
             # Move to the next input pattern
-            input_iterator += 1
+            self.input_iterator += 1
 
             # Optional delay for testing purposes
             # time.sleep(0.1)  # Uncomment this line to slow down the simulation for testing
@@ -70,7 +70,6 @@ class PlotOperationalDomainWidget(QWidget):
         self,
         settings_widget: SettingsWidget,
         lyt: pyfiction.charge_distribution_surface_100,
-        input_iterator: pyfiction.bdl_input_iterator_100,
         max_pos_initial: pyfiction.offset_coordinate,
         min_pos_initial: pyfiction.offset_coordinate,
         qlabel: QLabel,
@@ -80,7 +79,6 @@ class PlotOperationalDomainWidget(QWidget):
         super().__init__()
         self.settings_widget = settings_widget
         self.lyt = lyt
-        self.input_iterator = input_iterator
         self.previous_dot = None
         self.slider_value = slider_value
         self.plot_view_active = plot_view_active
@@ -214,10 +212,18 @@ class PlotOperationalDomainWidget(QWidget):
         self.sim_params.mu_minus = self.settings_widget.get_mu_minus()
         self.sim_params.lambda_tf = self.settings_widget.get_lambda_tf()
 
+        bdl_input_params = pyfiction.bdl_input_iterator_params()
+        bdl_input_params.input_bdl_config = (
+            pyfiction.input_bdl_configuration.PERTURBER_DISTANCE_ENCODED
+            if self.settings_widget.get_input_signal_encoding() == "Distance Encoding"
+            else pyfiction.input_bdl_configuration.PERTURBER_ABSENCE_ENCODED
+        )
+
         is_op_params = pyfiction.is_operational_params()
+        is_op_params.input_bdl_iterator_params = bdl_input_params
+        is_op_params.op_condition = self.op_condition_map[self.settings_widget.get_operational_condition()]
         is_op_params.simulation_parameters = self.sim_params
         is_op_params.sim_engine = self.engine_map[self.settings_widget.get_simulation_engine()]
-        is_op_params.op_condition = self.op_condition_map[self.settings_widget.get_operational_condition()]
 
         op_dom_params = pyfiction.operational_domain_params()
         op_dom_params.operational_params = is_op_params
@@ -382,14 +388,23 @@ class PlotOperationalDomainWidget(QWidget):
         self.qe_params.base_number_detection = pyfiction.automatic_base_number_detection.ON
         self.qe_params.simulation_parameters = self.qe_sim_params
 
-        # Reset the input iterator
-        self.input_iterator = pyfiction.bdl_input_iterator_100(self.lyt)
-        self.input_iterator_initial = pyfiction.bdl_input_iterator_100(self.lyt)
+        # Initialize an input iterator
+        bdl_input_iterator_params = pyfiction.bdl_input_iterator_params()
+        bdl_input_iterator_params.input_bdl_config = (
+            pyfiction.input_bdl_configuration.PERTURBER_DISTANCE_ENCODED
+            if self.settings_widget.get_input_signal_encoding() == "Distance Encoding"
+            else pyfiction.input_bdl_configuration.PERTURBER_ABSENCE_ENCODED
+        )
+        input_iterator = pyfiction.bdl_input_iterator_100(self.lyt, bdl_input_iterator_params)
+
+        is_op_params = pyfiction.is_operational_params()
+        is_op_params.input_bdl_iterator_params = bdl_input_iterator_params
+        is_op_params.op_condition = self.op_condition_map[self.settings_widget.get_operational_condition()]
+        is_op_params.simulation_parameters = self.sim_params
+        is_op_params.sim_engine = self.engine_map[self.settings_widget.get_simulation_engine()]
 
         # Get the gate function
         gate_func = self.boolean_function_map[self.settings_widget.get_boolean_function()]
-        is_op_params = pyfiction.is_operational_params()
-        is_op_params.simulation_parameters = self.qe_sim_params
 
         if (
             self.op_condition_map[self.settings_widget.get_operational_condition()]
@@ -401,11 +416,8 @@ class PlotOperationalDomainWidget(QWidget):
 
         self.operational_patterns = pyfiction.operational_input_patterns(self.lyt, gate_func, is_op_params)
 
-        # Calculate number of input pairs
-        num_input_pairs = self.input_iterator.num_input_pairs()
-
         # Create a new simulation thread with necessary data
-        self.simulation_thread = SimulationThread(self.lyt, self.qe_params, num_input_pairs)
+        self.simulation_thread = SimulationThread(self.lyt, input_iterator, self.qe_params)
         self.simulation_thread.progress.connect(self.update_progress_bar, Qt.ConnectionType.QueuedConnection)
         self.simulation_thread.finished.connect(self.simulation_finished, Qt.ConnectionType.QueuedConnection)
         self.simulation_thread.finished.connect(self.simulation_thread.deleteLater, Qt.ConnectionType.QueuedConnection)
@@ -438,40 +450,59 @@ class PlotOperationalDomainWidget(QWidget):
         if self.kink_induced_non_op_patterns is not None and iteration in self.kink_induced_non_op_patterns:
             kink_induced_operational_status = pyfiction.operational_status.NON_OPERATIONAL
 
+        # Initialize an input iterator
+        bdl_input_iterator_params = pyfiction.bdl_input_iterator_params()
+        bdl_input_iterator_params.input_bdl_config = (
+            pyfiction.input_bdl_configuration.PERTURBER_DISTANCE_ENCODED
+            if self.settings_widget.get_input_signal_encoding() == "Distance Encoding"
+            else pyfiction.input_bdl_configuration.PERTURBER_ABSENCE_ENCODED
+        )
+        input_iterator = pyfiction.bdl_input_iterator_100(self.lyt, bdl_input_iterator_params)
+
+        # Advance the iterator to match the current iteration
+        for _ in range(iteration):
+            input_iterator += 1
+
+        # Create binary representation with proper padding
+        bin_value = f"{iteration:0{input_iterator.num_input_pairs()}b}"
+
         # Plot the new layout and charge distribution
         _ = self.visualizer.visualize_layout(
             self.lyt,
-            self.input_iterator_initial.get_layout(),
+            input_iterator.get_layout(),
             self.min_pos,
             self.max_pos,
-            iteration,
-            gs,
-            status,
+            slider_value=iteration,
+            charge_lyt=gs,
+            operation_status=status,
             parameter_point=(self.x, self.y),
-            bin_value=f"{iteration:b}".zfill(self.input_iterator.num_input_pairs()),
+            bin_value=bin_value,
             kink_induced_operational_status=kink_induced_operational_status,
+            input_encoding="distance"
+            if self.settings_widget.get_input_signal_encoding() == "Distance Encoding"
+            else "presence",
         )
 
         # Update the QLabel if this is the current slider value
         if iteration == self.get_slider_value():
             plot_image_path = self.visualizer.visualize_layout(
                 self.lyt,
-                self.input_iterator_initial.get_layout(),
+                input_iterator.get_layout(),
                 self.min_pos,
                 self.max_pos,
-                self.get_slider_value(),
-                gs,
-                status,
+                slider_value=self.get_slider_value(),
+                charge_lyt=gs,
+                operation_status=status,
                 parameter_point=(self.x, self.y),
-                bin_value=f"{self.get_slider_value():0{self.input_iterator.num_input_pairs()}b}",
+                bin_value=bin_value,
                 kink_induced_operational_status=kink_induced_operational_status,
+                input_encoding="distance"
+                if self.settings_widget.get_input_signal_encoding() == "Distance Encoding"
+                else "presence",
             )
 
             self.pixmap = QPixmap(str(plot_image_path))
             self.plot_label.setPixmap(self.pixmap)
-
-        # Move to the next input pattern
-        self.input_iterator_initial += 1
 
     def get_slider_value(self) -> int:
         return self.slider_value
