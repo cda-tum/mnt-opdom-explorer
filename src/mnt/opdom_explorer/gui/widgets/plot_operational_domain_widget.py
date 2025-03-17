@@ -353,9 +353,9 @@ class PlotOperationalDomainWidget(QWidget):
             self.qe_sim_params.mu_minus = self.y
 
         # Perform Positive Charges Check in the Main Thread
-        positive_charges_possible = pyfiction.can_positive_charges_occur(self.lyt, self.qe_sim_params)
+        self.positive_charges_possible = pyfiction.can_positive_charges_occur(self.lyt, self.qe_sim_params)
 
-        if positive_charges_possible and self.lyt.num_cells() > 15:
+        if self.positive_charges_possible:
             # Display a QMessageBox with OK and Back buttons
             msg_box = QMessageBox(self)
             msg_box.setWindowTitle("Positive Charges May Occur")
@@ -442,7 +442,8 @@ class PlotOperationalDomainWidget(QWidget):
 
         # Determine operational status
         status = pyfiction.operational_status.NON_OPERATIONAL
-        if iteration in self.operational_patterns:
+
+        if not self.positive_charges_possible and iteration in self.operational_patterns:
             status = pyfiction.operational_status.OPERATIONAL
 
         # check if kinks induce the layout to become non-operational
