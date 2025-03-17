@@ -292,6 +292,39 @@ class SettingsWidget(QWidget):
 
         return boolean_function_layout
 
+    def _create_input_signal_perturber_radio_buttons(self) -> QHBoxLayout:
+        """Creates radio buttons for selecting the input signal perturber encoding.
+
+        Returns:
+            QHBoxLayout: The layout containing the radio buttons.
+        """
+        input_signal_perturber_layout = QHBoxLayout()
+        input_signal_perturber_label = QLabel("Input Signal Perturber")
+
+        # Radio buttons
+        distance_encoding_radio = QRadioButton("Distance Encoding")
+        presence_encoding_radio = QRadioButton("Presence Encoding")
+
+        self.input_signal_perturber_group = QButtonGroup(self)
+        self.input_signal_perturber_group.addButton(distance_encoding_radio)
+        self.input_signal_perturber_group.addButton(presence_encoding_radio)
+
+        input_signal_perturber_layout.addWidget(input_signal_perturber_label, 30)
+        input_signal_perturber_layout.addWidget(distance_encoding_radio, 34)
+        input_signal_perturber_layout.addWidget(presence_encoding_radio, 34)
+
+        input_signal_perturber_info_tag = InfoTag(
+            "Encoding method used for placing the perturbers that represent the input signals.\n"
+            "Distance Encoding: Input signals are encoded by the distance of the perturber (0 = far, 1 = close).\n"
+            "Presence Encoding: Input signals are encoded by the presence of the perturber (0 = absence, 1 = presence)."
+        )
+        input_signal_perturber_layout.addWidget(input_signal_perturber_info_tag, 1)
+
+        # Set default selection
+        distance_encoding_radio.setChecked(True)
+
+        return input_signal_perturber_layout
+
     def _create_gate_function_group(self) -> IconGroupBox:
         """Creates the gate function group containing the Boolean function drop-down.
 
@@ -301,6 +334,8 @@ class SettingsWidget(QWidget):
         gate_function_group = IconGroupBox(title="Gate Function", icon=self.icon_loader.load_function_icon())
         # Boolean function drop-down
         gate_function_group.add_layout(self._create_boolean_function_drop_down())
+        # Input signal perturber radio buttons
+        gate_function_group.add_layout(self._create_input_signal_perturber_radio_buttons())
 
         return gate_function_group
 
@@ -831,6 +866,17 @@ class SettingsWidget(QWidget):
             str: The selected Boolean function.
         """
         return self.boolean_function_dropdown.currentText()
+
+    def get_input_signal_encoding(self) -> str | None:
+        """Retrieves the selected input signal perturber encoding.
+
+        Returns:
+            str | None: The selected input signal perturber encoding.
+        """
+        for button in self.input_signal_perturber_group.buttons():
+            if button.isChecked():
+                return button.text()
+        return None
 
     def get_algorithm(self) -> str:
         """Retrieves the selected operational domain algorithm.

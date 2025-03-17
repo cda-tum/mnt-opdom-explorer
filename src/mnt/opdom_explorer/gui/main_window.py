@@ -11,6 +11,7 @@ from PyQt6.QtWidgets import (
     QLabel,
     QMainWindow,
     QPushButton,
+    QRadioButton,
     QSizePolicy,
     QSlider,
     QSpacerItem,
@@ -29,7 +30,10 @@ from .widgets.icon_loader import IconLoader
 class MainWindow(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
-        self.bdl_input_iterator = None
+        self.bdl_input_iterator_distance_encoding = None
+        self.bdl_input_iterator_presence_encoding = None
+        self.current_signal_encoding = pyfiction.input_bdl_configuration.PERTURBER_DISTANCE_ENCODED
+
         self._init_ui()
         self.plot_view_active = True  # Start with the layout plot without charges
         self.current_file_name_label = QLabel(self)  # Label for displaying the file name
@@ -73,10 +77,25 @@ class MainWindow(QMainWindow):
         file_name = Path(file_path).name  # Extract the file name from the full path
         self.current_file_name_label.setText(f"{file_name}")
 
-        # Parse the layout file and initialize the BDL input iterator
+        # Parse the layout file and initialize the BDL input iterators
         self.lyt = pyfiction.read_sqd_layout_100(file_path)
         self.min_pos, self.max_pos = self.lyt.bounding_box_2d()
-        self.bdl_input_iterator = pyfiction.bdl_input_iterator_100(self.lyt)
+
+        bdl_input_iterator_params_distance = pyfiction.bdl_input_iterator_params()
+        bdl_input_iterator_params_distance.input_bdl_config = (
+            pyfiction.input_bdl_configuration.PERTURBER_DISTANCE_ENCODED
+        )
+        bdl_input_iterator_params_presence = pyfiction.bdl_input_iterator_params()
+        bdl_input_iterator_params_presence.input_bdl_config = (
+            pyfiction.input_bdl_configuration.PERTURBER_ABSENCE_ENCODED
+        )
+
+        self.bdl_input_iterator_distance_encoding = pyfiction.bdl_input_iterator_100(
+            self.lyt, bdl_input_iterator_params_distance
+        )
+        self.bdl_input_iterator_presence_encoding = pyfiction.bdl_input_iterator_100(
+            self.lyt, bdl_input_iterator_params_presence
+        )
 
         # Create layout for display
         box_layout_view = QVBoxLayout()
@@ -105,7 +124,7 @@ class MainWindow(QMainWindow):
 
         # Create and configure QSlider
         self.slider = QSlider(Qt.Horizontal, self)
-        self.slider.setRange(0, 2 ** self.bdl_input_iterator.num_input_pairs() - 1)
+        self.slider.setRange(0, 2 ** self.bdl_input_iterator_distance_encoding.num_input_pairs() - 1)
         self.slider.setTickInterval(1)  # Ticks at each integer position
         self.slider.setTickPosition(QSlider.TicksBelow)
 
@@ -170,6 +189,7 @@ class MainWindow(QMainWindow):
         self.settings = SettingsWidget(file_name)
         self.settings.run_button.clicked.connect(self.settings.disable_run_button)
         self.settings.run_button.clicked.connect(self.plot_operational_domain)
+        self.settings.input_signal_perturber_group.buttonClicked.connect(self.update_input_signal_encoding)
         splitter.addWidget(self.settings)
 
         # Add the splitter to the stacked widget and switch view
@@ -180,7 +200,6 @@ class MainWindow(QMainWindow):
         self.plot = PlotOperationalDomainWidget(
             self.settings,
             self.lyt,
-            self.bdl_input_iterator,
             self.max_pos,
             self.min_pos,
             self.plot_label,
@@ -188,21 +207,32 @@ class MainWindow(QMainWindow):
         )
 
         # Generate plots for each slider value
-        for i in range(2 ** self.bdl_input_iterator.num_input_pairs()):
+        for i in range(2 ** self.bdl_input_iterator_distance_encoding.num_input_pairs()):
             _ = self.visualizer.visualize_layout(
                 lyt_original=self.lyt,
-                lyt=self.bdl_input_iterator.get_layout(),
+                lyt=self.bdl_input_iterator_distance_encoding.get_layout(),
                 bb_min=self.min_pos,
                 bb_max=self.max_pos,
                 slider_value=i,
-                bin_value=f"{i:b}".zfill(self.bdl_input_iterator.num_input_pairs()),
+                input_encoding="distance",
+                bin_value=f"{i:b}".zfill(self.bdl_input_iterator_distance_encoding.num_input_pairs()),
             )
-            self.bdl_input_iterator += 1
+            self.bdl_input_iterator_distance_encoding += 1
 
-        self.bdl_input_iterator = pyfiction.bdl_input_iterator_100(self.lyt)  # Reset the iterator
+        for i in range(2 ** self.bdl_input_iterator_presence_encoding.num_input_pairs()):
+            _ = self.visualizer.visualize_layout(
+                lyt_original=self.lyt,
+                lyt=self.bdl_input_iterator_presence_encoding.get_layout(),
+                bb_min=self.min_pos,
+                bb_max=self.max_pos,
+                slider_value=i,
+                input_encoding="presence",
+                bin_value=f"{i:b}".zfill(self.bdl_input_iterator_presence_encoding.num_input_pairs()),
+            )
+            self.bdl_input_iterator_presence_encoding += 1
 
         # Construct the full path to the file
-        plot_image_path = self.caching_dir / f"lyt_plot_{self.slider.value()}.svg"
+        plot_image_path = self.caching_dir / f"lyt_plot_distance_{self.slider.value()}.svg"
 
         # Load the image using QPixmap
         pixmap = QPixmap(str(plot_image_path))  # Convert Path object to string
@@ -238,30 +268,50 @@ class MainWindow(QMainWindow):
         self.plot_view_active = self.plot.get_layout_plot_view_active()
 
         self.plot.update_slider_value(value)
-        # Assume self.bdl_input_iterator is already defined in your class
         value_diff = value - self.previous_slider_value
-        if value_diff != 0 or ((value & self.previous_slider_value) == 0):
-            self.bdl_input_iterator += value_diff
 
-            self.previous_slider_value = value
+        self.bdl_input_iterator_distance_encoding += value_diff
+        self.bdl_input_iterator_presence_encoding += value_diff
 
-            if self.plot_view_active:
-                # Construct the full path to the file
-                plot_image_path = self.caching_dir / f"lyt_plot_{self.slider.value()}.svg"
+        self.previous_slider_value = value
 
-                self.pixmap = QPixmap(str(plot_image_path))
-            else:
-                x, y = self.plot.picked_x_y()
-                # Construct the full path to the file
-                plot_image_path = self.caching_dir / f"lyt_plot_{self.slider.value()}_x_{x}_y_{y}.svg"
-
-                # Load the image using QPixmap
-                self.pixmap = QPixmap(str(plot_image_path))
-
-            self.pixmap = self.pixmap.scaled(
-                self.desired_width, self.desired_height, Qt.KeepAspectRatio, Qt.SmoothTransformation
+        if self.plot_view_active:
+            encoding = (
+                "distance"
+                if self.current_signal_encoding == pyfiction.input_bdl_configuration.PERTURBER_DISTANCE_ENCODED
+                else "presence"
             )
-            self.plot_label.setPixmap(self.pixmap)
+            # Construct the full path to the file
+            plot_image_path = self.caching_dir / f"lyt_plot_{encoding}_{self.slider.value()}.svg"
+
+            self.pixmap = QPixmap(str(plot_image_path))
+        else:
+            x, y = self.plot.picked_x_y()
+            # Construct the full path to the file
+            plot_image_path = self.caching_dir / f"lyt_plot_{self.slider.value()}_x_{x}_y_{y}.svg"
+
+            # Load the image using QPixmap
+            self.pixmap = QPixmap(str(plot_image_path))
+
+        self.pixmap = self.pixmap.scaled(
+            self.desired_width, self.desired_height, Qt.KeepAspectRatio, Qt.SmoothTransformation
+        )
+        self.plot_label.setPixmap(self.pixmap)
+
+    def update_input_signal_encoding(self, button: QRadioButton) -> None:
+        """Updates the bdl_input_iterator based on the selected input signal perturber encoding.
+
+        Args:
+            button: The radio button that was clicked.
+        """
+        encoding = button.text()
+
+        if encoding == "Distance Encoding":
+            self.current_signal_encoding = pyfiction.input_bdl_configuration.PERTURBER_DISTANCE_ENCODED
+        elif encoding == "Presence Encoding":
+            self.current_signal_encoding = pyfiction.input_bdl_configuration.PERTURBER_ABSENCE_ENCODED
+
+        self.update_slider_label(self.slider.value())
 
     def plot_operational_domain(self) -> None:
         # self.is_plot_view_active = False
@@ -269,7 +319,6 @@ class MainWindow(QMainWindow):
         self.plot = PlotOperationalDomainWidget(
             self.settings,
             self.lyt,
-            self.bdl_input_iterator,
             self.max_pos,
             self.min_pos,
             self.plot_label,
@@ -300,8 +349,15 @@ class MainWindow(QMainWindow):
         # Replace the PlotWidget with the ContentSettingsWidget in the QSplitter
         self.splitter.replaceWidget(index, self.settings)
 
+        # input encoding
+        input_encoding = (
+            "distance"
+            if self.current_signal_encoding == pyfiction.input_bdl_configuration.PERTURBER_DISTANCE_ENCODED
+            else "presence"
+        )
+
         # Construct the full path to the plot image file based on the slider value
-        plot_image_path = self.caching_dir / f"lyt_plot_{self.slider.value()}.svg"
+        plot_image_path = self.caching_dir / f"lyt_plot_{input_encoding}_{self.slider.value()}.svg"
 
         # Load the image using QPixmap
         self.pixmap = QPixmap(str(plot_image_path))
