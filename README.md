@@ -28,7 +28,7 @@ the [Technical University of Munich](https://www.tum.de/).
 
 The _Operational Domain_ was proposed as a methodology to evaluate the extent of physical parameter variations that an
 SiDB logic gate can tolerate by plotting the logical correctness of that gate's behavior across a predetermined range of
-physical parameters. Given an SiDB layout _L_ and a Boolean function $f : \mathbb{B}^{n} ⟼ \mathbb{B}^{m}$, the operational domain of _L_ given
+physical parameters. Given an SiDB layout _L_ and a Boolean function _f : 𝔹ⁿ ⟶ 𝔹ᵐ_, the operational domain of _L_ given
 _f_ is defined in the parameter space as the set of coordinate points for which _L_ implements _f_. To determine whether
 _L_ implements _f_ at any given coordinate point _(x, y, z)_, this point can be sampled, i.e., by conducting _2ⁿ_
 physical simulations—one for each possible input pattern of _L_.
@@ -87,7 +87,7 @@ uv run main.py
    - **Gate Function**: Specify the Boolean function the gate is intended to implement. Supported functions include AND, OR, NAND, NOR, XOR, and XNOR, with more to be added soon.
    - **Operational Domain**: Define how the operational domain is simulated. Choose from _Grid Search_, _Random Sampling_, _Flood Fill_, or _Contour Tracing_ algorithms. Additionally, set the dimensions, range, and resolution of the operational domain. You can also configure whether to tolerate or reject kinks in the operational domain.
 
-   Users can hover over the help icons to get more information.
+   You can hover over the help icons to get more information.
 
 3. **▶️ Run the Operational Domain Simulation:**
    Once the settings are configured, start the operational domain simulation. Note that simulation time can vary depending on the simulation engine, reconstruction algorithm, resolution, etc. High-effort simulation may take several minutes, whereas lower resolutions can be explored almost instantaneously. After the simulation is finished, the settings widget is replaced with a visual representation of the operational domain.
