@@ -15,6 +15,7 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (
     QApplication,
     QButtonGroup,
+    QCheckBox,
     QComboBox,
     QDoubleSpinBox,
     QFrame,
@@ -422,6 +423,29 @@ class SettingsWidget(QWidget):
 
         return operational_condition_layout
 
+    def _create_figure_of_merit_checkbox(self) -> QHBoxLayout:
+        """Creates checkboxes for selecting the operational condition.
+
+        Returns:
+            QHBoxLayout: The layout containing the checkboxes.
+        """
+        fom_layout = QHBoxLayout()
+        fom_label = QLabel("Figure of Merit")
+
+        # Store the checkbox as an instance variable
+        self.ct_fom = QCheckBox("Critical Temperature")
+
+        fom_layout.addWidget(fom_label, 30)
+        fom_layout.addWidget(self.ct_fom, 34)
+
+        fom_info_tag = InfoTag(
+            "Setting to simulate figure of merit value on top of the operational domain.\n"
+            "Critical Temperature: The Critical Temperature is simulated on top of the operational domain."
+        )
+        fom_layout.addWidget(fom_info_tag, 1)  # 1% of the space goes to the info tag
+
+        return fom_layout
+
     def _create_x_dimension_drop_down(self) -> QHBoxLayout:
         """Creates a drop-down for selecting the sweep dimension in X direction.
 
@@ -606,6 +630,7 @@ class SettingsWidget(QWidget):
         operational_domain_group.add_layout(self._create_random_samples_spinbox())
         # Operational condition radio buttons
         operational_domain_group.add_layout(self._create_operational_condition_radio_buttons())
+        operational_domain_group.add_layout(self._create_figure_of_merit_checkbox())
         # Sweep settings sub-group
         operational_domain_group.add_widget(self._create_sweep_settings_sub_group())
 
@@ -834,6 +859,14 @@ class SettingsWidget(QWidget):
              str: The selected physical simulation engine.
         """
         return self.engine_dropdown.currentText()
+
+    def is_fom_selected(self) -> bool:
+        return bool(self.ct_fom.isChecked())
+
+    def get_fom(self) -> str | None:
+        if self.ct_fom.isChecked():
+            return self.ct_fom.text()
+        return None
 
     def get_mu_minus(self) -> float:
         """Retrieves the selected base μ_ value.

@@ -44,8 +44,12 @@ def load_data(csv_files: list[str]) -> tuple[list[pd.DataFrame], list[pd.DataFra
 
 
 def extract_parameters(
-    data: list[pd.DataFrame], x_param: str, y_param: str, z_param: str | None = None
-) -> tuple[list[pd.Series], list[pd.Series], list[pd.Series]]:
+    data: list[pd.DataFrame],
+    x_param: str,
+    y_param: str,
+    z_param: str | None = None,
+    fom_param: str | None = None,
+) -> tuple[list[pd.Series], list[pd.Series], list[pd.Series] | None, list[pd.Series] | None]:
     """Extract specific parameters from the dataset based on given names.
 
     Args:
@@ -53,15 +57,17 @@ def extract_parameters(
         x_param (str): Parameter name for the X-axis (e.g., 'epsilon_r').
         y_param (str): Parameter name for the Y-axis (e.g., 'lambda_tf').
         z_param (str, optional): Parameter name for the Z-axis (e.g., 'mu_minus') in case of 3D plots.
+        fom_param (str, optional): Figure of merit parameter name (e.g., 'Critical Temperature').
 
     Returns:
-        Tuple[List[pd.Series], List[pd.Series], List[pd.Series]]: Three lists containing the X, Y, and Z data, respectively.
+        Tuple[List[pd.Series], List[pd.Series], List[pd.Series], List[pd.Series]]: Extracted X, Y, Z, and FOM data.
     """
     x_data = [df[x_param] for df in data]
     y_data = [df[y_param] for df in data]
-    z_data = [df[z_param] for df in data] if z_param else []
+    z_data = [df[z_param] for df in data] if z_param else None
+    fom_data = [df[fom_param] for df in data] if fom_param else None
 
-    return x_data, y_data, z_data
+    return x_data, y_data, z_data, fom_data
 
 
 def calculate_colors(y_values: np.ndarray, z_values: np.ndarray) -> np.ndarray:
@@ -85,10 +91,14 @@ def calculate_colors(y_values: np.ndarray, z_values: np.ndarray) -> np.ndarray:
 
 def plot_data(
     ax: plt.Axes,
-    x_data: list[pd.Series],
-    y_data: list[pd.Series],
-    z_data: list[pd.Series] | None = None,
+    operational_data: list[pd.DataFrame],
+    non_operational_data: list[pd.DataFrame],
+    x_param: str,
+    y_param: str,
+    z_param: str | None = None,
+    is_temperature_domain_selected: bool = False,
     log_scale: tuple[bool, bool, bool] = (False, False, False),
+    include_non_operational: bool = True,
     label: str | None = None,
     color: np.ndarray = BASE_PURPLE,
     marker_size: int = 4,
@@ -96,56 +106,78 @@ def plot_data(
 ) -> None:
     """Plot data on a given matplotlib axis with support for 2D and 3D plotting, optional log scaling, and custom styling.
 
-    This function can create both 2D and 3D plots on the specified axis (`ax`). If `z_data` is provided, it will plot
-    a 3D scatter plot; otherwise, it defaults to 2D plotting. Log scaling can be enabled individually for the X, Y,
-    and Z axes by setting `log_scale` to a tuple of booleans. Customization options are available for color, marker
-    size, and transparency.
+     This function can create both 2D and 3D plots on the specified axis (`ax`). If `z_data` is provided, it will plot
+     a 3D scatter plot; otherwise, it defaults to 2D plotting. Log scaling can be enabled individually for the X, Y,
+     and Z axes by setting `log_scale` to a tuple of booleans. Customization options are available for color, marker
+     size, and transparency.
 
-    Args:
-        ax (plt.Axes): The matplotlib axis to plot on. Should be either a 2D or 3D axis depending on the data.
-        x_data (List[pd.Series]): List of X-axis data series, one per data set. Each series is concatenated
-            to form the full X data.
-        y_data (List[pd.Series]): List of Y-axis data series, one per data set. Each series is concatenated
-            to form the full Y data.
-        z_data (List[pd.Series], optional): List of Z-axis data series, one per data set, for 3D plotting.
-            If provided, a 3D scatter plot will be generated (default is None).
-        log_scale (Tuple[bool, bool, bool], optional): Tuple of booleans indicating whether to use log scaling
-            on the X, Y, and Z axes. Each axis's log scale can be enabled individually. For 2D plots, only the
-            X and Y values are used (default is (False, False, False)).
-        label (str, optional): Label for the data in the plot, used in the legend (default is None).
-        color (np.ndarray, optional): RGB tuple or array for the color of the markers in the plot. Defaults to
-            `BASE_PURPLE`.
-        marker_size (int, optional): Size of the markers in the plot. Larger values produce bigger markers
-            (default is 4).
-        alpha (float, optional): Alpha transparency for the markers, where 1.0 is fully opaque and 0.0 is fully
-            transparent (default is 1.0).
+     Args:
+         ax (plt.Axes): The matplotlib axis to plot on. Should be either a 2D or 3D axis depending on the data.
+         operational_data (List[pd.DataFrame]): List of operational dataframes.
+         non_operational_data (List[pd.DataFrame]): List of non-operational dataframes.
+         x_param (str): Parameter name for the X-axis (e.g., 'epsilon_r').
+         y_param (str): Parameter name for the Y-axis (e.g., 'lambda_tf').
+         z_param (str, optional): Parameter name for the Z-axis (e.g., 'mu_minus') in case of 3D plots (default None).
+         is_temperature_domain_selected (bool, optional): If True, the user has selected the temperature domain simulation.
+         log_scale (Tuple[bool, bool, bool], optional): Log scaling for X, Y, Z axes (default (False, False, False)).
+         include_non_operational (bool, optional): If True, non-operational data is included in the plot (default True).
+           label (str, optional): Label for the data in the plot, used in the legend (default is None).
+         color (np.ndarray, optional): RGB tuple or array for the color of the markers in the plot. Defaults to
+             `BASE_PURPLE`.
+         marker_size (int, optional): Size of the markers in the plot. Larger values produce bigger markers
+             (default is 4).
+         alpha (float, optional): Alpha transparency for the markers, where 1.0 is fully opaque and 0.0 is fully
+             transparent (default is 1.0).
 
-    Raises:
-        ValueError: If `z_data` is provided but `ax` is not a 3D axis.
+     Raises:
+         ValueError: If `z_data` is provided but `ax` is not a 3D axis.
 
     Notes:
-        - If `z_data` is provided, this function will create a 3D scatter plot, requiring `ax` to be a 3D axis.
-        - For 2D plotting, the log scale for the X and Y axes can be individually configured using `log_scale`.
-          - If `log_scale[0]` and `log_scale[1]` are True, a log-log plot is used.
-          - If only `log_scale[0]` is True, a semilog-x plot is created.
-          - If only `log_scale[1]` is True, a semilog-y plot is created.
-        - In 3D plots, if `y_data` and `z_data` are both provided, colors will be generated by `calculate_colors`
-          based on the Y and Z data values.
+         - If `z_data` is provided, this function will create a 3D scatter plot, requiring `ax` to be a 3D axis.
+         - For 2D plotting, the log scale for the X and Y axes can be individually configured using `log_scale`.
+           - If `log_scale[0]` and `log_scale[1]` are True, a log-log plot is used.
+           - If only `log_scale[0]` is True, a semilog-x plot is created.
+           - If only `log_scale[1]` is True, a semilog-y plot is created.
+         - In 3D plots, if `y_data` and `z_data` are both provided, colors will be generated by `calculate_colors`
+           based on the Y and Z data values.
     """
+
     plot_func = ax.plot
 
-    x_plot_data = np.concatenate(x_data)
-    y_plot_data = np.concatenate(y_data)
+    # Concatenate input data
+    if is_temperature_domain_selected:
+        x_op, y_op, z_op, temperature_op = extract_parameters(
+            operational_data, x_param, y_param, z_param, "critical temperature"
+        )
+        x_non_op, y_non_op, z_non_op, temperature_non_op = extract_parameters(
+            non_operational_data, x_param, y_param, z_param, "critical temperature"
+        )
+    else:
+        x_op, y_op, z_op, _ = extract_parameters(operational_data, x_param, y_param, z_param)
+        x_non_op, y_non_op, z_non_op, _ = extract_parameters(non_operational_data, x_param, y_param, z_param)
 
-    if z_data:
-        # 3D plot
-        z_plot_data = np.concatenate(z_data)
+    # operational data
+    x_plot_data_op = np.concatenate(x_op)
+    y_plot_data_op = np.concatenate(y_op)
 
-        colors = None
-        if y_data and z_data:
-            colors = calculate_colors(y_plot_data, z_plot_data)
+    # non-operational data
+    x_plot_data_non_op = np.concatenate(x_non_op)
+    y_plot_data_non_op = np.concatenate(y_non_op)
 
-        ax.scatter(x_plot_data, y_plot_data, z_plot_data, c=colors, s=marker_size, label=label, alpha=alpha)
+    if z_param is not None:
+        # Prepare 3D plot data
+        z_plot_data = np.concatenate(z_op)
+
+        # Calculate colors if both y and z data are available
+        colors = calculate_colors(y_plot_data_op, z_plot_data) if y_plot_data_op.size and z_plot_data.size else None
+
+        # Scatter plot with calculated colors
+        ax.scatter(x_plot_data_op, y_plot_data_op, z_plot_data, c=colors, s=marker_size, label=label, alpha=alpha)
+
+        if include_non_operational:
+            z_plot_data_non_op = np.concatenate(z_non_op)
+            ax.scatter(x_plot_data_non_op, y_plot_data_non_op, z_plot_data_non_op, c=GRAY, s=marker_size, alpha=alpha)
+
     else:
         # 2D plot
         if log_scale[0] and log_scale[1]:
@@ -155,7 +187,35 @@ def plot_data(
         elif log_scale[1]:
             plot_func = ax.semilogy
 
-        plot_func(x_plot_data, y_plot_data, "o", color=color, markersize=marker_size, label=label, alpha=alpha)
+        if is_temperature_domain_selected:
+            fom_plot_data_op = np.concatenate(temperature_op)
+            fom_plot_data_non_op = np.concatenate(temperature_non_op)
+
+            # Normalize fom_data for color mapping
+            vmin = min(np.min(fom_plot_data_op), np.min(fom_plot_data_non_op))
+            vmax = max(np.max(fom_plot_data_op), np.max(fom_plot_data_non_op))
+
+            # Create a normalization object
+            norm = plt.Normalize(vmin=vmin, vmax=vmax)
+            cmap = plt.cm.viridis
+
+            # Scatter plot with color mapping
+            for x, y, fom in zip(x_plot_data_op, y_plot_data_op, fom_plot_data_op, strict=False):
+                plot_func(x, y, color=cmap(norm(fom)), marker="o", markersize=marker_size, alpha=alpha)
+
+            # Add colorbar for 2D plot with fom_data
+            sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
+            sm.set_array([])
+            cbar = ax.figure.colorbar(sm, ax=ax)
+            cbar.set_label("Temperature (K)", fontsize=14)
+        else:
+            # Simple 2D scatter plot without fom_data
+            ax.plot(x_plot_data_op, y_plot_data_op, "o", color=color, markersize=marker_size, label=label, alpha=alpha)
+            if include_non_operational:
+                plot_func(x_plot_data_non_op, y_plot_data_non_op, "o", color=GRAY, markersize=marker_size, alpha=alpha)
+            # Add legend if label is provided
+            if label:
+                ax.legend(loc="upper left")
 
 
 def generate_plot(
@@ -163,6 +223,7 @@ def generate_plot(
     x_param: str,
     y_param: str,
     z_param: str | None = None,
+    is_temperature_domain_selected: bool = False,
     title: str | None = None,
     xlog: bool = False,
     ylog: bool = False,
@@ -185,6 +246,7 @@ def generate_plot(
        y_param (str): Name of the parameter to plot on the Y-axis (e.g., 'lambda_tf').
        z_param (str, optional): Name of the parameter to plot on the Z-axis for 3D plots. If not provided,
            a 2D plot is generated (default is None).
+       is_temperature_domain_selected (bool, optional): If True, the user has selected the temperature domain simulation.
        title (str, optional): Title of the plot (default is None).
        xlog (bool, optional): Whether to apply a logarithmic scale to the X-axis (default is False).
        ylog (bool, optional): Whether to apply a logarithmic scale to the Y-axis (default is False).
@@ -227,11 +289,12 @@ def generate_plot(
        )
        plt.show()
        ```
+       :param show_legend:
+       :param include_non_operational:
+       :param fom_param:
     """
     # Load the data
     operational_data, non_operational_data = load_data(csv_files)
-    x_op, y_op, z_op = extract_parameters(operational_data, x_param, y_param, z_param)
-    x_non_op, y_non_op, z_non_op = extract_parameters(non_operational_data, x_param, y_param, z_param)
 
     # Create a figure
     fig = plt.figure()
@@ -253,20 +316,19 @@ def generate_plot(
         ax.zaxis.set_rotate_label(False)  # Disable automatic rotation
 
         # Plot the data
-        plot_data(ax, x_op, y_op, z_data=z_op, label="Operational", marker_size=4, log_scale=(xlog, ylog, zlog))
-        if include_non_operational:
-            plot_data(
-                ax,
-                x_non_op,
-                y_non_op,
-                z_data=z_non_op,
-                label="Non-Operational",
-                color=GRAY,
-                marker_size=2,
-                alpha=0.1,
-                log_scale=(xlog, ylog, zlog),
-            )
-
+        plot_data(
+            ax,
+            operational_data,
+            non_operational_data,
+            x_param,
+            y_param,
+            z_param,
+            is_temperature_domain_selected,
+            include_non_operational=include_non_operational,
+            label="Operational",
+            marker_size=4,
+            log_scale=(xlog, ylog, zlog),
+        )
         ax.view_init(elev=30, azim=45)  # Fixed angle for 3D view
     else:
         # 2D plot
@@ -281,13 +343,21 @@ def generate_plot(
         ax.set_ylabel(_LATEX_LABELS.get(y_param, f"{y_param}"))
 
         # Plot the data
-        plot_data(ax, x_op, y_op, label="Operational", marker_size=4, log_scale=(xlog, ylog, zlog))
-        if include_non_operational:
-            plot_data(
-                ax, x_non_op, y_non_op, label="Non-Operational", color=GRAY, marker_size=2, log_scale=(xlog, ylog, zlog)
-            )
+        plot_data(
+            ax,
+            operational_data,
+            non_operational_data,
+            x_param,
+            y_param,
+            z_param,
+            is_temperature_domain_selected,
+            include_non_operational=include_non_operational,
+            label="Operational",
+            marker_size=4,
+            log_scale=(xlog, ylog, zlog),
+        )
 
-    if show_legend:
+    if show_legend and not is_temperature_domain_selected:
         ax.legend(loc="upper left")  # Moves legend to the upper-left
 
     if title is not None:
