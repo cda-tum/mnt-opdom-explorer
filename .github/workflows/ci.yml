@@ -26,18 +26,6 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Install Dependencies (Linux only)
-        if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y xvfb libgl1-mesa-glx libgl1-mesa-dri
-
-      - name: Start Xvfb (Linux only)
-        if: runner.os == 'Linux'
-        run: |
-          Xvfb :99 -screen 0 1920x1080x24 &
-          export DISPLAY=:99
-
       - name: Setup ccache
         uses: hendrikmuhs/ccache-action@v1.2
         with:
