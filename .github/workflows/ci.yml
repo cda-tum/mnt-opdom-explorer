@@ -30,10 +30,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libegl1 libxcb1 libx11-xcb1 libxrender1 \
-          libxext6 libxi6 libxcb-cursor0 libxcb-keysyms1 libxcb-randr0 \
-          libxcb-xinerama0 libxcb-xfixes0 libxcb-shape0 libxcb-shm0 \
-          libgl1-mesa-glx libgl1-mesa-dri xvfb
+          sudo apt-get install -y xvfb libgl1-mesa-glx libgl1-mesa-dri
 
       - name: Start Xvfb (Linux only)
         if: runner.os == 'Linux'
