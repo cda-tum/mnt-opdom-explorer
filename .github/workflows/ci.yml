@@ -15,9 +15,8 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        python_version: ["3.10.x", "3.11.x", "3.12.x", "3.13.x"]
 
-    name: 🐍 Python CI on ${{ matrix.os }} with Python ${{ matrix.python_version }}
+    name: 🐍 CI on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
 
     steps:
