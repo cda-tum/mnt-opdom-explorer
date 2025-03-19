@@ -18,7 +18,7 @@ nox.options.default_venv_backend = "uv|virtualenv"
 
 PYTHON_ALL_VERSIONS = ["3.10", "3.11", "3.12", "3.13"]
 
-BUILD_REQUIREMENTS = ["hatchling>=1.27.0", "hatch-vcs>=0.4.0"]
+BUILD_REQUIREMENTS = ["hatchling>=1.27.0", "hatch-vcs>=0.4.0", "editables>=0.3.0"]
 
 if os.environ.get("CI", None):
     nox.options.error_on_missing_interpreters = True
