@@ -15,43 +15,15 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        python_version: ["3.10.x", "3.11.x", "3.12.x", "3.13.x"]
 
-    name: 🐍 Python CI on ${{ matrix.os }} with Python ${{ matrix.python_version }}
+    name: 🐍 CI on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
-          submodules: recursive
-
-      - name: Install Dependencies (Linux only)
-        if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libegl1 libxcb1 libx11-xcb1 libxrender1 \
-          libxext6 libxi6 libxcb-cursor0 libxcb-keysyms1 libxcb-randr0 \
-          libxcb-xinerama0 libxcb-xfixes0 libxcb-shape0 libxcb-shm0 \
-          libgl1-mesa-glx libgl1-mesa-dri xvfb
-
-      - name: Start Xvfb (Linux only)
-        if: runner.os == 'Linux'
-        run: |
-          Xvfb :99 -screen 0 1920x1080x24 &
-          export DISPLAY=:99
-
-      - name: Setup ccache
-        uses: hendrikmuhs/ccache-action@v1.2
-        with:
-          key: "${{ matrix.os }}-pyfiction"
-          variant: ccache
-          save: true
-          max-size: 10G
-
-      - name: Setup mold (Linux only)
-        if: runner.os == 'Linux'
-        uses: rui314/setup-mold@v1
+          fetch-depth: 0
 
       - name: Install the latest version of uv
         uses: astral-sh/setup-uv@v5
