@@ -25,18 +25,6 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Setup ccache
-        uses: hendrikmuhs/ccache-action@v1.2
-        with:
-          key: "${{ matrix.os }}-pyfiction"
-          variant: ccache
-          save: true
-          max-size: 10G
-
-      - name: Setup mold (Linux only)
-        if: runner.os == 'Linux'
-        uses: rui314/setup-mold@v1
-
       - name: Install the latest version of uv
         uses: astral-sh/setup-uv@v5
         with:
