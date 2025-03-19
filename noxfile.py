@@ -16,7 +16,7 @@ nox.needs_version = ">=2024.3.2"
 nox.options.default_venv_backend = "uv|virtualenv"
 
 
-PYTHON_ALL_VERSIONS = ["3.9", "3.10", "3.11", "3.12"]
+PYTHON_ALL_VERSIONS = ["3.10", "3.11", "3.12", "3.13"]
 
 BUILD_REQUIREMENTS = ["hatchling>=1.27.0", "hatch-vcs>=0.4.0"]
 
