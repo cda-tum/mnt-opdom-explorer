@@ -45,20 +45,16 @@ def _run_tests(
     session.run("python", "--version", external=True)
     session.run("uv", "--version", external=True, env=env)
 
-    # Install build requirements
     session.run("uv", "pip", "install", *BUILD_REQS, *install_args, env=env)
 
-    # Sync dependencies with test extras, forcing reinstall
     sync_args = ["uv", "sync", "--extra", "test", "--reinstall", "--active"]
+
     session.run(*sync_args, *install_args, env=env)
 
-    # Install the project as an editable package
     session.run("uv", "pip", "install", "-e", ".", *install_args, env=env)
 
-    # Debug: List installed packages
     session.run("uv", "pip", "list", env=env)
 
-    # Run pytest
     session.run("pytest", "--rootdir=.", *run_args, *posargs, external=True, env=env)
 
 
