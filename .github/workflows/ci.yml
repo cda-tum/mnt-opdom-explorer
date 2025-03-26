@@ -31,7 +31,4 @@ jobs:
           enable-cache: true
 
       - name: 🐍 Test
-        run: |
-          uv venv
-          source .venv/bin/activate
-          uvx nox -s tests --verbose
+        run: uvx nox -s tests --verbose

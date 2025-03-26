@@ -42,7 +42,6 @@ def _run_tests(
         extras = (*extras, "coverage")  # Use tuple concatenation
         posargs.append("--cov-config=pyproject.toml")
 
-    # Debug: Show Python and uv versions
     session.run("python", "--version", external=True)
     session.run("uv", "--version", external=True, env=env)
 
@@ -50,7 +49,8 @@ def _run_tests(
     session.run("uv", "pip", "install", *BUILD_REQS, *install_args, env=env)
 
     # Sync dependencies with test extras, forcing reinstall
-    session.run("uv", "sync", "--extra", "test", "--reinstall", *install_args, env=env)
+    sync_args = ["uv", "sync", "--extra", "test", "--reinstall", "--active"]
+    session.run(*sync_args, *install_args, env=env)
 
     # Install the project as an editable package
     session.run("uv", "pip", "install", "-e", ".", *install_args, env=env)
@@ -62,13 +62,13 @@ def _run_tests(
     session.run("pytest", "--rootdir=.", *run_args, *posargs, external=True, env=env)
 
 
-@nox.session(reuse_venv=True, python=PYTHON_VERSIONS)
+@nox.session(python=PYTHON_VERSIONS, reuse_venv=True)
 def tests(session: nox.Session) -> None:
     """Run the test suite."""
     _run_tests(session)
 
 
-@nox.session(reuse_venv=True, venv_backend="uv", python=PYTHON_VERSIONS)
+@nox.session(python=PYTHON_VERSIONS, reuse_venv=True)
 def minimums(session: nox.Session) -> None:
     """Test with minimum dependency versions."""
     _run_tests(
