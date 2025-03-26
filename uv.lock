@@ -481,6 +481,14 @@ dependencies = [
     { name = "scikit-learn" },
 ]
 
+[package.optional-dependencies]
+test = [
+    { name = "nox" },
+    { name = "pytest" },
+    { name = "pytest-console-scripts" },
+    { name = "pytest-cov" },
+]
+
 [package.dev-dependencies]
 build = [
     { name = "hatch-vcs" },
@@ -521,11 +529,16 @@ test = [
 requires-dist = [
     { name = "matplotlib", specifier = "==3.10.1" },
     { name = "mnt-pyfiction", specifier = "==0.6.10" },
+    { name = "nox", marker = "extra == 'test'", specifier = ">=2024.10.9" },
     { name = "pandas", specifier = "==2.2.3" },
     { name = "pyqt6", specifier = "==6.8.1" },
+    { name = "pytest", marker = "extra == 'test'", specifier = ">=8.3.3" },
+    { name = "pytest-console-scripts", marker = "extra == 'test'", specifier = ">=1.4.1" },
+    { name = "pytest-cov", marker = "extra == 'test'", specifier = ">=6" },
     { name = "qtawesome", specifier = "==1.4.0" },
     { name = "scikit-learn", specifier = "==1.6.1" },
 ]
+provides-extras = ["test"]
 
 [package.metadata.requires-dev]
 build = [

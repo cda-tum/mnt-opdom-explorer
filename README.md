@@ -64,6 +64,8 @@ uv run main.py
 1. Run the tests:
 
    ```bash
+   uv venv
+   source .venv/bin/activate
    uvx nox -s tests --verbose
    ```
 
