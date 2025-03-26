@@ -19,6 +19,20 @@ dependencies = [
 ]
 dynamic = ["version"]
 
+[project.optional-dependencies]
+test = [
+    "nox>=2024.10.9",
+    "pytest>=8.3.3",
+    "pytest-console-scripts>=1.4.1",
+    "pytest-cov>=6",
+]
+
+[project.urls]
+Repository = "https://github.com/cda-tum/mnt-opdom-explorer"
+Homepage = "https://www.cda.cit.tum.de/research/nanotech/"
+Issues = "https://github.com/cda-tum/mnt-opdom-explorer/issues"
+Discussions = "https://github.com/cda-tum/mnt-opdom-explorer/discussions"
+
 
 [build-system]
 requires = [
@@ -36,13 +50,6 @@ source = "vcs"
 
 [tool.hatch.build.hooks.vcs]
 version-file = "src/mnt/opdom_explorer/_version.py"
-
-
-[project.urls]
-Repository = "https://github.com/cda-tum/mnt-opdom-explorer"
-Homepage = "https://www.cda.cit.tum.de/research/nanotech/"
-Issues = "https://github.com/cda-tum/mnt-opdom-explorer/issues"
-Discussions = "https://github.com/cda-tum/mnt-opdom-explorer/discussions"
 
 [tool.setuptools.packages.find]
 include = ["core", "gui", "widgets"]

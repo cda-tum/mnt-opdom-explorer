@@ -4,7 +4,7 @@ import unittest
 
 from PyQt6.QtWidgets import QApplication
 
-from mnt.opdom_explorer import Application
+from src.mnt.opdom_explorer import Application
 
 
 class TestApplication(unittest.TestCase):

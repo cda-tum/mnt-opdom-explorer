@@ -1,3 +1,5 @@
+"""Widgets for the Operational Domain Explorer GUI."""
+
 from __future__ import annotations
 
 from .drag_drop_widget import DragDropWidget

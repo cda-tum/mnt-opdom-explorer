@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 from PIL import Image
 
-from mnt.opdom_explorer.core.plot import calculate_colors, extract_parameters, generate_plot, load_data, plot_data
+from src.mnt.opdom_explorer.core.plot import calculate_colors, extract_parameters, generate_plot, load_data, plot_data
 
 if TYPE_CHECKING:
     from matplotlib.figure import Figure
