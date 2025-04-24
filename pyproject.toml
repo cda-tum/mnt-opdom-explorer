@@ -18,7 +18,6 @@ classifiers = [
     "Operating System :: POSIX :: Linux",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
@@ -26,11 +25,10 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Electronic Design Automation (EDA)",
     "Typing :: Typed",
 ]
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = [
     "PyQt6==6.8.1",
-    "PyQtProperty==0.2.0",
-    "RxPy==4.1.0",
+    "reactivex==4.0.4",
     "pydantic==2.9.0",
     "matplotlib==3.10.1",
     "mnt.pyfiction==0.6.10",
@@ -177,6 +175,7 @@ test = [
     "pytest>=8.3.3",
     "pytest-console-scripts>=1.4.1",
     "pytest-cov>=6",
+    "pytest-qt>=4.0.0",
 ]
 dev = [
     { include-group = "build" },
