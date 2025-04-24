@@ -223,7 +223,7 @@ def generate_plot(
            title="Operational Domain",
            xlog=True,
            ylog=False,
-           include_non_operational=True
+           include_non_operational=True,
        )
        plt.show()
        ```

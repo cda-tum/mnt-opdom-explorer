@@ -245,27 +245,26 @@ class LayoutVisualizer(QWidget):
                         elif operation_status == pyfiction.operational_status.NON_OPERATIONAL:
                             draw_rectangle(ax, box_x, box_y, width, height, "red")
 
-                else:  # When operational_status_kinks is None
-                    if operation_status == pyfiction.operational_status.OPERATIONAL:
-                        draw_rectangle(ax, box_x, box_y, width, height, "green")
-                        add_status_text(
-                            ax,
-                            box_x + 1.5 * width,
-                            -box_y - height / 2,
-                            "\u2713",
-                            "green",
-                            45,
-                        )
-                    else:
-                        draw_rectangle(ax, box_x, box_y, width, height, "red")
-                        add_status_text(
-                            ax,
-                            box_x + 1.5 * width,
-                            -box_y - height / 2,
-                            "X",
-                            "red",
-                            30,
-                        )
+                elif operation_status == pyfiction.operational_status.OPERATIONAL:
+                    draw_rectangle(ax, box_x, box_y, width, height, "green")
+                    add_status_text(
+                        ax,
+                        box_x + 1.5 * width,
+                        -box_y - height / 2,
+                        "\u2713",
+                        "green",
+                        45,
+                    )
+                else:
+                    draw_rectangle(ax, box_x, box_y, width, height, "red")
+                    add_status_text(
+                        ax,
+                        box_x + 1.5 * width,
+                        -box_y - height / 2,
+                        "X",
+                        "red",
+                        30,
+                    )
 
         plt.savefig(plot_image_path, bbox_inches="tight", dpi=500)
         plt.close()
