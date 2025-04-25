@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from .layout_model import LayoutModel
 from .settings_model import (
     ApplicationSettingsModel,
     AxisScale,
@@ -24,6 +25,7 @@ __all__ = [
     "BooleanFunction",
     "GateFunctionModel",
     "InputSignalEncoding",
+    "LayoutModel",
     "OperationalCondition",
     "OperationalDomainAlgorithm",
     "OperationalDomainModel",
