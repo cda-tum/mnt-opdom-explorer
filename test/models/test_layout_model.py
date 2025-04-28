@@ -34,10 +34,10 @@ def valid_path() -> Path:
 
 def test_layout_model_valid(valid_path: Path, fiction_layout: sidb_100_lattice) -> None:
     """Test successful instantiation with valid data."""
-    model = LayoutModel(source_file_path=valid_path, fiction_layout=fiction_layout)
+    model = LayoutModel(source_file_path=valid_path, sidb_layout=fiction_layout)
     assert model.source_file_path == valid_path
-    assert model.fiction_layout is fiction_layout
-    assert isinstance(model.fiction_layout, sidb_100_lattice)
+    assert model.sidb_layout is fiction_layout
+    assert isinstance(model.sidb_layout, sidb_100_lattice)
 
 
 def test_layout_model_missing_path(fiction_layout: sidb_100_lattice) -> None:
@@ -55,8 +55,8 @@ def test_layout_model_missing_layout(valid_path: Path) -> None:
 def test_layout_model_invalid_path_type(fiction_layout: sidb_100_lattice) -> None:
     """Test ValidationError when source_file_path has the wrong type."""
     with pytest.raises(ValidationError, match=R"Input is not a valid path"):
-        LayoutModel(source_file_path=123, fiction_layout=fiction_layout)
+        LayoutModel(source_file_path=123, sidb_layout=fiction_layout)
 
     # Check for None input - should also fail path validation
     with pytest.raises(ValidationError, match=R"Input is not a valid path for <class 'pathlib.Path'>"):
-        LayoutModel(source_file_path=None, fiction_layout=fiction_layout)
+        LayoutModel(source_file_path=None, sidb_layout=fiction_layout)
