@@ -21,5 +21,5 @@ class LayoutModel(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     source_file_path: Path = Field(..., description="Path to the source SQD file")
-    # Use Any as the type hint for the layout (mnt.pyfiction is not typed yet)
+    # Use Any as the type hint for the layout (mnt.pyfiction is currently untyped)
     fiction_layout: Any = Field(..., description="Layout object from mnt.pyfiction")

@@ -131,14 +131,13 @@ dmypy.json
 cython_debug/
 
 # setuptools_scm
-src/*/_version.py
+src/mnt/ode/_version.py
 
 # SKBuild cache dir
 _skbuild/
 
 # Any build dirs in the tests
 test/**/build/
-/src/mnt/opdom_explorer/_version.py
 
 # Common editor files
 *~
@@ -177,4 +176,4 @@ node_modules/
 wheelhouse/
 
 # Project specific
-src/mnt/opdom_explorer/**/caching/**
+src/mnt/ode/**/caching/**
