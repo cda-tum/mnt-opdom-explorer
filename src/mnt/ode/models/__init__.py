@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from .layout_model import LayoutModel
+from .layout_model import LayoutModel, SiDBLayoutType
+from .result_model import SimulationPoint, SimulationResultType, SinglePointResult
 from .settings_model import (
     ApplicationSettingsModel,
     AxisScale,
@@ -31,7 +32,11 @@ __all__ = [
     "OperationalDomainModel",
     "ParameterRangeModel",
     "PhysicalSimulationModel",
+    "SiDBLayoutType",
     "SimulationEngine",
+    "SimulationPoint",
+    "SimulationResultType",
+    "SinglePointResult",
     "SweepDimension",
     "SweepDimensionModel",
 ]

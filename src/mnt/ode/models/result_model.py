@@ -2,13 +2,19 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TypeAlias
 
 from pydantic import BaseModel, ConfigDict, Field
+
+from mnt.pyfiction import (
+    sidb_simulation_result_100,
+    sidb_simulation_result_111,
+)
 
 from .settings_model import SweepDimension
 
 SimulationPoint = dict[SweepDimension, float]
+SimulationResultType: TypeAlias = sidb_simulation_result_100 | sidb_simulation_result_111 | None
 
 
 class SinglePointResult(BaseModel):
@@ -29,8 +35,7 @@ class SinglePointResult(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)  # Allow fiction result types
 
     parameter_point: SimulationPoint = Field(..., description="Parameter point used for simulation")
-    # TODO(marcel): change Any to `sidb_simulation_result_100 | sidb_simulation_result_111` once mnt.pyfiction is typed
-    results: dict[int, Any | None] = Field(
+    results: dict[int, SimulationResultType] = Field(
         default_factory=dict, description="Simulation results per input pattern index"
     )
     positive_charges_occurred: bool | None = Field(

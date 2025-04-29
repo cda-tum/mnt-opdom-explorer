@@ -3,9 +3,13 @@
 from __future__ import annotations
 
 from pathlib import Path  # noqa: TC003 - Needed for Pydantic Field type
-from typing import Any
+from typing import TypeAlias
 
 from pydantic import BaseModel, ConfigDict, Field
+
+from mnt.pyfiction import sidb_100_lattice, sidb_111_lattice
+
+SiDBLayoutType: TypeAlias = sidb_100_lattice | sidb_111_lattice | None
 
 
 class LayoutModel(BaseModel):
@@ -21,5 +25,4 @@ class LayoutModel(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     source_file_path: Path = Field(..., description="Path to the source SQD file")
-    # TODO(marcel): change Any to `sidb_100_lattice | sidb_111_lattice` once mnt.pyfiction is typed
-    sidb_layout: Any = Field(..., description="Layout object from mnt.pyfiction")
+    sidb_layout: SiDBLayoutType = Field(..., description="Layout object from mnt.pyfiction")
