@@ -35,20 +35,22 @@ def lint(session: nox.Session) -> None:
 def _run_tests(
     session: nox.Session,
     *,
+    # Arguments passed to uv install (e.g., --resolution)
     install_args: Sequence[str] = (),
-    run_args: Sequence[str] = (),
+    # Arguments passed directly to the pytest command
+    pytest_args: Sequence[str] = (),
 ) -> None:
+    """Installs dependencies and runs pytest using uv via session.install."""
     env = {"UV_PROJECT_ENVIRONMENT": session.virtualenv.location}
 
+    # Install the current project (.) editable, along with the 'test' group.
+    # uv (as the backend) handles the installation.
+    # Pass install_args for resolution strategy (e.g., lowest-direct).
+    session.install(".[test]", *install_args)
+
     session.run(
-        "uv",
-        "run",
-        "--no-dev",
-        "--group",
-        "test",
-        *install_args,
         "pytest",
-        *run_args,
+        *pytest_args,
         *session.posargs,
         "--cov-config=pyproject.toml",
         env=env,
@@ -66,8 +68,8 @@ def minimums(session: nox.Session) -> None:
     """Test the minimum versions of dependencies."""
     _run_tests(
         session,
-        install_args=["--resolution=lowest-direct"],
-        run_args=["-Wdefault"],
+        install_args=["--resolution=lowest-direct"],  # Passed to session.install
+        pytest_args=["-Wdefault"],  # Passed to session.run("pytest", ...)
     )
     env = {"UV_PROJECT_ENVIRONMENT": session.virtualenv.location}
     session.run("uv", "tree", "--frozen", env=env)

@@ -78,6 +78,7 @@ addopts = [
     "-ra", # Show extra test summary info for (s)skipped, (X)failed, (x)passed
     "--strict-markers",
     "--strict-config",
+    "--showlocals",
 ]
 xfail_strict = true
 log_cli_level = "info"
