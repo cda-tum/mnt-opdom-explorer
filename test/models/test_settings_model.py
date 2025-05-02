@@ -10,9 +10,9 @@ from mnt.ode.models.settings_model import (
     AxisScale,
     OperationalCondition,
     OperationalDomainAlgorithm,
-    OperationalDomainModel,
+    OperationalDomainSettingsModel,
     ParameterRangeModel,
-    PhysicalSimulationModel,
+    PhysicalSimulationSettingsModel,
     SweepDimension,
     SweepDimensionModel,
 )
@@ -76,7 +76,7 @@ def test_sweep_dimension_instantiation() -> None:
 # Test OperationalDomainModel
 def test_operational_domain_defaults() -> None:
     """Test default values for OperationalDomainModel."""
-    model = OperationalDomainModel()
+    model = OperationalDomainSettingsModel()
     # Validator adjusts random_samples based on the default algorithm (GRID_SEARCH)
     assert model.algorithm == OperationalDomainAlgorithm.GRID_SEARCH
     assert model.random_samples == 100  # Default (but ignored for GRID_SEARCH)
@@ -89,21 +89,21 @@ def test_operational_domain_defaults() -> None:
 def test_operational_domain_default_samples_random() -> None:
     """Test default random samples for the Random Sampling algorithm."""
     # Instantiate with only the algorithm; validator sets the correct sample default.
-    model = OperationalDomainModel(algorithm=OperationalDomainAlgorithm.RANDOM_SAMPLING)
+    model = OperationalDomainSettingsModel(algorithm=OperationalDomainAlgorithm.RANDOM_SAMPLING)
     assert model.random_samples == 1000
 
 
 def test_operational_domain_default_samples_flood() -> None:
     """Test default random samples for the Flood Fill algorithm."""
     # Instantiate with only the algorithm; validator sets the correct sample default.
-    model = OperationalDomainModel(algorithm=OperationalDomainAlgorithm.FLOOD_FILL)
+    model = OperationalDomainSettingsModel(algorithm=OperationalDomainAlgorithm.FLOOD_FILL)
     assert model.random_samples == 100
 
 
 def test_operational_domain_default_samples_contour() -> None:
     """Test default random samples for Contour Tracing algorithm."""
     # Instantiate with only the algorithm; validator sets the correct sample default.
-    model = OperationalDomainModel(algorithm=OperationalDomainAlgorithm.CONTOUR_TRACING)
+    model = OperationalDomainSettingsModel(algorithm=OperationalDomainAlgorithm.CONTOUR_TRACING)
     assert model.random_samples == 100
 
 
@@ -111,7 +111,7 @@ def test_operational_domain_default_samples_contour() -> None:
 def test_operational_domain_override_samples_behavior() -> None:
     """Test behavior when samples are provided during init (validator overwrites)."""
     # Provide a value during init
-    model = OperationalDomainModel(algorithm=OperationalDomainAlgorithm.RANDOM_SAMPLING, random_samples=555)
+    model = OperationalDomainSettingsModel(algorithm=OperationalDomainAlgorithm.RANDOM_SAMPLING, random_samples=555)
     # Validator runs *after* init and sets the standard default for the algorithm
     assert model.random_samples == 1000
 
@@ -122,7 +122,7 @@ def test_operational_domain_override_samples_behavior() -> None:
 
 def test_operational_domain_unique_dimensions_valid() -> None:
     """Test valid unique sweep dimensions."""
-    model = OperationalDomainModel(
+    model = OperationalDomainSettingsModel(
         x_sweep=SweepDimensionModel(
             dimension=SweepDimension.EPSILON_R, parameter_range=ParameterRangeModel(min_val=1, max_val=2)
         ),
@@ -137,7 +137,7 @@ def test_operational_domain_unique_dimensions_valid() -> None:
     assert model.y_sweep.dimension == SweepDimension.LAMBDA_TF
     assert model.z_sweep.dimension == SweepDimension.MU_MINUS
 
-    model_with_none = OperationalDomainModel(
+    model_with_none = OperationalDomainSettingsModel(
         x_sweep=SweepDimensionModel(
             dimension=SweepDimension.EPSILON_R, parameter_range=ParameterRangeModel(min_val=1, max_val=2)
         ),
@@ -154,14 +154,14 @@ def test_operational_domain_unique_dimensions_valid() -> None:
 def test_operational_domain_unique_dimensions_invalid() -> None:
     """Test validation error for duplicate sweep dimensions."""
     with pytest.raises(ValidationError, match="Sweep dimensions must be unique"):
-        OperationalDomainModel(
+        OperationalDomainSettingsModel(
             x_sweep=SweepDimensionModel(dimension=SweepDimension.EPSILON_R, parameter_range=ParameterRangeModel()),
             y_sweep=SweepDimensionModel(dimension=SweepDimension.EPSILON_R, parameter_range=ParameterRangeModel()),
             z_sweep=SweepDimensionModel(dimension=SweepDimension.NONE, parameter_range=ParameterRangeModel()),
         )
 
     with pytest.raises(ValidationError, match="Sweep dimensions must be unique"):
-        OperationalDomainModel(
+        OperationalDomainSettingsModel(
             x_sweep=SweepDimensionModel(dimension=SweepDimension.MU_MINUS, parameter_range=ParameterRangeModel()),
             y_sweep=SweepDimensionModel(dimension=SweepDimension.LAMBDA_TF, parameter_range=ParameterRangeModel()),
             z_sweep=SweepDimensionModel(dimension=SweepDimension.MU_MINUS, parameter_range=ParameterRangeModel()),
@@ -171,7 +171,7 @@ def test_operational_domain_unique_dimensions_invalid() -> None:
 def test_operational_domain_contour_tracing_3d_invalid() -> None:
     """Test validation error for Contour Tracing with 3D sweep."""
     with pytest.raises(ValidationError, match="Contour Tracing algorithm is not compatible with 3D sweeps"):
-        OperationalDomainModel(
+        OperationalDomainSettingsModel(
             algorithm=OperationalDomainAlgorithm.CONTOUR_TRACING,
             x_sweep=SweepDimensionModel(dimension=SweepDimension.EPSILON_R, parameter_range=ParameterRangeModel()),
             y_sweep=SweepDimensionModel(dimension=SweepDimension.LAMBDA_TF, parameter_range=ParameterRangeModel()),
@@ -181,7 +181,7 @@ def test_operational_domain_contour_tracing_3d_invalid() -> None:
 
 def test_operational_domain_contour_tracing_2d_valid() -> None:
     """Test valid Contour Tracing with 2D sweep."""
-    model = OperationalDomainModel(
+    model = OperationalDomainSettingsModel(
         algorithm=OperationalDomainAlgorithm.CONTOUR_TRACING,
         x_sweep=SweepDimensionModel(dimension=SweepDimension.EPSILON_R, parameter_range=ParameterRangeModel()),
         y_sweep=SweepDimensionModel(dimension=SweepDimension.LAMBDA_TF, parameter_range=ParameterRangeModel()),
@@ -194,17 +194,17 @@ def test_operational_domain_contour_tracing_2d_valid() -> None:
 def test_application_settings_defaults() -> None:
     """Test default instantiation of the top-level settings model."""
     model = ApplicationSettingsModel()
-    assert isinstance(model.physical_simulation, PhysicalSimulationModel)
-    assert isinstance(model.operational_domain, OperationalDomainModel)
+    assert isinstance(model.physical_simulation, PhysicalSimulationSettingsModel)
+    assert isinstance(model.operational_domain, OperationalDomainSettingsModel)
     # Check a nested default value set correctly by the model validator
     assert model.operational_domain.random_samples == 100
 
 
 def test_application_settings_custom() -> None:
     """Test custom instantiation of the top-level settings model."""
-    phys_settings = PhysicalSimulationModel(engine="QuickSim")
+    phys_settings = PhysicalSimulationSettingsModel(engine="QuickSim")
     # Instantiate op_settings with just the algorithm; validator sets samples
-    op_settings = OperationalDomainModel(algorithm="Random Sampling")
+    op_settings = OperationalDomainSettingsModel(algorithm="Random Sampling")
     model = ApplicationSettingsModel(physical_simulation=phys_settings, operational_domain=op_settings)
 
     assert model.physical_simulation.engine == "QuickSim"

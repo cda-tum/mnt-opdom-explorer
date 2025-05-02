@@ -79,7 +79,7 @@ class AxisScale(str, Enum):
 
 
 # Pydantic Models
-class PhysicalSimulationModel(BaseModel):
+class PhysicalSimulationSettingsModel(BaseModel):
     """Model for physical simulation parameters."""
 
     model_config = ConfigDict(use_enum_values=True)
@@ -90,7 +90,7 @@ class PhysicalSimulationModel(BaseModel):
     mu_minus: float = Field(default=-0.28, ge=-1.0, le=1.0, description="Energy difference [eV]")
 
 
-class GateFunctionModel(BaseModel):
+class GateFunctionSettingsModel(BaseModel):
     """Model for gate function definition settings."""
 
     model_config = ConfigDict(use_enum_values=True)
@@ -185,7 +185,7 @@ class SweepDimensionModel(BaseModel):
         return v
 
 
-class OperationalDomainModel(BaseModel):
+class OperationalDomainSettingsModel(BaseModel):
     """Model for operational domain calculation settings."""
 
     model_config = ConfigDict(use_enum_values=True)
@@ -214,8 +214,8 @@ class OperationalDomainModel(BaseModel):
     )
 
     @model_validator(mode="after")
-    def set_samples_and_check_compatibility(self) -> OperationalDomainModel:
-        """Set default samples based on algorithm and check cross-field compatibility.
+    def set_samples_and_check_compatibility(self) -> OperationalDomainSettingsModel:
+        """Set default samples based on the selected algorithm and check cross-field compatibility.
 
         Returns:
             The validated OperationalDomainModel instance.
@@ -259,6 +259,6 @@ class ApplicationSettingsModel(BaseModel):
 
     model_config = ConfigDict(use_enum_values=True)
 
-    physical_simulation: PhysicalSimulationModel = Field(default_factory=PhysicalSimulationModel)
-    gate_function: GateFunctionModel = Field(default_factory=GateFunctionModel)
-    operational_domain: OperationalDomainModel = Field(default_factory=lambda: OperationalDomainModel())  # noqa: PLW0108
+    physical_simulation: PhysicalSimulationSettingsModel = Field(default_factory=PhysicalSimulationSettingsModel)
+    gate_function: GateFunctionSettingsModel = Field(default_factory=GateFunctionSettingsModel)
+    operational_domain: OperationalDomainSettingsModel = Field(default_factory=lambda: OperationalDomainSettingsModel())  # noqa: PLW0108
