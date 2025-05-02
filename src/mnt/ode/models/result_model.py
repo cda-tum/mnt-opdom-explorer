@@ -14,9 +14,10 @@ from mnt.pyfiction import (
 from .settings_model import SweepDimension
 
 SimulationPoint = dict[SweepDimension, float]
-SimulationResultType: TypeAlias = sidb_simulation_result_100 | sidb_simulation_result_111 | None
+SimulationResultType: TypeAlias = sidb_simulation_result_100 | sidb_simulation_result_111
 
 
+# TODO(marcel): add tests
 class SinglePointResult(BaseModel):
     """Represents the physical simulation results for all input patterns at a single parameter point.
 
@@ -36,7 +37,7 @@ class SinglePointResult(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     parameter_point: SimulationPoint = Field(..., description="Parameter point used for simulation")
-    results: dict[int, SimulationResultType] = Field(
+    results: dict[int, SimulationResultType | None] = Field(
         default_factory=dict, description="Simulation results per input pattern index"
     )
     positive_charges_occurred: bool | None = Field(

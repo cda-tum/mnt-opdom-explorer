@@ -14,8 +14,8 @@ from mnt.pyfiction import (
     sidb_111_lattice,
 )
 
-SiDBLayoutType: TypeAlias = sidb_100_lattice | sidb_111_lattice | None
-SiDBChargeLayoutType: TypeAlias = charge_distribution_surface_100 | charge_distribution_surface_111 | None
+SiDBLayoutType: TypeAlias = sidb_100_lattice | sidb_111_lattice
+SiDBChargeLayoutType: TypeAlias = charge_distribution_surface_100 | charge_distribution_surface_111
 
 
 class LayoutModel(BaseModel):
@@ -31,4 +31,4 @@ class LayoutModel(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     source_file_path: Path = Field(..., description="Path to the source SQD file")
-    sidb_layout: SiDBLayoutType = Field(..., description="Layout object from mnt.pyfiction")
+    sidb_layout: SiDBLayoutType | None = Field(..., description="Layout object from mnt.pyfiction")

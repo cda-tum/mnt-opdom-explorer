@@ -10,7 +10,7 @@ from mnt.pyfiction import operational_status
 
 from .layout_model import SiDBChargeLayoutType  # noqa: TC001 - Needed for Pydantic Field type
 
-OperationalStatus: TypeAlias = operational_status | None
+OperationalStatus: TypeAlias = operational_status
 
 
 class VisualizationOptions(BaseModel):
@@ -44,9 +44,9 @@ class PlotStatusInfo(BaseModel):
     # Allow arbitrary types, enabling the use of pyfiction's untyped objects
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    charge_layout: SiDBChargeLayoutType = Field(default=None, description="Layout with charge states to display")
-    operational_status: OperationalStatus = Field(default=None, description="Overall operational status")
-    kink_induced_operational_status: OperationalStatus = Field(
+    charge_layout: SiDBChargeLayoutType | None = Field(default=None, description="Layout with charge states to display")
+    operational_status: OperationalStatus | None = Field(default=None, description="Overall operational status")
+    kink_induced_operational_status: OperationalStatus | None = Field(
         default=None, description="Operational status considering only kinks"
     )
     binary_input_string: str | None = Field(default=None, description="Binary string representing the input state")
