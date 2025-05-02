@@ -152,6 +152,7 @@ class SimulationService:
 
         # 5. Run Simulation Loop
         simulation_results: dict[int, SimulationResultType | None] = {}
+        # TODO(marcel): parallelize
         for i in range(num_input_patterns):
             try:
                 current_layout = bdl_iterator.get_layout()
