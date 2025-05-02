@@ -7,9 +7,15 @@ from typing import TypeAlias
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from mnt.pyfiction import sidb_100_lattice, sidb_111_lattice
+from mnt.pyfiction import (
+    charge_distribution_surface_100,
+    charge_distribution_surface_111,
+    sidb_100_lattice,
+    sidb_111_lattice,
+)
 
 SiDBLayoutType: TypeAlias = sidb_100_lattice | sidb_111_lattice | None
+SiDBChargeLayoutType: TypeAlias = charge_distribution_surface_100 | charge_distribution_surface_111 | None
 
 
 class LayoutModel(BaseModel):
@@ -21,7 +27,7 @@ class LayoutModel(BaseModel):
                      Type hint uses Any because pyfiction is currently untyped.
     """
 
-    # Use ConfigDict to allow arbitrary types like the fiction layout object
+    # Allow arbitrary types, enabling the use of pyfiction's untyped objects
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     source_file_path: Path = Field(..., description="Path to the source SQD file")

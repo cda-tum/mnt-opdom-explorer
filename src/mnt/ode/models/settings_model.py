@@ -257,6 +257,7 @@ class OperationalDomainSettingsModel(BaseModel):
 class ApplicationSettingsModel(BaseModel):
     """Top-level model aggregating all application settings."""
 
+    # Allow arbitrary types, enabling the use of pyfiction's untyped objects
     model_config = ConfigDict(use_enum_values=True)
 
     physical_simulation: PhysicalSimulationSettingsModel = Field(default_factory=PhysicalSimulationSettingsModel)

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from .layout_model import LayoutModel, SiDBLayoutType
+from .layout_model import LayoutModel, SiDBChargeLayoutType, SiDBLayoutType
 from .result_model import SimulationPoint, SimulationResultType, SinglePointResult
 from .settings_model import (
     ApplicationSettingsModel,
@@ -19,6 +19,7 @@ from .settings_model import (
     SweepDimension,
     SweepDimensionModel,
 )
+from .visualization_model import PlotStatusInfo, VisualizationOptions
 
 __all__ = [
     "ApplicationSettingsModel",
@@ -32,6 +33,8 @@ __all__ = [
     "OperationalDomainSettingsModel",
     "ParameterRangeModel",
     "PhysicalSimulationSettingsModel",
+    "PlotStatusInfo",
+    "SiDBChargeLayoutType",
     "SiDBLayoutType",
     "SimulationEngine",
     "SimulationPoint",
@@ -39,4 +42,5 @@ __all__ = [
     "SinglePointResult",
     "SweepDimension",
     "SweepDimensionModel",
+    "VisualizationOptions",
 ]

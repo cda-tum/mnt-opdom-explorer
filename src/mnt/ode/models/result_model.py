@@ -32,7 +32,8 @@ class SinglePointResult(BaseModel):
         error_message: An optional error message if the simulation failed before completing all input patterns.
     """
 
-    model_config = ConfigDict(arbitrary_types_allowed=True)  # Allow fiction result types
+    # Allow arbitrary types, enabling the use of pyfiction's untyped objects
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
     parameter_point: SimulationPoint = Field(..., description="Parameter point used for simulation")
     results: dict[int, SimulationResultType] = Field(
