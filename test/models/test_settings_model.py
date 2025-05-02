@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from mnt.ode.models.settings_model import (
+from mnt.ode.models import (
     ApplicationSettingsModel,
     AxisScale,
     OperationalCondition,

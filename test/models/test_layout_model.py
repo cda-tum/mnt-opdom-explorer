@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from mnt.ode.models.layout_model import LayoutModel
+from mnt.ode.models import LayoutModel
 from mnt.pyfiction import sidb_100_lattice
 
 
