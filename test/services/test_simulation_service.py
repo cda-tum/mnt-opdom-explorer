@@ -13,7 +13,7 @@ from mnt.ode.models import (
     InputSignalEncoding,
     LayoutModel,
     SimulationEngine,
-    SimulationPoint,
+    SimulationSweepPointType,
     SinglePointResult,
     SweepDimension,
 )
@@ -108,7 +108,7 @@ def presence_encoding_settings(default_settings: ApplicationSettingsModel) -> Ap
 
 
 @pytest.fixture
-def parameter_point() -> SimulationPoint:
+def parameter_point() -> SimulationSweepPointType:
     """Provides a sample parameter point.
 
     Returns:
@@ -147,7 +147,7 @@ def test_run_simulation_quickexact_success(
     service: SimulationService,
     mock_layout_model: LayoutModel,
     default_settings: ApplicationSettingsModel,
-    parameter_point: SimulationPoint,
+    parameter_point: SimulationSweepPointType,
     caplog: pytest.LogCaptureFixture,
 ) -> None:
     """Test the successful simulation using the QuickExact engine."""
@@ -217,7 +217,7 @@ def test_run_simulation_exgs_success(
     service: SimulationService,
     mock_layout_model: LayoutModel,
     exgs_settings: ApplicationSettingsModel,
-    parameter_point: SimulationPoint,
+    parameter_point: SimulationSweepPointType,
 ) -> None:
     """Test the successful simulation using the ExGS engine."""
     # Arrange mocks
@@ -257,7 +257,7 @@ def test_run_simulation_quicksim_success(
     service: SimulationService,
     mock_layout_model: LayoutModel,
     quicksim_settings: ApplicationSettingsModel,
-    parameter_point: SimulationPoint,
+    parameter_point: SimulationSweepPointType,
 ) -> None:
     """Test the successful simulation using the QuickSim engine."""
     # Arrange mocks
@@ -293,7 +293,7 @@ def test_run_simulation_presence_encoding(
     service: SimulationService,
     mock_layout_model: LayoutModel,
     presence_encoding_settings: ApplicationSettingsModel,
-    parameter_point: SimulationPoint,
+    parameter_point: SimulationSweepPointType,
 ) -> None:
     """Test simulation uses the correct BDL config for Presence Encoding."""
     # Arrange mocks
@@ -316,7 +316,7 @@ def test_run_simulation_positive_charges_warning(
     service: SimulationService,
     mock_layout_model: LayoutModel,
     default_settings: ApplicationSettingsModel,
-    parameter_point: SimulationPoint,
+    parameter_point: SimulationSweepPointType,
     caplog: pytest.LogCaptureFixture,
 ) -> None:
     """Test warning log when positive charges can occur."""
@@ -347,7 +347,7 @@ def test_run_simulation_pattern_error(
     service: SimulationService,
     mock_layout_model: LayoutModel,
     default_settings: ApplicationSettingsModel,
-    parameter_point: SimulationPoint,
+    parameter_point: SimulationSweepPointType,
     caplog: pytest.LogCaptureFixture,
 ) -> None:
     """Test handling of simulation error for a single input pattern."""
@@ -398,7 +398,7 @@ def test_run_simulation_bdl_iterator_error(
     service: SimulationService,
     mock_layout_model: LayoutModel,
     default_settings: ApplicationSettingsModel,
-    parameter_point: SimulationPoint,
+    parameter_point: SimulationSweepPointType,
     caplog: pytest.LogCaptureFixture,
 ) -> None:
     """Test handling of error during BDL iterator creation."""

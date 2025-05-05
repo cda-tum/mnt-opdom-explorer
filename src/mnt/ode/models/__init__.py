@@ -3,7 +3,13 @@
 from __future__ import annotations
 
 from .layout_model import LayoutModel, SiDBChargeLayoutType, SiDBLayoutType
-from .result_model import SimulationPoint, SimulationResultType, SinglePointResult
+from .result_model import (
+    OperationalDomainResultModel,
+    OperationalDomainResultType,
+    SimulationPointResultType,
+    SimulationSweepPointType,
+    SinglePointResult,
+)
 from .settings_model import (
     ApplicationSettingsModel,
     AxisScale,
@@ -30,6 +36,8 @@ __all__ = [
     "LayoutModel",
     "OperationalCondition",
     "OperationalDomainAlgorithm",
+    "OperationalDomainResultModel",
+    "OperationalDomainResultType",
     "OperationalDomainSettingsModel",
     "ParameterRangeModel",
     "PhysicalSimulationSettingsModel",
@@ -37,8 +45,8 @@ __all__ = [
     "SiDBChargeLayoutType",
     "SiDBLayoutType",
     "SimulationEngine",
-    "SimulationPoint",
-    "SimulationResultType",
+    "SimulationPointResultType",
+    "SimulationSweepPointType",
     "SinglePointResult",
     "SweepDimension",
     "SweepDimensionModel",

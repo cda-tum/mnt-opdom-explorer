@@ -11,8 +11,8 @@ from mnt.ode.models import (
     LayoutModel,
     SiDBLayoutType,
     SimulationEngine,
-    SimulationPoint,
-    SimulationResultType,
+    SimulationPointResultType,
+    SimulationSweepPointType,
     SinglePointResult,
     SweepDimension,
 )
@@ -51,7 +51,7 @@ class SimulationService:
     def run_simulation_at_point(
         layout_model: LayoutModel,
         settings: ApplicationSettingsModel,
-        parameter_point: SimulationPoint,
+        parameter_point: SimulationSweepPointType,
         progress_callback: Callable[[int], None] | None = None,
     ) -> SinglePointResult:
         """Runs simulations for all input patterns at a single parameter point.
@@ -128,7 +128,7 @@ class SimulationService:
                     SiDBLayoutType,
                     quickexact_params | quicksim_params | sidb_simulation_parameters,
                 ],
-                SimulationResultType,
+                SimulationPointResultType,
             ]
             | None
         ) = None
@@ -151,7 +151,7 @@ class SimulationService:
             logger.debug("Using QuickSim engine.")
 
         # 5. Run Simulation Loop
-        simulation_results: dict[int, SimulationResultType | None] = {}
+        simulation_results: dict[int, SimulationPointResultType | None] = {}
         # TODO(marcel): parallelize
         for i in range(num_input_patterns):
             try:
@@ -162,7 +162,7 @@ class SimulationService:
                 if engine_params is None:
                     msg = "Simulation engine parameters not assigned."
                     raise SimulationError(msg)  # noqa: TRY301
-                sim_result: SimulationResultType = engine_func(current_layout, engine_params)
+                sim_result: SimulationPointResultType = engine_func(current_layout, engine_params)
                 simulation_results[i] = sim_result
                 logger.debug("Simulation successful for input pattern %d.", i)
 

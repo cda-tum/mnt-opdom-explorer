@@ -6,15 +6,13 @@ from typing import TypeAlias
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from mnt.pyfiction import (
-    sidb_simulation_result_100,
-    sidb_simulation_result_111,
-)
+from mnt.pyfiction import operational_domain, sidb_simulation_result_100, sidb_simulation_result_111
 
 from .settings_model import SweepDimension
 
-SimulationPoint = dict[SweepDimension, float]
-SimulationResultType: TypeAlias = sidb_simulation_result_100 | sidb_simulation_result_111
+SimulationSweepPointType = dict[SweepDimension, float]
+SimulationPointResultType: TypeAlias = sidb_simulation_result_100 | sidb_simulation_result_111
+OperationalDomainResultType: TypeAlias = operational_domain
 
 
 # TODO(marcel): add tests
@@ -36,11 +34,27 @@ class SinglePointResult(BaseModel):
     # Allow arbitrary types, enabling the use of pyfiction's untyped objects
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    parameter_point: SimulationPoint = Field(..., description="Parameter point used for simulation")
-    results: dict[int, SimulationResultType | None] = Field(
+    parameter_point: SimulationSweepPointType = Field(..., description="Parameter point used for simulation")
+    results: dict[int, SimulationPointResultType | None] = Field(
         default_factory=dict, description="Simulation results per input pattern index"
     )
     positive_charges_occurred: bool | None = Field(
         default=None, description="Whether positive charges check was positive"
     )
     error_message: str | None = Field(default=None, description="Overall error message, if any")
+
+
+class OperationalDomainResultModel(BaseModel):
+    """Represents the calculated operational domain results.
+
+    Attributes:
+        op_domain: The operational_domain object returned by mnt.pyfiction.
+                   This object contains the parameter points and their corresponding operational statuses.
+    """
+
+    # Allow arbitrary types, enabling the use of pyfiction's untyped objects
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    op_domain: OperationalDomainResultType = Field(
+        ..., description="Operational domain obtained from a reconstruction algorithm"
+    )
