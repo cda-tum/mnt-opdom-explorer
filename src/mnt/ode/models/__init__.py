@@ -19,7 +19,7 @@ from .settings_model import (
     SweepDimension,
     SweepDimensionModel,
 )
-from .visualization_model import PlotStatusInfo, VisualizationOptions
+from .visualization_model import PlotConfiguration, VisualizationOptions
 
 __all__ = [
     "ApplicationSettingsModel",
@@ -33,7 +33,7 @@ __all__ = [
     "OperationalDomainSettingsModel",
     "ParameterRangeModel",
     "PhysicalSimulationSettingsModel",
-    "PlotStatusInfo",
+    "PlotConfiguration",
     "SiDBChargeLayoutType",
     "SiDBLayoutType",
     "SimulationEngine",

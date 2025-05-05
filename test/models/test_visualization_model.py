@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 import pytest
 from pydantic import ValidationError
 
-from mnt.ode.models import PlotStatusInfo, VisualizationOptions
+from mnt.ode.models import PlotConfiguration, VisualizationOptions
 from mnt.pyfiction import charge_distribution_surface_100, operational_status
 
 if TYPE_CHECKING:
@@ -76,7 +76,7 @@ def charge_layout() -> charge_distribution_surface_100:
 
 def test_plot_status_info_defaults() -> None:
     """Test default values for PlotStatusInfo."""
-    status = PlotStatusInfo()
+    status = PlotConfiguration()
     assert status.charge_layout is None
     assert status.operational_status is None
     assert status.kink_induced_operational_status is None
@@ -86,7 +86,7 @@ def test_plot_status_info_defaults() -> None:
 
 def test_plot_status_info_valid(charge_layout: SiDBLayoutType) -> None:
     """Test valid instantiation of PlotStatusInfo."""
-    status = PlotStatusInfo(
+    status = PlotConfiguration(
         charge_layout=charge_layout,
         operational_status=operational_status.OPERATIONAL,
         kink_induced_operational_status=operational_status.NON_OPERATIONAL,
@@ -102,7 +102,7 @@ def test_plot_status_info_valid(charge_layout: SiDBLayoutType) -> None:
 
 def test_plot_status_info_partial() -> None:
     """Test instantiation with only some optional values."""
-    status = PlotStatusInfo(binary_input_string="01")
+    status = PlotConfiguration(binary_input_string="01")
     assert status.charge_layout is None
     assert status.operational_status is None
     assert status.binary_input_string == "01"
@@ -111,8 +111,8 @@ def test_plot_status_info_partial() -> None:
 def test_plot_status_info_invalid_type() -> None:
     """Test ValidationError for incorrect type (e.g., for parameter_point)."""
     with pytest.raises(ValidationError):
-        PlotStatusInfo(parameter_point="not a tuple")
+        PlotConfiguration(parameter_point="not a tuple")
 
     with pytest.raises(ValidationError):
         # Example: operational_status expects a specific enum member or None
-        PlotStatusInfo(operational_status="OPERATIONAL_STRING")
+        PlotConfiguration(operational_status="OPERATIONAL_STRING")

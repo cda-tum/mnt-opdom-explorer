@@ -38,7 +38,7 @@ class VisualizationOptions(BaseModel):
     figure_dpi: int = Field(default=100, description="Figure resolution in dots per inch")
 
 
-class PlotStatusInfo(BaseModel):
+class PlotConfiguration(BaseModel):
     """Information about the specific state being plotted."""
 
     # Allow arbitrary types, enabling the use of pyfiction's untyped objects
@@ -50,4 +50,4 @@ class PlotStatusInfo(BaseModel):
         default=None, description="Operational status considering only kinks"
     )
     binary_input_string: str | None = Field(default=None, description="Binary string representing the input state")
-    parameter_point: tuple[float, float] | None = Field(default=None, description="Parameter point (e.g., for title)")
+    parameter_point: tuple[float, float] | None = Field(default=None, description="Parameter point to highlight")
