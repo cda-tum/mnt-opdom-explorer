@@ -3,12 +3,15 @@
 from __future__ import annotations
 
 from .layout_visualization_service import LayoutVisualizationError, LayoutVisualizationService
+from .operational_domain_service import OperationalDomainError, OperationalDomainService
 from .simulation_service import SimulationError, SimulationService
 from .sqd_file_service import SQDFileService
 
 __all__ = [
     "LayoutVisualizationError",
     "LayoutVisualizationService",
+    "OperationalDomainError",
+    "OperationalDomainService",
     "SQDFileService",
     "SimulationError",
     "SimulationService",
