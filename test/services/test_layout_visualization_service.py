@@ -14,7 +14,7 @@ from mnt.ode.models import (
     PlotConfiguration,
     VisualizationOptions,
 )
-from mnt.ode.services.layout_visualization_service import (
+from mnt.ode.services import (
     LayoutVisualizationError,
     LayoutVisualizationService,
 )

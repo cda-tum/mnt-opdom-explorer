@@ -9,7 +9,7 @@ from unittest.mock import Mock, patch
 import pytest
 
 from mnt.ode.models import LayoutModel
-from mnt.ode.services.sqd_file_service import SQDFileService
+from mnt.ode.services import SQDFileService
 from mnt.pyfiction import sidb_100_lattice, sqd_parsing_error
 
 

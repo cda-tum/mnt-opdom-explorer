@@ -17,7 +17,7 @@ from mnt.ode.models import (
     SinglePointResult,
     SweepDimension,
 )
-from mnt.ode.services.simulation_service import SimulationService
+from mnt.ode.services import SimulationService
 from mnt.pyfiction import (
     input_bdl_configuration,
     sidb_100_lattice,
