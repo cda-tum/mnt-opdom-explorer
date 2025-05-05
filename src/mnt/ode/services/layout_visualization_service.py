@@ -46,6 +46,7 @@ class LayoutVisualizationError(Exception):
 class LayoutVisualizationService:
     """Generates Matplotlib visualizations of SiDB layouts."""
 
+    # TODO(marcel): LayoutModel as input instead?
     @staticmethod
     def create_layout_plots(
         layout: SiDBLayoutType,
@@ -96,6 +97,7 @@ class LayoutVisualizationService:
             num_input_patterns = 2 ** bdl_iterator.num_input_pairs()
             logger.info("Generating %d layout plots based on BDL inputs.", num_input_patterns)
 
+            # TODO(marcel): parallelize this loop
             for i in range(num_input_patterns):
                 layout_to_plot = bdl_iterator.get_layout()
                 # Create plot configuration just with the binary string for input labels
@@ -118,6 +120,7 @@ class LayoutVisualizationService:
 
         return figures
 
+    # TODO(marcel): SinglePointResult as input instead?
     @staticmethod
     def create_charge_distribution_plots(
         original_layout: SiDBLayoutType,
