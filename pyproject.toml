@@ -30,10 +30,10 @@ dependencies = [
     "PyQt6==6.8.1",
     "reactivex==4.0.4",
     "pydantic==2.9.0",
-    "matplotlib==3.10.1",
-    "mnt.pyfiction==0.6.10",
-    "pandas==2.2.3",
     "qtawesome==1.4.0",
+    "mnt.pyfiction==0.6.10",
+    "matplotlib==3.10.1",
+    "pandas==2.2.3",
 ]
 dynamic = ["version"]
 
