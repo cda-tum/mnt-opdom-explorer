@@ -12,8 +12,8 @@ from mnt.pyfiction import sidb_100_lattice
 
 
 @pytest.fixture
-def fiction_layout() -> sidb_100_lattice:
-    """Pytest fixture to provide a minimal mnt.pyfiction layout object.
+def default_100_lattice() -> sidb_100_lattice:
+    """Pytest fixture to provide an empty sidb_100_lattice object.
 
     Returns:
         A default-constructed sidb_100_lattice instance.
@@ -32,18 +32,18 @@ def valid_path() -> Path:
     return Path(__file__).parent / "dummy_layout.sqd"
 
 
-def test_layout_model_valid(valid_path: Path, fiction_layout: sidb_100_lattice) -> None:
+def test_layout_model_valid(valid_path: Path, default_100_lattice: sidb_100_lattice) -> None:
     """Test successful instantiation with valid data."""
-    model = LayoutModel(source_file_path=valid_path, sidb_layout=fiction_layout)
+    model = LayoutModel(source_file_path=valid_path, sidb_layout=default_100_lattice)
     assert model.source_file_path == valid_path
-    assert model.sidb_layout is fiction_layout
+    assert model.sidb_layout is default_100_lattice
     assert isinstance(model.sidb_layout, sidb_100_lattice)
 
 
-def test_layout_model_missing_path(fiction_layout: sidb_100_lattice) -> None:
+def test_layout_model_missing_path(default_100_lattice: sidb_100_lattice) -> None:
     """Test ValidationError when source_file_path is missing."""
     with pytest.raises(ValidationError, match=R"Field required"):
-        LayoutModel.model_validate({"fiction_layout": fiction_layout})
+        LayoutModel.model_validate({"fiction_layout": default_100_lattice})
 
 
 def test_layout_model_missing_layout(valid_path: Path) -> None:
@@ -52,12 +52,12 @@ def test_layout_model_missing_layout(valid_path: Path) -> None:
         LayoutModel.model_validate({"source_file_path": valid_path})
 
 
-def test_layout_model_invalid_path_type(fiction_layout: sidb_100_lattice) -> None:
+def test_layout_model_invalid_path_type(default_100_lattice: sidb_100_lattice) -> None:
     """Test ValidationError when source_file_path has the wrong type."""
     with pytest.raises(ValidationError, match=R"Input is not a valid path"):
-        LayoutModel(source_file_path=123, sidb_layout=fiction_layout)
+        LayoutModel(source_file_path=123, sidb_layout=default_100_lattice)
 
     # Accept both 'pathlib.Path' and 'pathlib._local.Path' (Python 3.13 compatibility)
     path_regex = r"Input is not a valid path for <class 'pathlib(\._local)?\.Path'>"
     with pytest.raises(ValidationError, match=path_regex):
-        LayoutModel(source_file_path=None, sidb_layout=fiction_layout)
+        LayoutModel(source_file_path=None, sidb_layout=default_100_lattice)
