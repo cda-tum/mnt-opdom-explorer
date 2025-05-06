@@ -2,15 +2,11 @@
 
 from __future__ import annotations
 
-from typing import TypeAlias
-
-from pydantic import BaseModel, ConfigDict, Field
-
-from mnt.pyfiction import operational_status
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from .layout_model import SiDBChargeLayoutType  # noqa: TC001 - Needed for Pydantic Field type
-
-OperationalStatus: TypeAlias = operational_status
+from .result_model import OperationalStatus  # noqa: TC001 - Needed for Pydantic Field type
+from .settings_model import SweepDimension
 
 
 class LayoutVisualizationOptions(BaseModel):
@@ -51,3 +47,63 @@ class ChargeLayoutVisualizationConfiguration(BaseModel):
     )
     binary_input_string: str | None = Field(default=None, description="Binary string representing the input state")
     parameter_point: tuple[float, float] | None = Field(default=None, description="Parameter point to highlight")
+
+
+class OperationalDomainPlotOptions(BaseModel):
+    """Options to configure the operational domain plot appearance."""
+
+    x_param: SweepDimension = Field(default=SweepDimension.EPSILON_R, description="Parameter for the X-axis")
+    y_param: SweepDimension = Field(default=SweepDimension.LAMBDA_TF, description="Parameter for the Y-axis")
+    z_param: SweepDimension | None = Field(default=None, description="Parameter for the Z-axis (for 3D plots)")
+    title: str | None = Field(default="Operational Domain", description="Title of the plot")
+    x_log: bool = Field(default=False, description="Use logarithmic scale for X-axis")
+    y_log: bool = Field(default=False, description="Use logarithmic scale for Y-axis")
+    z_log: bool = Field(default=False, description="Use logarithmic scale for Z-axis (3D only)")
+    include_non_operational: bool = Field(default=True, description="Show non-operational points")
+    show_legend: bool = Field(default=True, description="Display the legend")
+    x_range: tuple[float, float] | None = Field(default=(0.5, 10.5), description="Manual range for X-axis (min, max)")
+    y_range: tuple[float, float] | None = Field(default=(0.5, 10.5), description="Manual range for Y-axis (min, max)")
+    z_range: tuple[float, float] | None = Field(
+        default=(-0.55, -0.05), description="Manual range for Z-axis (min, max)"
+    )
+    operational_marker_color: str = Field(default="#801A99", description="Color for operational points")
+    operational_marker_size: int = Field(default=4, description="Marker size for operational points")
+    non_operational_marker_color: str = Field(default="#BFBFBF", description="Color for non-operational points")
+    non_operational_marker_size: int = Field(default=2, description="Marker size for non-operational points")
+    non_operational_marker_alpha: float = Field(default=1.0, description="Alpha for non-operational points")
+    three_d_color_by_coords: bool = Field(default=True, description="Color 3D points by Y/Z coordinates")
+    figure_dpi: int = Field(default=100, description="Figure resolution in dots per inch")
+
+    @field_validator("z_param")
+    @classmethod
+    def check_z_param_not_none(cls, v: SweepDimension | None) -> SweepDimension | None:
+        """Ensure z_param is not SweepDimension.NONE.
+
+        Args:
+            v: The value of z_param to validate.
+
+        Returns:
+            The validated z_param value or None if it is SweepDimension.NONE.
+        """
+        if v == SweepDimension.NONE:
+            return None  # Treat explicit NONE as no Z dimension
+        return v
+
+    @field_validator("x_range", "y_range", "z_range")
+    @classmethod
+    def check_range_order(cls, v: tuple[float, float] | None) -> tuple[float, float] | None:
+        """Ensure min <= max in ranges.
+
+        Args:
+            v: The range tuple to validate.
+
+        Returns:
+            The validated range tuple or None if it is not provided.
+
+        Raises:
+            ValueError: If the minimum value is greater than the maximum value.
+        """
+        if v is not None and v[0] > v[1]:
+            msg = "Range minimum cannot be greater than maximum."
+            raise ValueError(msg)
+        return v

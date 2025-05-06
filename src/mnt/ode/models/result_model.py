@@ -6,12 +6,13 @@ from typing import TypeAlias
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from mnt.pyfiction import operational_domain, sidb_simulation_result_100, sidb_simulation_result_111
+from mnt.pyfiction import operational_domain, operational_status, sidb_simulation_result_100, sidb_simulation_result_111
 
 from .settings_model import SweepDimension
 
 SimulationSweepPointType = dict[SweepDimension, float]
 SimulationPointResultType: TypeAlias = sidb_simulation_result_100 | sidb_simulation_result_111
+OperationalStatus: TypeAlias = operational_status
 OperationalDomainResultType: TypeAlias = operational_domain
 
 

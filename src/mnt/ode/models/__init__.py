@@ -6,6 +6,7 @@ from .layout_model import LayoutModel, SiDBChargeLayoutType, SiDBLayoutType
 from .result_model import (
     OperationalDomainResultModel,
     OperationalDomainResultType,
+    OperationalStatus,
     SimulationPointResultType,
     SimulationSweepPointType,
     SinglePointResult,
@@ -25,7 +26,11 @@ from .settings_model import (
     SweepDimension,
     SweepDimensionModel,
 )
-from .visualization_model import ChargeLayoutVisualizationConfiguration, LayoutVisualizationOptions
+from .visualization_model import (
+    ChargeLayoutVisualizationConfiguration,
+    LayoutVisualizationOptions,
+    OperationalDomainPlotOptions,
+)
 
 __all__ = [
     "ApplicationSettingsModel",
@@ -38,9 +43,11 @@ __all__ = [
     "LayoutVisualizationOptions",
     "OperationalCondition",
     "OperationalDomainAlgorithm",
+    "OperationalDomainPlotOptions",
     "OperationalDomainResultModel",
     "OperationalDomainResultType",
     "OperationalDomainSettingsModel",
+    "OperationalStatus",
     "ParameterRangeModel",
     "PhysicalSimulationSettingsModel",
     "SiDBChargeLayoutType",

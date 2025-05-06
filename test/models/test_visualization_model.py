@@ -7,14 +7,19 @@ from typing import TYPE_CHECKING
 import pytest
 from pydantic import ValidationError
 
-from mnt.ode.models import ChargeLayoutVisualizationConfiguration, LayoutVisualizationOptions
+from mnt.ode.models import (
+    ChargeLayoutVisualizationConfiguration,
+    LayoutVisualizationOptions,
+    OperationalDomainPlotOptions,
+    SweepDimension,
+)
 from mnt.pyfiction import charge_distribution_surface_100, operational_status
 
 if TYPE_CHECKING:
     from mnt.ode.models import SiDBLayoutType
 
 
-# --- Tests for VisualizationOptions ---
+# --- Tests for LayoutVisualizationOptions ---
 
 
 def test_visualization_options_defaults() -> None:
@@ -61,7 +66,7 @@ def test_visualization_options_valid_override() -> None:
     assert options.positive_charge_color == "#E34857"
 
 
-# --- Tests for PlotStatusInfo ---
+# --- Tests for ChargeLayoutVisualizationConfiguration ---
 
 
 @pytest.fixture
@@ -116,3 +121,78 @@ def test_plot_status_info_invalid_type() -> None:
     with pytest.raises(ValidationError):
         # Example: operational_status expects a specific enum member or None
         ChargeLayoutVisualizationConfiguration(operational_status="OPERATIONAL_STRING")
+
+
+# --- Tests for OperationalDomainPlotOptions ---
+
+
+def test_op_domain_plot_options_defaults() -> None:
+    """Test default values for OperationalDomainPlotOptions."""
+    options = OperationalDomainPlotOptions()
+    assert options.x_param == SweepDimension.EPSILON_R
+    assert options.y_param == SweepDimension.LAMBDA_TF
+    assert options.z_param is None
+    assert options.title == "Operational Domain"
+    assert options.x_log is False
+    assert options.y_log is False
+    assert options.z_log is False
+    assert options.include_non_operational is True
+    assert options.show_legend is True
+    assert options.x_range == (0.5, 10.5)
+    assert options.y_range == (0.5, 10.5)
+    assert options.z_range == (-0.55, -0.05)
+    assert options.operational_marker_color == "#801A99"
+    assert options.operational_marker_size == 4
+    assert options.non_operational_marker_color == "#BFBFBF"
+    assert options.non_operational_marker_size == 2
+    assert options.non_operational_marker_alpha == 1.0
+    assert options.three_d_color_by_coords is True
+    assert options.figure_dpi == 100
+
+
+def test_op_domain_plot_options_valid_override() -> None:
+    """Test valid instantiation with overridden values."""
+    options = OperationalDomainPlotOptions(
+        x_param=SweepDimension.MU_MINUS,
+        z_param=SweepDimension.EPSILON_R,
+        title="Custom Title",
+        x_log=True,
+        z_range=(-0.3, -0.1),
+        operational_marker_size=6,
+        include_non_operational=False,
+    )
+    assert options.x_param == SweepDimension.MU_MINUS
+    assert options.y_param == SweepDimension.LAMBDA_TF
+    assert options.z_param == SweepDimension.EPSILON_R
+    assert options.title == "Custom Title"
+    assert options.x_log is True
+    assert options.y_log is False
+    assert options.z_log is False
+    assert options.z_range == (-0.3, -0.1)
+    assert options.operational_marker_size == 6
+    assert options.include_non_operational is False
+
+
+def test_op_domain_plot_options_z_param_none() -> None:
+    """Test that z_param=SweepDimension.NONE becomes None."""
+    options = OperationalDomainPlotOptions(z_param=SweepDimension.NONE)
+    assert options.z_param is None
+
+
+def test_op_domain_plot_options_invalid_range() -> None:
+    """Test validation error for invalid range (min > max)."""
+    with pytest.raises(ValidationError, match=r"Range minimum cannot be greater than maximum\."):
+        OperationalDomainPlotOptions(x_range=(10.0, 1.0))
+
+    with pytest.raises(ValidationError, match=r"Range minimum cannot be greater than maximum\."):
+        OperationalDomainPlotOptions(y_range=(100.0, 10.0))
+
+    with pytest.raises(ValidationError, match=r"Range minimum cannot be greater than maximum\."):
+        OperationalDomainPlotOptions(z_range=(0.0, -0.1))
+
+
+def test_op_domain_plot_options_valid_range() -> None:
+    """Test valid ranges."""
+    options = OperationalDomainPlotOptions(x_range=(1.0, 10.0), z_range=(-0.4, -0.2))
+    assert options.x_range == (1.0, 10.0)
+    assert options.z_range == (-0.4, -0.2)
