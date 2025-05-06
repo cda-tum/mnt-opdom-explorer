@@ -43,11 +43,11 @@ def test_layout_model_valid(valid_path: Path, default_100_lattice: sidb_100_latt
 def test_layout_model_missing_path(default_100_lattice: sidb_100_lattice) -> None:
     """Test ValidationError when source_file_path is missing."""
     with pytest.raises(ValidationError, match=R"Field required"):
-        LayoutModel.model_validate({"fiction_layout": default_100_lattice})
+        LayoutModel.model_validate({"sidb_layout": default_100_lattice})
 
 
 def test_layout_model_missing_layout(valid_path: Path) -> None:
-    """Test ValidationError when fiction_layout is missing."""
+    """Test ValidationError when sidb_layout is missing."""
     with pytest.raises(ValidationError, match=R"Field required"):
         LayoutModel.model_validate({"source_file_path": valid_path})
 
