@@ -57,6 +57,7 @@ def test_layout_model_invalid_path_type(fiction_layout: sidb_100_lattice) -> Non
     with pytest.raises(ValidationError, match=R"Input is not a valid path"):
         LayoutModel(source_file_path=123, sidb_layout=fiction_layout)
 
-    # Check for None input - should also fail path validation
-    with pytest.raises(ValidationError, match=R"Input is not a valid path for <class 'pathlib.Path'>"):
+    # Accept both 'pathlib.Path' and 'pathlib._local.Path' (Python 3.13 compatibility)
+    path_regex = r"Input is not a valid path for <class 'pathlib(\._local)?\.Path'>"
+    with pytest.raises(ValidationError, match=path_regex):
         LayoutModel(source_file_path=None, sidb_layout=fiction_layout)
