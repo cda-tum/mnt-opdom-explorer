@@ -13,7 +13,7 @@ from .layout_model import SiDBChargeLayoutType  # noqa: TC001 - Needed for Pydan
 OperationalStatus: TypeAlias = operational_status
 
 
-class VisualizationOptions(BaseModel):
+class LayoutVisualizationOptions(BaseModel):
     """Options to configure the layout visualization appearance."""
 
     padding_x: int = Field(default=2, description="Padding on the x-axis")
@@ -38,8 +38,8 @@ class VisualizationOptions(BaseModel):
     figure_dpi: int = Field(default=100, description="Figure resolution in dots per inch")
 
 
-class PlotConfiguration(BaseModel):
-    """Information about the specific state being plotted."""
+class ChargeLayoutVisualizationConfiguration(BaseModel):
+    """Information about charge layouts being visualized."""
 
     # Allow arbitrary types, enabling the use of pyfiction's untyped objects
     model_config = ConfigDict(arbitrary_types_allowed=True)

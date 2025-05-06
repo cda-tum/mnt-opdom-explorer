@@ -9,11 +9,11 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 
 from mnt.ode.models import (
+    ChargeLayoutVisualizationConfiguration,
     InputSignalEncoding,
-    PlotConfiguration,
+    LayoutVisualizationOptions,
     SiDBChargeLayoutType,
     SiDBLayoutType,
-    VisualizationOptions,
 )
 from mnt.pyfiction import (
     bdl_input_iterator_100,
@@ -51,7 +51,7 @@ class LayoutVisualizationService:
     def create_layout_plots(
         layout: SiDBLayoutType,
         bdl_encoding: InputSignalEncoding,
-        options: VisualizationOptions | None = None,
+        options: LayoutVisualizationOptions | None = None,
     ) -> list[Figure | None]:
         """Generates layout plots for each possible BDL input combination.
 
@@ -74,7 +74,7 @@ class LayoutVisualizationService:
             msg = "Original layout cannot be None."
             raise LayoutVisualizationError(msg)
 
-        opts = options or VisualizationOptions()
+        opts = options or LayoutVisualizationOptions()
         figures: list[Figure | None] = []
 
         # Configure BDL Iterator
@@ -102,7 +102,7 @@ class LayoutVisualizationService:
                 layout_to_plot = bdl_iterator.get_layout()
                 # Create plot configuration just with the binary string for input labels
                 bin_value_str = f"{i:0{bdl_iterator.num_input_pairs()}b}"
-                plot_config = PlotConfiguration(binary_input_string=bin_value_str)
+                plot_config = ChargeLayoutVisualizationConfiguration(binary_input_string=bin_value_str)
 
                 fig = LayoutVisualizationService._create_single_plot(
                     layout_to_plot=layout_to_plot,
@@ -127,7 +127,7 @@ class LayoutVisualizationService:
         charge_layouts: Sequence[SiDBChargeLayoutType],
         operational_statuses: Sequence[operational_status | None] | None = None,
         kink_statuses: Sequence[operational_status | None] | None = None,
-        options: VisualizationOptions | None = None,
+        options: LayoutVisualizationOptions | None = None,
     ) -> list[Figure | None]:
         """Generates plots for a sequence of provided charge distribution layouts.
 
@@ -161,7 +161,7 @@ class LayoutVisualizationService:
             msg = "Length of kink_statuses must match charge_layouts."
             raise LayoutVisualizationError(msg)
 
-        opts = options or VisualizationOptions()
+        opts = options or LayoutVisualizationOptions()
         figures: list[Figure | None] = []
 
         num_input_pairs = 0
@@ -190,7 +190,7 @@ class LayoutVisualizationService:
             kink_status = kink_statuses[i] if kink_statuses else None
             bin_value_str = f"{i:0{num_input_pairs}b}" if num_input_pairs > 0 else None
 
-            plot_config = PlotConfiguration(
+            plot_config = ChargeLayoutVisualizationConfiguration(
                 charge_layout=charge_lyt,
                 operational_status=op_status,
                 kink_induced_operational_status=kink_status,
@@ -213,8 +213,8 @@ class LayoutVisualizationService:
     def _create_single_plot(
         layout_to_plot: SiDBLayoutType,
         original_layout: SiDBLayoutType,
-        opts: VisualizationOptions,
-        plot_config: PlotConfiguration,
+        opts: LayoutVisualizationOptions,
+        plot_config: ChargeLayoutVisualizationConfiguration,
     ) -> Figure | None:
         """Generates a single Matplotlib figure visualizing the SiDB layout state. (Private Helper).
 
@@ -283,7 +283,11 @@ class LayoutVisualizationService:
 
     @staticmethod
     def _plot_grid(
-        ax: Axes, lyt: SiDBLayoutType, bb_min: offset_coordinate, bb_max: offset_coordinate, opts: VisualizationOptions
+        ax: Axes,
+        lyt: SiDBLayoutType,
+        bb_min: offset_coordinate,
+        bb_max: offset_coordinate,
+        opts: LayoutVisualizationOptions,
     ) -> None:
         """Plots the background grid dots.
 
@@ -319,7 +323,7 @@ class LayoutVisualizationService:
 
     @staticmethod
     def _plot_sidbs(
-        ax: Axes, lyt: SiDBLayoutType, charge_lyt: SiDBChargeLayoutType | None, opts: VisualizationOptions
+        ax: Axes, lyt: SiDBLayoutType, charge_lyt: SiDBChargeLayoutType | None, opts: LayoutVisualizationOptions
     ) -> None:
         """Plots the SiDBs, colored by charge state if available.
 
@@ -427,7 +431,7 @@ class LayoutVisualizationService:
         original_lyt: SiDBLayoutType,
         op_status: operational_status,
         kink_status: operational_status | None,
-        opts: VisualizationOptions,
+        opts: LayoutVisualizationOptions,
     ) -> None:
         """Draws rectangles and status symbols around output BDL pairs.
 

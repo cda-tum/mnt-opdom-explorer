@@ -25,15 +25,17 @@ from .settings_model import (
     SweepDimension,
     SweepDimensionModel,
 )
-from .visualization_model import PlotConfiguration, VisualizationOptions
+from .visualization_model import ChargeLayoutVisualizationConfiguration, LayoutVisualizationOptions
 
 __all__ = [
     "ApplicationSettingsModel",
     "AxisScale",
     "BooleanFunction",
+    "ChargeLayoutVisualizationConfiguration",
     "GateFunctionSettingsModel",
     "InputSignalEncoding",
     "LayoutModel",
+    "LayoutVisualizationOptions",
     "OperationalCondition",
     "OperationalDomainAlgorithm",
     "OperationalDomainResultModel",
@@ -41,7 +43,6 @@ __all__ = [
     "OperationalDomainSettingsModel",
     "ParameterRangeModel",
     "PhysicalSimulationSettingsModel",
-    "PlotConfiguration",
     "SiDBChargeLayoutType",
     "SiDBLayoutType",
     "SimulationEngine",
@@ -50,5 +51,4 @@ __all__ = [
     "SinglePointResult",
     "SweepDimension",
     "SweepDimensionModel",
-    "VisualizationOptions",
 ]

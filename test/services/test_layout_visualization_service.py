@@ -10,9 +10,9 @@ from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
 from mnt.ode.models import (
+    ChargeLayoutVisualizationConfiguration,
     InputSignalEncoding,
-    PlotConfiguration,
-    VisualizationOptions,
+    LayoutVisualizationOptions,
 )
 from mnt.ode.services import (
     LayoutVisualizationError,
@@ -96,23 +96,23 @@ def mock_charge_layout_100() -> Mock:
 
 
 @pytest.fixture
-def default_options() -> VisualizationOptions:
+def default_visualization_options() -> LayoutVisualizationOptions:
     """Provides default VisualizationOptions.
 
     Returns:
         A default VisualizationOptions instance.
     """
-    return VisualizationOptions()
+    return LayoutVisualizationOptions()
 
 
 @pytest.fixture
-def default_plot_config() -> PlotConfiguration:
+def default_charge_layout_config() -> ChargeLayoutVisualizationConfiguration:
     """Provides default PlotConfiguration.
 
     Returns:
         A default PlotConfiguration instance.
     """
-    return PlotConfiguration()
+    return ChargeLayoutVisualizationConfiguration()
 
 
 # --- Mocks for External Dependencies ---
@@ -198,7 +198,7 @@ def mock_fiction_funcs() -> Iterator[dict[str, Mock]]:
 
 def test_create_layout_plots_success(
     mock_layout_100: Mock,
-    default_options: VisualizationOptions,
+    default_visualization_options: LayoutVisualizationOptions,
     mock_fiction_funcs: dict[str, Mock],
     mock_plt: dict[str, Mock],
 ) -> None:
@@ -210,7 +210,7 @@ def test_create_layout_plots_success(
     figures = LayoutVisualizationService.create_layout_plots(
         layout=mock_layout_100,
         bdl_encoding=InputSignalEncoding.DISTANCE,
-        options=default_options,
+        options=default_visualization_options,
     )
 
     # Assert
@@ -245,7 +245,7 @@ def test_create_layout_plots_iterator_error(mock_layout_100: Mock, mock_fiction_
 def test_create_charge_distribution_plots_success(
     mock_layout_100: Mock,
     mock_charge_layout_100: Mock,
-    default_options: VisualizationOptions,
+    default_visualization_options: LayoutVisualizationOptions,
     mock_plt: dict[str, Mock],
 ) -> None:
     """Test creating plots from a sequence of charge layouts."""
@@ -256,7 +256,7 @@ def test_create_charge_distribution_plots_success(
     figures = LayoutVisualizationService.create_charge_distribution_plots(
         original_layout=mock_layout_100,
         charge_layouts=charge_layouts,
-        options=default_options,
+        options=default_visualization_options,
     )
 
     # Assert
@@ -323,22 +323,22 @@ def test_create_single_plot_calls_helpers(
     mock_plot_sidbs: Mock,
     mock_plot_grid: Mock,
     mock_layout_100: Mock,
-    default_options: VisualizationOptions,
+    default_visualization_options: LayoutVisualizationOptions,
     mock_plt: dict[str, Mock],
-    default_plot_config: PlotConfiguration,
+    default_charge_layout_config: ChargeLayoutVisualizationConfiguration,
 ) -> None:
     """Test that _create_single_plot calls the correct plotting helpers."""
     # Arrange
-    default_plot_config.charge_layout = mock_layout_100
-    default_plot_config.operational_status = operational_status.OPERATIONAL
-    default_plot_config.binary_input_string = "10"
+    default_charge_layout_config.charge_layout = mock_layout_100
+    default_charge_layout_config.operational_status = operational_status.OPERATIONAL
+    default_charge_layout_config.binary_input_string = "10"
 
     # Act
     fig = LayoutVisualizationService._create_single_plot(
         layout_to_plot=mock_layout_100,
         original_layout=mock_layout_100,
-        opts=default_options,
-        plot_config=default_plot_config,
+        opts=default_visualization_options,
+        plot_config=default_charge_layout_config,
     )
 
     # Assert
@@ -351,9 +351,9 @@ def test_create_single_plot_calls_helpers(
 
 def test_create_single_plot_handles_plotting_exception(
     mock_layout_100: Mock,
-    default_options: VisualizationOptions,
+    default_visualization_options: LayoutVisualizationOptions,
     mock_plt: dict[str, Mock],
-    default_plot_config: PlotConfiguration,
+    default_charge_layout_config: ChargeLayoutVisualizationConfiguration,
 ) -> None:
     """Test that _create_single_plot returns None and closes figure on exception."""
     # Arrange
@@ -363,8 +363,8 @@ def test_create_single_plot_handles_plotting_exception(
     fig = LayoutVisualizationService._create_single_plot(
         layout_to_plot=mock_layout_100,
         original_layout=mock_layout_100,
-        opts=default_options,
-        plot_config=default_plot_config,
+        opts=default_visualization_options,
+        plot_config=default_charge_layout_config,
     )
 
     # Assert
