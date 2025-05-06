@@ -72,6 +72,8 @@ class OperationalDomainPlotOptions(BaseModel):
     non_operational_marker_size: int = Field(default=2, description="Marker size for non-operational points")
     non_operational_marker_alpha: float = Field(default=1.0, description="Alpha for non-operational points")
     three_d_color_by_coords: bool = Field(default=True, description="Color 3D points by Y/Z coordinates")
+    three_d_color_start: str = Field(default="#801A99", description="Start color for 3D coordinate gradient")
+    three_d_color_end: str = Field(default="#FF0000", description="End color for 3D coordinate gradient")
     figure_dpi: int = Field(default=100, description="Figure resolution in dots per inch")
 
     @field_validator("z_param")
@@ -86,7 +88,7 @@ class OperationalDomainPlotOptions(BaseModel):
             The validated z_param value or None if it is SweepDimension.NONE.
         """
         if v == SweepDimension.NONE:
-            return None  # Treat explicit NONE as no Z dimension
+            return None
         return v
 
     @field_validator("x_range", "y_range", "z_range")
