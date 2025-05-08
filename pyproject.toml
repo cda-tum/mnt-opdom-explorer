@@ -120,6 +120,8 @@ plugins = [
 [[tool.mypy.overrides]]
 module = [
     "mnt.pyfiction", # Ignore missing stubs/types for mnt.pyfiction (not typed yet)
+    "PyQt6.*", # Ignore missing stubs/types for PyQt6 (no stubs available)
+    "qtawesome.*", # Ignore missing stubs/types for qtawesome (no stubs available)
 ]
 ignore_missing_imports = true
 
