@@ -95,7 +95,7 @@ class LayoutVisualizationService:
                 raise LayoutVisualizationError(msg)  # noqa: TRY301
 
             num_input_patterns = 2 ** bdl_iterator.num_input_pairs()
-            logger.info("Generating %d layout plots based on BDL inputs.", num_input_patterns)
+            logger.info("Generating %d layout plots.", num_input_patterns)
 
             # TODO(marcel): parallelize this loop
             for i in range(num_input_patterns):
