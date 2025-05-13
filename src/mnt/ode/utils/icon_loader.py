@@ -10,7 +10,8 @@ import qtawesome as qta
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QColor, QIcon, QPainter, QPixmap
 from PyQt6.QtSvg import QSvgRenderer
-from PyQt6.QtWidgets import QApplication
+
+from .palette_detection import is_dark_mode
 
 logger = logging.getLogger(__name__)
 
@@ -27,31 +28,12 @@ class IconLoader:
 
     def __init__(self) -> None:
         """Initializes the icon loader."""
-        self.is_dark_mode = self._detect_dark_mode()
+        self.is_dark_mode = is_dark_mode()
         logger.info("IconLoader initialized. Dark mode detected: %s", self.is_dark_mode)
-
-    @staticmethod
-    def _detect_dark_mode() -> bool:
-        """Detects if the application is likely in dark mode based on palette.
-
-        Returns:
-            True if dark mode is detected, False otherwise.
-        """
-        try:
-            app = QApplication.instance()
-            if app is None:
-                logger.warning("QApplication instance not found for dark mode detection. Assuming light mode.")
-                return False
-            palette = app.palette()
-            # Compare window background color lightness to a threshold
-            return bool(palette.color(palette.ColorRole.Window).lightness() < 128)
-        except Exception:
-            logger.exception("Error detecting dark mode. Assuming light mode.")
-            return False
 
     def refresh_mode(self) -> None:
         """Refreshes the dark/light mode detection."""
-        self.is_dark_mode = self._detect_dark_mode()
+        self.is_dark_mode = is_dark_mode()
         logger.info("Refreshed theme mode. Dark mode detected: %s", self.is_dark_mode)
 
     def get_icon_color(self) -> QColor:
