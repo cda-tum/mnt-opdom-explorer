@@ -16,11 +16,15 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
+class LayoutLoadError(Exception):
+    """Custom exception for errors during layout loading."""
+
+
 class SQDFileService:
     """Handles reading and parsing of SQD layout files."""
 
     @staticmethod
-    def load_layout(file_path: Path) -> LayoutModel | None:
+    def load_layout(file_path: Path) -> LayoutModel:
         """Loads an SiDB layout from the specified SQD file.
 
         Uses pyfiction's read_sqd_layout_100 function.
@@ -29,13 +33,16 @@ class SQDFileService:
             file_path: The path to the SQD file.
 
         Returns:
-            A LayoutModel instance containing the loaded layout and source path if successful, otherwise None.
-            Returns None on FileNotFoundError or parsing errors.
+            A LayoutModel instance containing the loaded layout and source path.
+
+        Raises:
+            LayoutLoadError: If the file is not found, cannot be parsed, or any other error occurs.
         """
         logger.info("Attempting to load layout from: %s", file_path)
         if not file_path.is_file():
-            logger.error("File not found: %s", file_path)
-            return None
+            msg = f"File not found: {file_path}"
+            logger.error(msg)
+            raise LayoutLoadError(msg)
 
         try:
             layout = read_sqd_layout_100(str(file_path))
@@ -45,10 +52,10 @@ class SQDFileService:
             return LayoutModel(source_file_path=file_path, sidb_layout=layout)
 
         except sqd_parsing_error as e:
-            # Log expected parsing errors as warnings without full traceback
-            logger.warning("Failed to parse SQD file %s: %s", file_path, e)
-            return None
-        except Exception:
-            # Catch other unexpected errors during file processing and log with traceback
-            logger.exception("An unexpected error occurred while loading layout from %s", file_path)
-            return None
+            msg = f"Failed to parse SQD file {file_path}: {e!s}"
+            logger.warning(msg)
+            raise LayoutLoadError(msg) from e
+        except Exception as e:
+            msg = f"An unexpected error occurred while loading layout from {file_path}: {e!s}"
+            logger.exception(msg)
+            raise LayoutLoadError(msg) from e

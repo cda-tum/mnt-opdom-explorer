@@ -6,9 +6,10 @@ from .layout_visualization_service import LayoutVisualizationError, LayoutVisual
 from .operational_domain_plotting_service import OperationalDomainPlottingService, PlottingError
 from .operational_domain_service import OperationalDomainError, OperationalDomainService
 from .simulation_service import SimulationError, SimulationService
-from .sqd_file_service import SQDFileService
+from .sqd_file_service import LayoutLoadError, SQDFileService
 
 __all__ = [
+    "LayoutLoadError",
     "LayoutVisualizationError",
     "LayoutVisualizationService",
     "OperationalDomainError",

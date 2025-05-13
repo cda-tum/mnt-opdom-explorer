@@ -9,7 +9,7 @@ from unittest.mock import Mock, patch
 import pytest
 
 from mnt.ode.models import LayoutModel
-from mnt.ode.services import SQDFileService
+from mnt.ode.services import LayoutLoadError, SQDFileService
 from mnt.pyfiction import sidb_100_lattice, sqd_parsing_error
 
 
@@ -66,7 +66,7 @@ def test_load_layout_success(
     # Assert
     assert isinstance(result, LayoutModel)
     assert result.source_file_path == dummy_path
-    assert result.sidb_layout is mock_fiction_layout  # Check if the correct object is stored
+    assert result.sidb_layout is mock_fiction_layout
     mock_is_file.assert_called_once_with()
     mock_read_sqd.assert_called_once_with(str(dummy_path))
     assert f"Attempting to load layout from: {dummy_path}" in caplog.text
@@ -77,19 +77,18 @@ def test_load_layout_success(
 def test_load_layout_file_not_found(
     mock_is_file: Mock, service: SQDFileService, dummy_path: Path, caplog: pytest.LogCaptureFixture
 ) -> None:
-    """Test loading when the file does not exist."""
+    """Test loading when the file does not exist and LayoutLoadError is raised."""
     # Arrange: Simulate file does not exist
     mock_is_file.return_value = False
 
-    # Act
-    caplog.set_level(logging.INFO)
-    result = service.load_layout(dummy_path)
+    # Act & Assert
+    caplog.set_level(logging.INFO)  # Set to INFO to capture the initial attempt log
+    with pytest.raises(LayoutLoadError, match=f"File not found: {dummy_path}"):
+        service.load_layout(dummy_path)
 
-    # Assert
-    assert result is None
     mock_is_file.assert_called_once_with()
-    assert f"File not found: {dummy_path}" in caplog.text
-    assert "Attempting to load layout" in caplog.text  # Check initial log message
+    assert f"File not found: {dummy_path}" in caplog.text  # This is an ERROR message
+    assert "Attempting to load layout" in caplog.text  # This is an INFO message
 
 
 @patch("mnt.ode.services.sqd_file_service.read_sqd_layout_100")
@@ -101,21 +100,22 @@ def test_load_layout_parsing_error(
     dummy_path: Path,
     caplog: pytest.LogCaptureFixture,
 ) -> None:
-    """Test loading when pyfiction raises sqd_parsing_error."""
-    # Arrange: Simulate file exists but parsing fails with a specific error
+    """Test loading when pyfiction raises sqd_parsing_error and LayoutLoadError is raised."""
+    # Arrange: Simulate file exists but parsing fails with specific error
     mock_is_file.return_value = True
-    mock_read_sqd.side_effect = sqd_parsing_error("Invalid SQD format")
+    parse_error_msg = "Invalid SQD format details"
+    mock_read_sqd.side_effect = sqd_parsing_error(parse_error_msg)
 
-    # Act
-    caplog.set_level(logging.INFO)
-    result = service.load_layout(dummy_path)
+    # Act & Assert
+    caplog.set_level(logging.INFO)  # Set to INFO to capture the initial attempt log
+    expected_error_msg = f"Failed to parse SQD file {dummy_path}: {parse_error_msg}"
+    with pytest.raises(LayoutLoadError, match=expected_error_msg):
+        service.load_layout(dummy_path)
 
-    # Assert
-    assert result is None
     mock_is_file.assert_called_once_with()
     mock_read_sqd.assert_called_once_with(str(dummy_path))
-    assert f"Failed to parse SQD file {dummy_path}: Invalid SQD format" in caplog.text
-    assert "Attempting to load layout" in caplog.text
+    assert expected_error_msg in caplog.text  # This is a WARNING message
+    assert "Attempting to load layout" in caplog.text  # This is an INFO message
 
 
 @patch("mnt.ode.services.sqd_file_service.read_sqd_layout_100")
@@ -127,19 +127,21 @@ def test_load_layout_unexpected_error(
     dummy_path: Path,
     caplog: pytest.LogCaptureFixture,
 ) -> None:
-    """Test loading when pyfiction raises an unexpected Exception."""
+    """Test loading when an unexpected Exception occurs and LayoutLoadError is raised."""
     # Arrange: Simulate file exists but reading fails with a generic error
     mock_is_file.return_value = True
-    mock_read_sqd.side_effect = RuntimeError("Something else went wrong")
+    runtime_error_msg = "Something else went wrong"
+    mock_read_sqd.side_effect = RuntimeError(runtime_error_msg)
 
-    # Act
-    caplog.set_level(logging.ERROR)  # Need ERROR level to capture logger.exception
-    result = service.load_layout(dummy_path)
+    # Act & Assert
+    caplog.set_level(logging.INFO)  # Set to INFO to capture the initial attempt log
+    expected_error_msg = f"An unexpected error occurred while loading layout from {dummy_path}: {runtime_error_msg}"
+    with pytest.raises(LayoutLoadError, match=expected_error_msg):
+        service.load_layout(dummy_path)
 
-    # Assert
-    assert result is None
     mock_is_file.assert_called_once_with()
     mock_read_sqd.assert_called_once_with(str(dummy_path))
+    # The logger.exception call includes the error message and traceback
     assert f"An unexpected error occurred while loading layout from {dummy_path}" in caplog.text
-    # Check that the exception traceback was logged (logger.exception includes it)
-    assert "RuntimeError: Something else went wrong" in caplog.text
+    assert runtime_error_msg in caplog.text
+    assert "Attempting to load layout" in caplog.text  # This is an INFO message
