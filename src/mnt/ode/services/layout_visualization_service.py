@@ -11,6 +11,7 @@ from matplotlib.patches import Rectangle
 from mnt.ode.models import (
     ChargeLayoutVisualizationConfiguration,
     InputSignalEncoding,
+    LayoutModel,
     LayoutVisualizationOptions,
     SiDBChargeLayoutType,
     SiDBLayoutType,
@@ -46,10 +47,9 @@ class LayoutVisualizationError(Exception):
 class LayoutVisualizationService:
     """Generates Matplotlib visualizations of SiDB layouts."""
 
-    # TODO(marcel): LayoutModel as input instead?
     @staticmethod
     def create_layout_plots(
-        layout: SiDBLayoutType,
+        layout: LayoutModel,
         bdl_encoding: InputSignalEncoding,
         options: LayoutVisualizationOptions | None = None,
     ) -> list[Figure | None]:
@@ -70,8 +70,8 @@ class LayoutVisualizationService:
         Raises:
             LayoutVisualizationError: If the BDL iterator cannot be created or the layout type is unsupported.
         """
-        if layout is None:
-            msg = "Original layout cannot be None."
+        if layout.sidb_layout is None:
+            msg = "SiDB layout cannot be None."
             raise LayoutVisualizationError(msg)
 
         opts = options or LayoutVisualizationOptions()
@@ -86,10 +86,10 @@ class LayoutVisualizationService:
 
         try:
             bdl_iterator: bdl_input_iterator_100 | bdl_input_iterator_111 | None = None
-            if isinstance(layout, sidb_100_lattice):
-                bdl_iterator = bdl_input_iterator_100(layout, bdl_params)
-            elif isinstance(layout, sidb_111_lattice):
-                bdl_iterator = bdl_input_iterator_111(layout, bdl_params)
+            if isinstance(layout.sidb_layout, sidb_100_lattice):
+                bdl_iterator = bdl_input_iterator_100(layout.sidb_layout, bdl_params)
+            elif isinstance(layout.sidb_layout, sidb_111_lattice):
+                bdl_iterator = bdl_input_iterator_111(layout.sidb_layout, bdl_params)
             else:
                 msg = "Unsupported layout type for BDL iterator."
                 raise LayoutVisualizationError(msg)  # noqa: TRY301
@@ -106,7 +106,7 @@ class LayoutVisualizationService:
 
                 fig = LayoutVisualizationService._create_single_plot(
                     layout_to_plot=layout_to_plot,
-                    original_layout=layout,
+                    original_layout=layout.sidb_layout,
                     opts=opts,
                     plot_config=plot_config,
                 )

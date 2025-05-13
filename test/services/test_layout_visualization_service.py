@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, Mock, patch
 
@@ -12,6 +13,7 @@ from matplotlib.figure import Figure
 from mnt.ode.models import (
     ChargeLayoutVisualizationConfiguration,
     InputSignalEncoding,
+    LayoutModel,
     LayoutVisualizationOptions,
 )
 from mnt.ode.services import (
@@ -80,6 +82,19 @@ def mock_layout_100(mock_input_pair: Mock, mock_output_pair: Mock) -> Mock:
     mock._mock_input_pairs = [mock_input_pair]
     mock._mock_output_pairs = [mock_output_pair]
     return mock
+
+
+@pytest.fixture
+def mock_layout_model(mock_layout_100: Mock) -> LayoutModel:
+    """Provides a mock LayoutModel object.
+
+    Args:
+        mock_layout_100: Fixture for a mock sidb_100_lattice layout object.
+
+    Returns:
+        A MagicMock object simulating a LayoutModel.
+    """
+    return LayoutModel(sidb_layout=mock_layout_100, source_file_path=Path())
 
 
 @pytest.fixture
@@ -197,7 +212,7 @@ def mock_fiction_funcs() -> Iterator[dict[str, Mock]]:
 
 
 def test_create_layout_plots_success(
-    mock_layout_100: Mock,
+    mock_layout_model: LayoutModel,
     default_visualization_options: LayoutVisualizationOptions,
     mock_fiction_funcs: dict[str, Mock],
     mock_plt: dict[str, Mock],
@@ -208,7 +223,7 @@ def test_create_layout_plots_success(
 
     # Act
     figures = LayoutVisualizationService.create_layout_plots(
-        layout=mock_layout_100,
+        layout=mock_layout_model,
         bdl_encoding=InputSignalEncoding.DISTANCE,
         options=default_visualization_options,
     )
@@ -226,11 +241,15 @@ def test_create_layout_plots_success(
 
 def test_create_layout_plots_no_layout() -> None:
     """Test error when original_layout is None."""
-    with pytest.raises(LayoutVisualizationError, match=r"Original layout cannot be None\."):
-        LayoutVisualizationService.create_layout_plots(layout=None, bdl_encoding=InputSignalEncoding.DISTANCE)
+    with pytest.raises(LayoutVisualizationError, match=r"SiDB layout cannot be None\."):
+        LayoutVisualizationService.create_layout_plots(
+            layout=LayoutModel(source_file_path=Path(), sidb_layout=None), bdl_encoding=InputSignalEncoding.DISTANCE
+        )
 
 
-def test_create_layout_plots_iterator_error(mock_layout_100: Mock, mock_fiction_funcs: dict[str, Mock]) -> None:
+def test_create_layout_plots_iterator_error(
+    mock_layout_model: LayoutModel, mock_fiction_funcs: dict[str, Mock]
+) -> None:
     """Test error handling when BDL iterator creation fails."""
     # Arrange
     mock_fiction_funcs["iter_100"].side_effect = ValueError("Iterator creation failed")
@@ -238,7 +257,7 @@ def test_create_layout_plots_iterator_error(mock_layout_100: Mock, mock_fiction_
     # Act & Assert
     with pytest.raises(LayoutVisualizationError, match="Failed to generate all layout plots"):
         LayoutVisualizationService.create_layout_plots(
-            layout=mock_layout_100, bdl_encoding=InputSignalEncoding.DISTANCE
+            layout=mock_layout_model, bdl_encoding=InputSignalEncoding.DISTANCE
         )
 
 
