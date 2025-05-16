@@ -2,6 +2,6 @@
 
 from __future__ import annotations
 
-from .info_tag import InfoTag
+from .info_tag import InfoTagWidget
 
-__all__ = ["InfoTag"]
+__all__ = ["InfoTagWidget"]

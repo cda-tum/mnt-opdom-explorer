@@ -7,8 +7,8 @@ from PyQt6.QtWidgets import QLabel, QWidget
 from mnt.ode.utils import IconLoader
 
 
-class InfoTag(QLabel):  # type: ignore[misc]
-    """An InfoTag is a QLabel that displays a help icon and provides a tooltip when hovered over."""
+class InfoTagWidget(QLabel):  # type: ignore[misc]
+    """An InfoTagWidget is a QLabel that displays a help icon and provides a tooltip when hovered over."""
 
     def __init__(self, tooltip_text: str, icon_size: tuple[int, int] = (16, 16), parent: QWidget = None) -> None:
         """Initialize the InfoTag.
