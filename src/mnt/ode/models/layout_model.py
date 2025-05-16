@@ -24,7 +24,6 @@ class LayoutModel(BaseModel):
     Attributes:
         source_file_path: The path to the SQD file from which the layout was loaded.
         sidb_layout: The layout object returned by pyfiction's reader function.
-                     Type hint uses Any because pyfiction is currently untyped.
     """
 
     # Allow arbitrary types, enabling the use of pyfiction's untyped objects
