@@ -4,28 +4,35 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from PyQt6.QtCore import QObject, QRunnable, QThreadPool, pyqtSignal, pyqtSlot
 
 from mnt.ode.models import (
     ApplicationSettingsModel,
+    InputSignalEncoding,
     LayoutModel,
+    LayoutVisualizationOptions,
 )
-from mnt.ode.services import LayoutLoadError, SQDFileService
+from mnt.ode.services import (
+    LayoutLoadError,
+    LayoutVisualizationError,
+    LayoutVisualizationService,
+    SQDFileService,
+)
+
+if TYPE_CHECKING:
+    from matplotlib.figure import Figure
 
 logger = logging.getLogger(__name__)
 
 
-# --- QRunnable Task for Background Operations ---
+# --- QRunnable Task for Background File Loading ---
 class LoadFileTask(QRunnable):  # type: ignore[misc]
     """Task to load an SQD file in a background thread."""
 
     class Signals(QObject):  # type: ignore[misc]
-        """Defines signals available from a running worker thread.
-
-        Supported signals are:
-            finished: Emits LayoutModel, file_path, error_message
-        """
+        """Defines signals available from a running worker thread."""
 
         finished = pyqtSignal(LayoutModel, str, str)
 
@@ -44,40 +51,113 @@ class LoadFileTask(QRunnable):  # type: ignore[misc]
     @pyqtSlot()  # type: ignore[misc]
     def run(self) -> None:
         """Executes the file loading task."""
+        layout_model_result: LayoutModel | None = None
+        error_message_result: str | None = None
         try:
             logger.info("LoadFileTask: Starting to load %s", self.file_path)
-            layout_model = self.sqd_file_service.load_layout(Path(self.file_path))
+            layout_model_result = self.sqd_file_service.load_layout(Path(self.file_path))
             logger.info("LoadFileTask: Successfully loaded %s", self.file_path)
-            self.signals.finished.emit(layout_model, self.file_path, None)
         except LayoutLoadError as e:
             logger.exception("LoadFileTask: LayoutLoadError for %s", self.file_path)
-            self.signals.finished.emit(None, self.file_path, str(e))
+            error_message_result = str(e)
         except Exception:
             logger.exception("LoadFileTask: Unexpected error loading %s", self.file_path)
-            self.signals.finished.emit(None, self.file_path, "An unexpected error occurred during file loading.")
+            error_message_result = "An unexpected error occurred during file loading."
+        finally:
+            # Ensure signal is always emitted
+            self.signals.finished.emit(layout_model_result, self.file_path, error_message_result)
+
+
+# --- QRunnable Task for Generating Layout Plots ---
+class GenerateLayoutPlotsTask(QRunnable):  # type: ignore[misc]
+    """Task to generate layout plots in a background thread."""
+
+    class Signals(QObject):  # type: ignore[misc]
+        """Defines signals for this task."""
+
+        finished = pyqtSignal(list, list, str)
+
+    def __init__(
+        self,
+        layout_viz_service: LayoutVisualizationService,
+        layout_model: LayoutModel,
+        options: LayoutVisualizationOptions | None = None,
+    ) -> None:
+        """Initializes the GenerateLayoutPlotsTask.
+
+        Args:
+            layout_viz_service: Service for generating layout visualizations.
+            layout_model: The loaded layout model.
+            options: Visualization options.
+        """
+        super().__init__()
+        self.layout_viz_service = layout_viz_service
+        self.layout_model = layout_model
+        self.options = options or LayoutVisualizationOptions()
+        self.signals = GenerateLayoutPlotsTask.Signals()
+
+    @pyqtSlot()  # type: ignore[misc]
+    def run(self) -> None:
+        """Executes the plot generation task."""
+        distance_plots: list[Figure | None] | None = None
+        presence_plots: list[Figure | None] | None = None
+        error_message: str | None = None
+        try:
+            logger.info("GenerateLayoutPlotsTask: Generating figures for distance-encoded layouts...")
+            distance_plots = self.layout_viz_service.create_layout_plots(
+                layout=self.layout_model,
+                bdl_encoding=InputSignalEncoding.DISTANCE,
+                options=self.options,
+            )
+
+            logger.info("GenerateLayoutPlotsTask: Generating figures for presence-encoded layouts...")
+            presence_plots = self.layout_viz_service.create_layout_plots(
+                layout=self.layout_model,
+                bdl_encoding=InputSignalEncoding.PRESENCE,
+                options=self.options,
+            )
+
+            logger.info("GenerateLayoutPlotsTask: Plot generation finished.")
+
+        except LayoutVisualizationError as e:
+            logger.exception("GenerateLayoutPlotsTask: LayoutVisualizationError occurred.")
+            error_message = str(e)
+        except Exception:
+            logger.exception("GenerateLayoutPlotsTask: Unexpected error during plot generation.")
+            error_message = "An unexpected error occurred during plot generation."
+        finally:
+            self.signals.finished.emit(
+                distance_plots or [],
+                presence_plots or [],
+                error_message or "",
+            )
 
 
 class MainWindowViewModel(QObject):  # type: ignore[misc]
     """ViewModel for the main application window."""
 
     # Signals for View updates
-    is_busy_changed = pyqtSignal(bool, int)
-    status_message_changed = pyqtSignal(str)
-    layout_loaded_changed = pyqtSignal(bool)
-    current_file_path_changed = pyqtSignal(str)
+    is_busy_changed = pyqtSignal(bool, int)  # GUI switches from busy to idle or vice versa
+    status_message_changed = pyqtSignal(str)  # New status message received
+    layout_loaded_changed = pyqtSignal(bool)  # Layout parsing started/completed
+    current_file_path_changed = pyqtSignal(str)  # File path updated
+    initial_layout_plots_ready = pyqtSignal(bool)  # Layout plots ready
 
     def __init__(
         self,
         sqd_file_service: SQDFileService,
+        layout_viz_service: LayoutVisualizationService,
     ) -> None:
         """Initializes the MainWindowViewModel.
 
         Args:
             sqd_file_service: Service for loading SQD files.
+            layout_viz_service: Service for visualizing layouts.
         """
         super().__init__()
 
         self._sqd_file_service = sqd_file_service
+        self._layout_viz_service = layout_viz_service
 
         self._thread_pool = QThreadPool.globalInstance()
         logger.info(
@@ -91,6 +171,10 @@ class MainWindowViewModel(QObject):  # type: ignore[misc]
         self._current_file_path: Path | None = None
         self._is_busy: bool = False
         self._status_message: str = "Ready. Please load an SQD file."
+
+        # Layout visualizations with different input encodings
+        self._distance_layout_figures: list[Figure | None] = []
+        self._presence_layout_figures: list[Figure | None] = []
 
         # Emit initial state
         self.status_message_changed.emit(self._status_message)
@@ -170,7 +254,13 @@ class MainWindowViewModel(QObject):  # type: ignore[misc]
     def _handle_load_file_finished(
         self, layout_model: LayoutModel | None, file_path_str: str, error_message: str | None
     ) -> None:
-        """Handles the result of the background file loading task."""
+        """Handles the result of the background file loading task.
+
+        Args:
+            layout_model: The loaded LayoutModel instance.
+            file_path_str: The string path to the SQD file.
+            error_message: An error message if loading failed, None if successful.
+        """
         file_path = Path(file_path_str)
         if layout_model:
             self._current_layout = layout_model
@@ -178,12 +268,62 @@ class MainWindowViewModel(QObject):  # type: ignore[misc]
             self.status_message = f"Successfully loaded: {file_path.name}"
             self.current_file_path_changed.emit(file_path.name)
             self.layout_loaded_changed.emit(True)  # noqa: FBT003 - Emit a Boolean; don't treat as positional argument
-            logger.info("Layout loaded, path: %s", self._current_file_path)
+            logger.info("Layout loaded, path: %s. Triggering layout visualization.", self._current_file_path)
+            self._start_layout_plot_generation()
         else:
             self._current_layout = None
             self._current_file_path = None
             self.status_message = f"Error loading {file_path.name}: {error_message or 'Unknown error'}"
             self.layout_loaded_changed.emit(False)  # noqa: FBT003 - Emit a Boolean; don't treat as positional argument
             logger.error("Failed to load layout from %s. Error: %s", file_path_str, error_message)
+            self.is_busy = False  # Reset busy state on load failure
+
+    def _start_layout_plot_generation(self) -> None:
+        """Initiates the background task for generating layout plots."""
+        if not self._current_layout:
+            logger.error("Cannot generate plots, no layout loaded.")
+            self.is_busy = False
+            self.initial_layout_plots_ready.emit(False)  # noqa: FBT003 - Emit a Boolean; don't treat as positional argument
+            return
+
+        logger.info("Starting layout plot generation task...")
+        # self.is_busy is already True from file loading
+        self.status_message = f"Generating visualizations for {self.current_file_name}..."
+
+        plot_task = GenerateLayoutPlotsTask(self._layout_viz_service, self._current_layout)
+        plot_task.signals.finished.connect(self._handle_generate_layout_plots_finished)
+        self._thread_pool.start(plot_task)
+
+    @pyqtSlot(list, list, str)  # type: ignore[misc]
+    def _handle_generate_layout_plots_finished(
+        self,
+        distance_plots: list[Figure | None],
+        presence_plots: list[Figure | None],
+        error_message: str,
+    ) -> None:
+        """Handles the result of the background plot generation task.
+
+        Args:
+            distance_plots: List of generated distance layout plots.
+            presence_plots: List of generated presence layout plots.
+            error_message: An error message if generation failed, None if successful.
+        """
+        if error_message:
+            self.status_message = f"Error generating layout plots: {error_message}"
+            logger.error("Layout plot generation failed: %s", error_message)
+            self._distance_layout_figures = []
+            self._presence_layout_figures = []
+            self.initial_layout_plots_ready.emit(False)  # noqa: FBT003 - Emit a Boolean; don't treat as positional argument
+        else:
+            self._distance_layout_figures = distance_plots
+            self._presence_layout_figures = presence_plots
+            self.status_message = f"Layout visualizations ready for {self.current_file_name}."
+            logger.info(
+                "Successfully generated %d distance and %d presence layout plots.",
+                len(distance_plots),
+                len(presence_plots),
+            )
+            self.initial_layout_plots_ready.emit(True)  # noqa: FBT003 - Emit a Boolean; don't treat as positional argument
+            # TODO(marcel): Optionally, emit a signal here to update the UI with the first plot
 
         self.is_busy = False
