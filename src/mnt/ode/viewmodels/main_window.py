@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-from matplotlib.figure import Figure
 from PyQt6.QtCore import QObject, QRunnable, QThreadPool, pyqtSignal, pyqtSlot
 
 from mnt.ode.models import (
@@ -20,6 +20,9 @@ from mnt.ode.services import (
     LayoutVisualizationService,
     SQDFileService,
 )
+
+if TYPE_CHECKING:
+    from matplotlib.figure import Figure
 
 logger = logging.getLogger(__name__)
 
@@ -140,7 +143,6 @@ class MainWindowViewModel(QObject):  # type: ignore[misc]
     status_message_changed = pyqtSignal(str)  # New status message received
     layout_loaded_changed = pyqtSignal(bool)  # Layout parsing started/completed
     initial_layout_plots_ready = pyqtSignal(bool)  # Layout visualizations ready
-    active_layout_figure_changed = pyqtSignal(Figure)  # Layout visualization to display
 
     def __init__(
         self,
@@ -277,7 +279,10 @@ class MainWindowViewModel(QObject):  # type: ignore[misc]
         if layout_model:
             self._current_layout = layout_model
             self._current_file_path = file_path
-            self.status_message = f"Successfully loaded: {file_path.name}"
+            # Set a status message indicating further processing is ongoing
+            self.status_message = f"Preparing visualizations for {file_path.name}..."
+            # Also emit a progress/loading message for the welcome widget
+            self.status_message_changed.emit(f"Parsing complete. Preparing visualizations for {file_path.name}...")
             logger.info("Layout loaded, path: %s. Triggering layout visualization.", self._current_file_path)
             self._start_layout_plot_generation()
         else:
@@ -298,6 +303,8 @@ class MainWindowViewModel(QObject):  # type: ignore[misc]
 
         logger.info("Starting layout plot generation task...")
         self.status_message = f"Generating visualizations for {self.current_file_name}..."
+        # Also emit a progress/loading message for the welcome widget
+        self.status_message_changed.emit(f"Generating visualizations for {self.current_file_name}...")
 
         plot_task = GenerateLayoutPlotsTask(self._layout_viz_service, self._current_layout)
         plot_task.signals.finished.connect(self._handle_generate_layout_plots_finished)
@@ -323,6 +330,8 @@ class MainWindowViewModel(QObject):  # type: ignore[misc]
             self._distance_layout_figures = []
             self._presence_layout_figures = []
             self.initial_layout_plots_ready.emit(False)  # noqa: FBT003
+            self.layout_loaded_changed.emit(False)  # noqa: FBT003
+            self.is_busy = False
         else:
             self._distance_layout_figures = distance_plots
             self._presence_layout_figures = presence_plots
@@ -332,39 +341,4 @@ class MainWindowViewModel(QObject):  # type: ignore[misc]
                 len(distance_plots),
                 len(presence_plots),
             )
-            self.layout_loaded_changed.emit(True)  # noqa: FBT003
             self.initial_layout_plots_ready.emit(True)  # noqa: FBT003
-            self.show_layout_plot_for_input_index(0)
-
-        self.is_busy = False
-
-    @pyqtSlot(int)  # type: ignore[misc]
-    def show_layout_plot_for_input_index(self, index: int) -> None:
-        """Select and emit the layout figure for the given input index and active encoding.
-
-        Args:
-            index: The input index to display.
-        """
-        logger.debug("Request to show plot for index %d, encoding %s", index, self._active_bdl_encoding)
-        figures_to_use = (
-            self._distance_layout_figures
-            if self._active_bdl_encoding == InputSignalEncoding.DISTANCE
-            else self._presence_layout_figures
-        )
-
-        if 0 <= index < len(figures_to_use):
-            figure_to_display = figures_to_use[index]
-            if figure_to_display:
-                self.active_layout_figure_changed.emit(figure_to_display)
-                logger.debug("Emitted figure for index %d", index)
-            else:
-                logger.warning("No figure available for index %d in %s set.", index, self._active_bdl_encoding)
-                self.active_layout_figure_changed.emit(None)  # Emit None to clear
-        else:
-            logger.warning(
-                "Index %d out of range for %s figures (count: %d).",
-                index,
-                self._active_bdl_encoding,
-                len(figures_to_use),
-            )
-            self.active_layout_figure_changed.emit(None)  # Emit None to clear
