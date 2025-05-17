@@ -18,6 +18,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
+# TODO(marcel): Add tests for this service
 class PixmapConversionService:
     """Service to convert Matplotlib Figures to QPixmap for PyQt6."""
 
