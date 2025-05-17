@@ -97,6 +97,9 @@ class LayoutVisualizationService:
             num_input_patterns = 2 ** bdl_iterator.num_input_pairs()
             logger.info("Generating %d layout plots.", num_input_patterns)
 
+            # Compute bounding box of the original layout
+            bb_min, bb_max = layout.sidb_layout.bounding_box_2d()
+
             # TODO(marcel): parallelize this loop
             for i in range(num_input_patterns):
                 layout_to_plot = bdl_iterator.get_layout()
@@ -109,6 +112,8 @@ class LayoutVisualizationService:
                     original_layout=layout.sidb_layout,
                     opts=opts,
                     plot_config=plot_config,
+                    bb_min=bb_min,
+                    bb_max=bb_max,
                 )
                 figures.append(fig)
                 bdl_iterator += 1  # Increment iterator
@@ -180,6 +185,9 @@ class LayoutVisualizationService:
         except Exception:  # noqa: BLE001
             logger.warning("Could not determine number of input pairs from original layout for labeling.")
 
+        # Compute bounding box of the original layout
+        bb_min, bb_max = original_layout.bounding_box_2d()
+
         for i, charge_lyt in enumerate(charge_layouts):
             if charge_lyt is None:
                 logger.warning("Skipping plot for input index %d because charge layout is None.", i)
@@ -202,6 +210,8 @@ class LayoutVisualizationService:
                 original_layout=original_layout,
                 opts=opts,
                 plot_config=plot_config,
+                bb_min=bb_min,
+                bb_max=bb_max,
             )
             figures.append(fig)
 
@@ -215,6 +225,8 @@ class LayoutVisualizationService:
         original_layout: SiDBLayoutType,
         opts: LayoutVisualizationOptions,
         plot_config: ChargeLayoutVisualizationConfiguration,
+        bb_min: offset_coordinate,
+        bb_max: offset_coordinate,
     ) -> Figure | None:
         """Generates a single Matplotlib figure visualizing the SiDB layout state. (Private Helper).
 
@@ -223,6 +235,8 @@ class LayoutVisualizationService:
             original_layout: The original layout (used for BDL detection).
             opts: Visualization options.
             plot_config: Plot configuration (charges, operational status, etc.).
+            bb_min: Fixed minimum bounding box coordinate.
+            bb_max: Fixed maximum bounding box coordinate.
 
         Returns:
             A Matplotlib Figure object or None if an error occurs.
@@ -239,8 +253,6 @@ class LayoutVisualizationService:
             ax.axis("off")
             ax.set_aspect("equal", adjustable="box")
 
-            bb_min, bb_max = layout_to_plot.bounding_box_2d()
-
             if opts.show_grid_dots:
                 LayoutVisualizationService._plot_grid(ax, layout_to_plot, bb_min, bb_max, opts)
 
@@ -248,7 +260,11 @@ class LayoutVisualizationService:
 
             if opts.show_input_labels and plot_config.binary_input_string is not None:
                 LayoutVisualizationService._plot_input_labels(
-                    ax, layout_to_plot, original_layout, plot_config.binary_input_string
+                    ax,
+                    layout_to_plot,
+                    original_layout,
+                    plot_config.binary_input_string,
+                    opts,
                 )
 
             if opts.show_output_indicators and plot_config.operational_status is not None:
@@ -261,14 +277,10 @@ class LayoutVisualizationService:
                     opts,
                 )
 
-            # Ensure coordinates passed to offset_coordinate are non-negative
-            min_plot_x = max(0, bb_min.x - opts.padding_x)
-            min_plot_y = max(0, bb_min.y - opts.padding_y)
-            max_plot_x = bb_max.x + opts.padding_x  # Max coords are usually fine, but ensure non-negative if needed
-            max_plot_y = bb_max.y + opts.padding_y
-
-            bb_min_nm = sidb_nm_position(layout_to_plot, offset_coordinate(min_plot_x, min_plot_y))
-            bb_max_nm = sidb_nm_position(layout_to_plot, offset_coordinate(max_plot_x, max_plot_y))
+            bb_min_shifted = offset_coordinate(bb_min.x + opts.padding_x, bb_min.y + opts.padding_y)
+            bb_max_shifted = offset_coordinate(bb_max.x + opts.padding_x, bb_max.y + opts.padding_y)
+            bb_min_nm = sidb_nm_position(layout_to_plot, bb_min_shifted)
+            bb_max_nm = sidb_nm_position(layout_to_plot, bb_max_shifted)
 
             ax.set_xlim(bb_min_nm[0], bb_max_nm[0])
             ax.set_ylim(-bb_max_nm[1], -bb_min_nm[1])
@@ -304,22 +316,20 @@ class LayoutVisualizationService:
         step_size = 1
         # Iterate over potential grid coordinates including padding
         for x_int in range(int(bb_min.x - opts.padding_x), int(bb_max.x + opts.padding_x + 1), step_size):
-            for y_int in range(int(bb_min.y - opts.padding_y), int(bb_max.y + opts.padding_y + 1), step_size):
+            for y_int in range(int(bb_min.y - opts.padding_y), int(bb_max.y + opts.padding_y * 3 + 1), step_size):
                 # Ensure coordinates are non-negative before creating offset_coordinate
                 if x_int >= 0 and y_int >= 0:
                     coord = offset_coordinate(x_int, y_int)
-                    # Check if the coordinate is actually within the layout's bounds
-                    if lyt.is_within_bounds(coord):
-                        nm_pos = sidb_nm_position(lyt, coord)
-                        ax.plot(
-                            nm_pos[0],
-                            -nm_pos[1],
-                            "o",
-                            color=opts.neutral_dot_color,
-                            markersize=opts.markersize_grid,
-                            markeredgewidth=0,
-                            alpha=0.5,
-                        )
+                    nm_pos = sidb_nm_position(lyt, coord)
+                    ax.plot(
+                        nm_pos[0],
+                        -nm_pos[1],
+                        "o",
+                        color=opts.neutral_dot_color,
+                        markersize=opts.markersize_grid,
+                        markeredgewidth=0,
+                        alpha=0.5,
+                    )
 
     @staticmethod
     def _plot_sidbs(
@@ -338,7 +348,8 @@ class LayoutVisualizationService:
             return
         all_cells = lyt.cells()
         for cell in all_cells:
-            nm_pos = sidb_nm_position(lyt, cell)
+            shifted_cell = offset_coordinate(cell.x + opts.padding_x, cell.y + opts.padding_y)
+            nm_pos = sidb_nm_position(lyt, shifted_cell)
             charge_state = sidb_charge_state.NEUTRAL
             if charge_lyt is not None and charge_lyt.is_within_bounds(cell):
                 charge_state = charge_lyt.get_charge_state(cell)
@@ -378,6 +389,7 @@ class LayoutVisualizationService:
         lyt: SiDBLayoutType,
         original_lyt: SiDBLayoutType,
         bin_value_str: str,
+        opts: LayoutVisualizationOptions,
     ) -> None:
         """Annotates input BDL pairs with binary values.
 
@@ -386,6 +398,7 @@ class LayoutVisualizationService:
             lyt: The SiDB layout object.
             original_lyt: The original layout (used for BDL detection).
             bin_value_str: The binary string representing the input state.
+            opts: Visualization options.
         """
         if lyt is None or original_lyt is None:
             logger.warning("Cannot plot input labels: Layout is None.")
@@ -402,8 +415,10 @@ class LayoutVisualizationService:
 
             for idx, pair in enumerate(input_pairs):
                 if lyt.is_within_bounds(pair.lower) and lyt.is_within_bounds(pair.upper):
-                    nm_pos_lower = sidb_nm_position(lyt, pair.lower)
-                    nm_pos_upper = sidb_nm_position(lyt, pair.upper)
+                    shifted_lower = offset_coordinate(pair.lower.x + opts.padding_x, pair.lower.y + opts.padding_y)
+                    shifted_upper = offset_coordinate(pair.upper.x + opts.padding_x, pair.upper.y + opts.padding_y)
+                    nm_pos_lower = sidb_nm_position(lyt, shifted_lower)
+                    nm_pos_upper = sidb_nm_position(lyt, shifted_upper)
                     nm_pos_x = (nm_pos_lower[0] + nm_pos_upper[0]) / 2
                     label_y_pos = -nm_pos_upper[1] + 1.0
 
@@ -450,8 +465,10 @@ class LayoutVisualizationService:
             output_pairs = detect_bdl_pairs(original_lyt, sidb_technology.cell_type.OUTPUT)
             for pair in output_pairs:
                 if lyt.is_within_bounds(pair.lower) and lyt.is_within_bounds(pair.upper):
-                    nm_pos_upper = sidb_nm_position(lyt, pair.upper)
-                    nm_pos_lower = sidb_nm_position(lyt, pair.lower)
+                    shifted_lower = offset_coordinate(pair.lower.x + opts.padding_x, pair.lower.y + opts.padding_y)
+                    shifted_upper = offset_coordinate(pair.upper.x + opts.padding_x, pair.upper.y + opts.padding_y)
+                    nm_pos_lower = sidb_nm_position(lyt, shifted_lower)
+                    nm_pos_upper = sidb_nm_position(lyt, shifted_upper)
 
                     width = abs(nm_pos_upper[0] - nm_pos_lower[0]) + 0.5
                     height = abs(nm_pos_lower[1] - nm_pos_upper[1]) + 0.5

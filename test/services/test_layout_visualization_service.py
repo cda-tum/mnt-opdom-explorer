@@ -352,12 +352,16 @@ def test_create_single_plot_calls_helpers(
     default_charge_layout_config.operational_status = operational_status.OPERATIONAL
     default_charge_layout_config.binary_input_string = "10"
 
+    bb_min, bb_max = mock_layout_100.bounding_box_2d.return_value
+
     # Act
     fig = LayoutVisualizationService._create_single_plot(
         layout_to_plot=mock_layout_100,
         original_layout=mock_layout_100,
         opts=default_visualization_options,
         plot_config=default_charge_layout_config,
+        bb_min=bb_min,
+        bb_max=bb_max,
     )
 
     # Assert
@@ -378,12 +382,16 @@ def test_create_single_plot_handles_plotting_exception(
     # Arrange
     mock_plt["ax"].plot.side_effect = ValueError("Plotting failed")
 
+    bb_min, bb_max = mock_layout_100.bounding_box_2d.return_value
+
     # Act
     fig = LayoutVisualizationService._create_single_plot(
         layout_to_plot=mock_layout_100,
         original_layout=mock_layout_100,
         opts=default_visualization_options,
         plot_config=default_charge_layout_config,
+        bb_min=bb_min,
+        bb_max=bb_max,
     )
 
     # Assert
