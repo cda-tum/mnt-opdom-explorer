@@ -18,10 +18,13 @@ from mnt.ode.services import (
     LayoutLoadError,
     LayoutVisualizationError,
     LayoutVisualizationService,
+    PixmapConversionService,
     SQDFileService,
 )
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from matplotlib.figure import Figure
 
 logger = logging.getLogger(__name__)
@@ -135,6 +138,39 @@ class GenerateLayoutPlotsTask(QRunnable):  # type: ignore[misc]
             self.signals.finished.emit(distance_plots, presence_plots, error_message)
 
 
+class PixmapConversionTask(QRunnable):  # type: ignore[misc]
+    """QRunnable to convert figures to pixmaps using the pixmap_conversion_service."""
+
+    def __init__(
+        self,
+        distance_figures: Sequence[Figure | None],
+        presence_figures: Sequence[Figure | None],
+        pixmaps_ready_signal: pyqtSignal,
+        plots_ready_signal: pyqtSignal,
+    ) -> None:
+        """Initialize the PixmapConversionTask.
+
+        Args:
+            distance_figures: Distance-encoded layout figures to convert.
+            presence_figures: Presence-encoded layout figures to convert.
+            pixmaps_ready_signal: Signal emitted when pixmaps are ready.
+            plots_ready_signal: Signal emitted when plots are ready.
+        """
+        super().__init__()
+        self.distance_figures = distance_figures
+        self.presence_figures = presence_figures
+        self.pixmaps_ready_signal = pixmaps_ready_signal
+        self.plots_ready_signal = plots_ready_signal
+
+    def run(self) -> None:
+        """Execute the pixmap conversion task."""
+        distance_pixmaps = PixmapConversionService.convert(self.distance_figures)
+        presence_pixmaps = PixmapConversionService.convert(self.presence_figures)
+        self.pixmaps_ready_signal.emit(distance_pixmaps, presence_pixmaps)
+        # TODO(marcel): is that signal needed?
+        self.plots_ready_signal.emit(True)  # noqa: FBT003
+
+
 class MainWindowViewModel(QObject):  # type: ignore[misc]
     """ViewModel for the main application window."""
 
@@ -143,6 +179,7 @@ class MainWindowViewModel(QObject):  # type: ignore[misc]
     status_message_changed = pyqtSignal(str)  # New status message received
     layout_loaded_changed = pyqtSignal(bool)  # Layout parsing started/completed
     initial_layout_plots_ready = pyqtSignal(bool)  # Layout visualizations ready
+    layout_pixmaps_ready = pyqtSignal(list, list)  # distance_pixmaps, presence_pixmaps
 
     def __init__(
         self,
@@ -341,4 +378,9 @@ class MainWindowViewModel(QObject):  # type: ignore[misc]
                 len(distance_plots),
                 len(presence_plots),
             )
-            self.initial_layout_plots_ready.emit(True)  # noqa: FBT003
+            # Convert pixmaps in background using QRunnable
+            self._thread_pool.start(
+                PixmapConversionTask(
+                    distance_plots, presence_plots, self.layout_pixmaps_ready, self.initial_layout_plots_ready
+                )
+            )
