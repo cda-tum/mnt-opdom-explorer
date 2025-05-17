@@ -211,27 +211,26 @@ def mock_fiction_funcs() -> Iterator[dict[str, Mock]]:
 # --- Test Cases ---
 
 
-def test_create_layout_plots_success(
+def test_create_layout_svgs_success(
     mock_layout_model: LayoutModel,
     default_visualization_options: LayoutVisualizationOptions,
     mock_fiction_funcs: dict[str, Mock],
     mock_plt: dict[str, Mock],
 ) -> None:
-    """Test creating layout plots for BDL inputs successfully."""
+    """Test creating layout SVGs for BDL inputs successfully."""
     # Arrange
     mock_fiction_funcs["iter_instance"].num_input_pairs.return_value = 1  # 2 patterns
 
     # Act
-    figures = LayoutVisualizationService.create_layout_plots(
+    svgs = LayoutVisualizationService.create_layout_svgs(
         layout=mock_layout_model,
         bdl_encoding=InputSignalEncoding.DISTANCE,
         options=default_visualization_options,
     )
 
     # Assert
-    assert len(figures) == 2
-    assert figures[0] is mock_plt["fig"]
-    assert figures[1] is mock_plt["fig"]
+    assert len(svgs) == 2
+    assert all(isinstance(svg, (bytes, type(None))) for svg in svgs)
     assert mock_plt["subplots"].call_count == 2
     mock_fiction_funcs["iter_100"].assert_called_once()
     assert mock_fiction_funcs["iter_instance"].get_layout.call_count == 2
@@ -239,54 +238,51 @@ def test_create_layout_plots_success(
     assert mock_plt["ax"].plot.call_count > 0
 
 
-def test_create_layout_plots_no_layout() -> None:
+def test_create_layout_svgs_no_layout() -> None:
     """Test error when original_layout is None."""
     with pytest.raises(LayoutVisualizationError, match=r"SiDB layout cannot be None\."):
-        LayoutVisualizationService.create_layout_plots(
+        LayoutVisualizationService.create_layout_svgs(
             layout=LayoutModel(source_file_path=Path(), sidb_layout=None), bdl_encoding=InputSignalEncoding.DISTANCE
         )
 
 
-def test_create_layout_plots_iterator_error(
-    mock_layout_model: LayoutModel, mock_fiction_funcs: dict[str, Mock]
-) -> None:
+def test_create_layout_svgs_iterator_error(mock_layout_model: LayoutModel, mock_fiction_funcs: dict[str, Mock]) -> None:
     """Test error handling when BDL iterator creation fails."""
     # Arrange
     mock_fiction_funcs["iter_100"].side_effect = ValueError("Iterator creation failed")
 
     # Act & Assert
-    with pytest.raises(LayoutVisualizationError, match="Failed to generate all layout plots"):
-        LayoutVisualizationService.create_layout_plots(
+    with pytest.raises(LayoutVisualizationError, match="Failed to generate all layout SVGs"):
+        LayoutVisualizationService.create_layout_svgs(
             layout=mock_layout_model, bdl_encoding=InputSignalEncoding.DISTANCE
         )
 
 
-def test_create_charge_distribution_plots_success(
+def test_create_charge_distribution_svgs_success(
     mock_layout_100: Mock,
     mock_charge_layout_100: Mock,
     default_visualization_options: LayoutVisualizationOptions,
     mock_plt: dict[str, Mock],
 ) -> None:
-    """Test creating plots from a sequence of charge layouts."""
+    """Test creating SVGs from a sequence of charge layouts."""
     # Arrange
     charge_layouts = [mock_charge_layout_100, mock_charge_layout_100]
 
     # Act
-    figures = LayoutVisualizationService.create_charge_distribution_plots(
+    svgs = LayoutVisualizationService.create_charge_distribution_svgs(
         original_layout=mock_layout_100,
         charge_layouts=charge_layouts,
         options=default_visualization_options,
     )
 
     # Assert
-    assert len(figures) == 2
-    assert figures[0] is mock_plt["fig"]
-    assert figures[1] is mock_plt["fig"]
+    assert len(svgs) == 2
+    assert all(isinstance(svg, (bytes, type(None))) for svg in svgs)
     assert mock_plt["subplots"].call_count == 2
     assert mock_plt["ax"].plot.call_count > 0
 
 
-def test_create_charge_distribution_plots_mismatched_lengths(
+def test_create_charge_distribution_svgs_mismatched_lengths(
     mock_layout_100: Mock, mock_charge_layout_100: Mock
 ) -> None:
     """Test error when status list length doesn't match charge layouts."""
@@ -294,59 +290,58 @@ def test_create_charge_distribution_plots_mismatched_lengths(
     op_statuses = [operational_status.OPERATIONAL, operational_status.NON_OPERATIONAL]
 
     with pytest.raises(LayoutVisualizationError, match=r"Length of operational_statuses must match charge_layouts\."):
-        LayoutVisualizationService.create_charge_distribution_plots(
+        LayoutVisualizationService.create_charge_distribution_svgs(
             original_layout=mock_layout_100, charge_layouts=charge_layouts, operational_statuses=op_statuses
         )
 
 
-def test_create_charge_distribution_plots_no_layout() -> None:
+def test_create_charge_distribution_svgs_no_layout() -> None:
     """Test error when original_layout is None."""
     with pytest.raises(LayoutVisualizationError, match=r"Original layout cannot be None\."):
-        LayoutVisualizationService.create_charge_distribution_plots(original_layout=None, charge_layouts=[MagicMock()])
+        LayoutVisualizationService.create_charge_distribution_svgs(original_layout=None, charge_layouts=[MagicMock()])
 
 
-def test_create_charge_distribution_plots_empty_list(mock_layout_100: Mock) -> None:
+def test_create_charge_distribution_svgs_empty_list(mock_layout_100: Mock) -> None:
     """Test returning an empty list when charge_layouts is empty."""
-    figures = LayoutVisualizationService.create_charge_distribution_plots(
+    svgs = LayoutVisualizationService.create_charge_distribution_svgs(
         original_layout=mock_layout_100, charge_layouts=[]
     )
-    assert figures == []
+    assert svgs == []
 
 
-def test_create_charge_distribution_plots_with_none_in_list(
+def test_create_charge_distribution_svgs_with_none_in_list(
     mock_layout_100: Mock, mock_charge_layout_100: Mock, mock_plt: dict[str, Mock]
 ) -> None:
     """Test handling of None within the charge_layouts list."""
     charge_layouts = [mock_charge_layout_100, None, mock_charge_layout_100]
 
-    figures = LayoutVisualizationService.create_charge_distribution_plots(
+    svgs = LayoutVisualizationService.create_charge_distribution_svgs(
         original_layout=mock_layout_100, charge_layouts=charge_layouts
     )
-    assert len(figures) == 3
-    assert figures[0] is mock_plt["fig"]
-    assert figures[1] is None
-    assert figures[2] is mock_plt["fig"]
+    assert len(svgs) == 3
+    assert isinstance(svgs[0], (bytes, type(None)))
+    assert svgs[1] is None
+    assert isinstance(svgs[2], (bytes, type(None)))
     assert mock_plt["subplots"].call_count == 2
 
 
-# --- Tests for _create_single_plot (indirectly via public methods, or directly mocking helpers) ---
+# --- Tests for _create_single_svg (indirectly via public methods, or directly mocking helpers) ---
 
 
 @patch(f"{MODULE_PATH}.LayoutVisualizationService._plot_grid")
 @patch(f"{MODULE_PATH}.LayoutVisualizationService._plot_sidbs")
 @patch(f"{MODULE_PATH}.LayoutVisualizationService._plot_input_labels")
 @patch(f"{MODULE_PATH}.LayoutVisualizationService._plot_output_indicators")
-def test_create_single_plot_calls_helpers(
+def test_create_single_svg_calls_helpers(
     mock_plot_outputs: Mock,
     mock_plot_inputs: Mock,
     mock_plot_sidbs: Mock,
     mock_plot_grid: Mock,
     mock_layout_100: Mock,
     default_visualization_options: LayoutVisualizationOptions,
-    mock_plt: dict[str, Mock],
     default_charge_layout_config: ChargeLayoutVisualizationConfiguration,
 ) -> None:
-    """Test that _create_single_plot calls the correct plotting helpers."""
+    """Test that _create_single_svg calls the correct plotting helpers."""
     # Arrange
     default_charge_layout_config.charge_layout = mock_layout_100
     default_charge_layout_config.operational_status = operational_status.OPERATIONAL
@@ -355,7 +350,7 @@ def test_create_single_plot_calls_helpers(
     bb_min, bb_max = mock_layout_100.bounding_box_2d.return_value
 
     # Act
-    fig = LayoutVisualizationService._create_single_plot(
+    svg_bytes = LayoutVisualizationService._create_single_svg(
         layout_to_plot=mock_layout_100,
         original_layout=mock_layout_100,
         opts=default_visualization_options,
@@ -365,27 +360,27 @@ def test_create_single_plot_calls_helpers(
     )
 
     # Assert
-    assert fig is mock_plt["fig"]
+    assert isinstance(svg_bytes, (bytes, type(None)))
     mock_plot_grid.assert_called_once()
     mock_plot_sidbs.assert_called_once()
     mock_plot_inputs.assert_called_once()
     mock_plot_outputs.assert_called_once()
 
 
-def test_create_single_plot_handles_plotting_exception(
+def test_create_single_svg_handles_plotting_exception(
     mock_layout_100: Mock,
     default_visualization_options: LayoutVisualizationOptions,
     mock_plt: dict[str, Mock],
     default_charge_layout_config: ChargeLayoutVisualizationConfiguration,
 ) -> None:
-    """Test that _create_single_plot returns None and closes figure on exception."""
+    """Test that _create_single_svg returns None and closes figure on exception."""
     # Arrange
     mock_plt["ax"].plot.side_effect = ValueError("Plotting failed")
 
     bb_min, bb_max = mock_layout_100.bounding_box_2d.return_value
 
     # Act
-    fig = LayoutVisualizationService._create_single_plot(
+    svg_bytes = LayoutVisualizationService._create_single_svg(
         layout_to_plot=mock_layout_100,
         original_layout=mock_layout_100,
         opts=default_visualization_options,
@@ -395,5 +390,5 @@ def test_create_single_plot_handles_plotting_exception(
     )
 
     # Assert
-    assert fig is None
+    assert svg_bytes is None
     mock_plt["close"].assert_called_once_with(mock_plt["fig"])

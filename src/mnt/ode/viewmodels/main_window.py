@@ -25,8 +25,6 @@ from mnt.ode.services import (
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    from matplotlib.figure import Figure
-
 logger = logging.getLogger(__name__)
 
 
@@ -105,67 +103,67 @@ class GenerateLayoutPlotsTask(QRunnable):  # type: ignore[misc]
         Raises:
             LayoutVisualizationError: Not actually passed through, but caught internally.
         """
-        distance_plots: list[Figure | None] = []
-        presence_plots: list[Figure | None] = []
+        distance_svgs: list[bytes | None] = []
+        presence_svgs: list[bytes | None] = []
         error_message: str = ""
         try:
             if self.layout_model.sidb_layout is None:
                 msg = "SiDB layout is missing in LayoutModel."
                 raise LayoutVisualizationError(msg)  # noqa: TRY301 - raising here is clear enough
 
-            logger.info("GenerateLayoutPlotsTask: Generating figures for distance-encoded layouts...")
-            distance_plots = self.layout_viz_service.create_layout_plots(
+            logger.info("GenerateLayoutPlotsTask: Generating SVGs for distance-encoded layouts...")
+            distance_svgs = self.layout_viz_service.create_layout_svgs(
                 layout=self.layout_model,
                 bdl_encoding=InputSignalEncoding.DISTANCE,
                 options=self.options,
             )
 
-            logger.info("GenerateLayoutPlotsTask: Generating figures for presence-encoded layouts...")
-            presence_plots = self.layout_viz_service.create_layout_plots(
+            logger.info("GenerateLayoutPlotsTask: Generating SVGs for presence-encoded layouts...")
+            presence_svgs = self.layout_viz_service.create_layout_svgs(
                 layout=self.layout_model,
                 bdl_encoding=InputSignalEncoding.PRESENCE,
                 options=self.options,
             )
-            logger.info("GenerateLayoutPlotsTask: Plot generation finished.")
+            logger.info("GenerateLayoutPlotsTask: SVG generation finished.")
 
         except LayoutVisualizationError as e:
             logger.exception("GenerateLayoutPlotsTask: LayoutVisualizationError occurred.")
             error_message = str(e)
         except Exception:
-            logger.exception("GenerateLayoutPlotsTask: Unexpected error during plot generation.")
+            logger.exception("GenerateLayoutPlotsTask: Unexpected error during SVG generation.")
             error_message = "An unexpected error occurred during plot generation."
         finally:
-            self.signals.finished.emit(distance_plots, presence_plots, error_message)
+            self.signals.finished.emit(distance_svgs, presence_svgs, error_message)
 
 
 class PixmapConversionTask(QRunnable):  # type: ignore[misc]
-    """QRunnable to convert figures to pixmaps using the pixmap_conversion_service."""
+    """QRunnable to convert SVGs to pixmaps using the pixmap_conversion_service."""
 
     def __init__(
         self,
-        distance_figures: Sequence[Figure | None],
-        presence_figures: Sequence[Figure | None],
+        distance_svgs: Sequence[bytes | None],
+        presence_svgs: Sequence[bytes | None],
         pixmaps_ready_signal: pyqtSignal,
         plots_ready_signal: pyqtSignal,
     ) -> None:
         """Initialize the PixmapConversionTask.
 
         Args:
-            distance_figures: Distance-encoded layout figures to convert.
-            presence_figures: Presence-encoded layout figures to convert.
+            distance_svgs: Distance-encoded layout SVGs to convert.
+            presence_svgs: Presence-encoded layout SVGs to convert.
             pixmaps_ready_signal: Signal emitted when pixmaps are ready.
             plots_ready_signal: Signal emitted when plots are ready.
         """
         super().__init__()
-        self.distance_figures = distance_figures
-        self.presence_figures = presence_figures
+        self.distance_svgs = distance_svgs
+        self.presence_svgs = presence_svgs
         self.pixmaps_ready_signal = pixmaps_ready_signal
         self.plots_ready_signal = plots_ready_signal
 
     def run(self) -> None:
         """Execute the pixmap conversion task."""
-        distance_pixmaps = PixmapConversionService.convert(self.distance_figures)
-        presence_pixmaps = PixmapConversionService.convert(self.presence_figures)
+        distance_pixmaps = PixmapConversionService.convert(self.distance_svgs)
+        presence_pixmaps = PixmapConversionService.convert(self.presence_svgs)
         self.pixmaps_ready_signal.emit(distance_pixmaps, presence_pixmaps)
         # TODO(marcel): is that signal needed?
         self.plots_ready_signal.emit(True)  # noqa: FBT003
@@ -213,8 +211,8 @@ class MainWindowViewModel(QObject):  # type: ignore[misc]
         self._active_bdl_encoding: InputSignalEncoding = InputSignalEncoding.DISTANCE
 
         # Layout visualizations with different input encodings
-        self._distance_layout_figures: list[Figure | None] = []
-        self._presence_layout_figures: list[Figure | None] = []
+        self._distance_layout_figures: list[bytes | None] = []
+        self._presence_layout_figures: list[bytes | None] = []
 
         # Emit initial state
         self.status_message_changed.emit(self._status_message)
@@ -350,15 +348,15 @@ class MainWindowViewModel(QObject):  # type: ignore[misc]
     @pyqtSlot(list, list, str)  # type: ignore[misc]
     def _handle_generate_layout_plots_finished(
         self,
-        distance_plots: list[Figure | None],
-        presence_plots: list[Figure | None],
+        distance_svgs: list[bytes | None],
+        presence_svgs: list[bytes | None],
         error_message: str,
     ) -> None:
         """Handle the result of the background plot generation task.
 
         Args:
-            distance_plots: List of generated distance layout plots.
-            presence_plots: List of generated presence layout plots.
+            distance_svgs: List of generated distance layout SVGs.
+            presence_svgs: List of generated presence layout SVGs.
             error_message: An error message if generation failed, None if successful.
         """
         if error_message:
@@ -370,17 +368,17 @@ class MainWindowViewModel(QObject):  # type: ignore[misc]
             self.layout_loaded_changed.emit(False)  # noqa: FBT003
             self.is_busy = False
         else:
-            self._distance_layout_figures = distance_plots
-            self._presence_layout_figures = presence_plots
+            self._distance_layout_figures = distance_svgs
+            self._presence_layout_figures = presence_svgs
             self.status_message = f"Successfully loaded {self.current_file_name}"
             logger.info(
-                "Successfully generated %d distance and %d presence layout plots.",
-                len(distance_plots),
-                len(presence_plots),
+                "Successfully generated %d distance and %d presence layout SVGs.",
+                len(distance_svgs),
+                len(presence_svgs),
             )
             # Convert pixmaps in background using QRunnable
             self._thread_pool.start(
                 PixmapConversionTask(
-                    distance_plots, presence_plots, self.layout_pixmaps_ready, self.initial_layout_plots_ready
+                    distance_svgs, presence_svgs, self.layout_pixmaps_ready, self.initial_layout_plots_ready
                 )
             )

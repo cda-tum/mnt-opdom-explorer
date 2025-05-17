@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import io
 import logging
 from typing import TYPE_CHECKING
 
@@ -45,18 +46,18 @@ class LayoutVisualizationError(Exception):
 
 
 class LayoutVisualizationService:
-    """Generates Matplotlib visualizations of SiDB layouts."""
+    """Generates SVG visualizations of SiDB layouts."""
 
     @staticmethod
-    def create_layout_plots(
+    def create_layout_svgs(
         layout: LayoutModel,
         bdl_encoding: InputSignalEncoding,
         options: LayoutVisualizationOptions | None = None,
-    ) -> list[Figure | None]:
-        """Generates layout plots for each possible BDL input combination.
+    ) -> list[bytes | None]:
+        """Generates SVGs for each possible BDL input combination.
 
         Creates a BDL iterator based on the original layout and encoding setting,
-        then generates a plot for the layout state corresponding to each input pattern.
+        then generates an SVG for the layout state corresponding to each input pattern.
 
         Args:
             layout: The original SiDB layout object (without perturbers).
@@ -64,8 +65,8 @@ class LayoutVisualizationService:
             options: Configuration options for the plot's appearance. Uses defaults if None.
 
         Returns:
-            A list of Matplotlib Figure objects, one for each input pattern.
-            Contains None for any pattern where plotting failed.
+            A list of SVG byte objects, one for each input pattern.
+            Contains None for any pattern where SVG generation failed.
 
         Raises:
             LayoutVisualizationError: If the BDL iterator cannot be created or the layout type is unsupported.
@@ -75,7 +76,7 @@ class LayoutVisualizationService:
             raise LayoutVisualizationError(msg)
 
         opts = options or LayoutVisualizationOptions()
-        figures: list[Figure | None] = []
+        svgs: list[bytes | None] = []
 
         # Configure BDL Iterator
         bdl_params = bdl_input_iterator_params()
@@ -95,7 +96,7 @@ class LayoutVisualizationService:
                 raise LayoutVisualizationError(msg)  # noqa: TRY301
 
             num_input_patterns = 2 ** bdl_iterator.num_input_pairs()
-            logger.info("Generating %d layout plots.", num_input_patterns)
+            logger.info("Generating %d layout SVGs.", num_input_patterns)
 
             # Compute bounding box of the original layout
             bb_min, bb_max = layout.sidb_layout.bounding_box_2d()
@@ -107,7 +108,7 @@ class LayoutVisualizationService:
                 bin_value_str = f"{i:0{bdl_iterator.num_input_pairs()}b}"
                 plot_config = ChargeLayoutVisualizationConfiguration(binary_input_string=bin_value_str)
 
-                fig = LayoutVisualizationService._create_single_plot(
+                svg_bytes = LayoutVisualizationService._create_single_svg(
                     layout_to_plot=layout_to_plot,
                     original_layout=layout.sidb_layout,
                     opts=opts,
@@ -115,26 +116,25 @@ class LayoutVisualizationService:
                     bb_min=bb_min,
                     bb_max=bb_max,
                 )
-                figures.append(fig)
+                svgs.append(svg_bytes)
                 bdl_iterator += 1  # Increment iterator
 
         except Exception as e:
-            logger.exception("Error occurred during layout plot generation for inputs.")
-            msg = f"Failed to generate all layout plots: {e}"
+            logger.exception("Error occurred during layout SVG generation for inputs.")
+            msg = f"Failed to generate all layout SVGs: {e}"
             raise LayoutVisualizationError(msg) from e
 
-        return figures
+        return svgs
 
-    # TODO(marcel): SinglePointResult as input instead?
     @staticmethod
-    def create_charge_distribution_plots(
+    def create_charge_distribution_svgs(
         original_layout: SiDBLayoutType,
         charge_layouts: Sequence[SiDBChargeLayoutType],
         operational_statuses: Sequence[operational_status | None] | None = None,
         kink_statuses: Sequence[operational_status | None] | None = None,
         options: LayoutVisualizationOptions | None = None,
-    ) -> list[Figure | None]:
-        """Generates plots for a sequence of provided charge distribution layouts.
+    ) -> list[bytes | None]:
+        """Generates SVGs for a sequence of provided charge distribution layouts.
 
         Args:
             original_layout: The original SiDB layout object (used for BDL pair detection).
@@ -146,8 +146,8 @@ class LayoutVisualizationService:
             options: Configuration options for the plot's appearance. Uses defaults if None.
 
         Returns:
-            A list of Matplotlib Figure objects, one for each charge layout.
-            Contains None for any layout where plotting failed.
+            A list of SVG byte objects, one for each charge layout.
+            Contains None for any layout where SVG generation failed.
 
         Raises:
             LayoutVisualizationError: If input list lengths do not match or layout is None.
@@ -167,7 +167,7 @@ class LayoutVisualizationService:
             raise LayoutVisualizationError(msg)
 
         opts = options or LayoutVisualizationOptions()
-        figures: list[Figure | None] = []
+        svgs: list[bytes | None] = []
 
         num_input_pairs = 0
         try:
@@ -190,8 +190,8 @@ class LayoutVisualizationService:
 
         for i, charge_lyt in enumerate(charge_layouts):
             if charge_lyt is None:
-                logger.warning("Skipping plot for input index %d because charge layout is None.", i)
-                figures.append(None)
+                logger.warning("Skipping SVG for input index %d because charge layout is None.", i)
+                svgs.append(None)
                 continue
 
             op_status = operational_statuses[i] if operational_statuses else None
@@ -205,7 +205,7 @@ class LayoutVisualizationService:
                 binary_input_string=bin_value_str,
             )
 
-            fig = LayoutVisualizationService._create_single_plot(
+            svg_bytes = LayoutVisualizationService._create_single_svg(
                 layout_to_plot=original_layout,
                 original_layout=original_layout,
                 opts=opts,
@@ -213,22 +213,22 @@ class LayoutVisualizationService:
                 bb_min=bb_min,
                 bb_max=bb_max,
             )
-            figures.append(fig)
+            svgs.append(svg_bytes)
 
-        return figures
+        return svgs
 
     # --- Private Helper Methods for Plotting Elements ---
 
     @staticmethod
-    def _create_single_plot(
+    def _create_single_svg(
         layout_to_plot: SiDBLayoutType,
         original_layout: SiDBLayoutType,
         opts: LayoutVisualizationOptions,
         plot_config: ChargeLayoutVisualizationConfiguration,
         bb_min: offset_coordinate,
         bb_max: offset_coordinate,
-    ) -> Figure | None:
-        """Generates a single Matplotlib figure visualizing the SiDB layout state. (Private Helper).
+    ) -> bytes | None:
+        """Generates a single SVG visualizing the SiDB layout.
 
         Args:
             layout_to_plot: The layout object to plot (structure, potentially with perturbers).
@@ -239,10 +239,10 @@ class LayoutVisualizationService:
             bb_max: Fixed maximum bounding box coordinate.
 
         Returns:
-            A Matplotlib Figure object or None if an error occurs.
+            An SVG byte object or None if an error occurs.
         """
         if layout_to_plot is None or original_layout is None:
-            logger.error("Cannot create plot: layout_to_plot or original_layout is None.")
+            logger.error("Cannot create SVG: layout_to_plot or original_layout is None.")
             return None
 
         fig: Figure | None = None
@@ -251,7 +251,6 @@ class LayoutVisualizationService:
             fig.patch.set_facecolor(opts.background_color)  # type: ignore[attr-defined]
             ax.set_facecolor(opts.background_color)
             ax.axis("off")
-            ax.set_aspect("equal", adjustable="box")
 
             if opts.show_grid_dots:
                 LayoutVisualizationService._plot_grid(ax, layout_to_plot, bb_min, bb_max, opts)
@@ -285,13 +284,17 @@ class LayoutVisualizationService:
             ax.set_xlim(bb_min_nm[0], bb_max_nm[0])
             ax.set_ylim(-bb_max_nm[1], -bb_min_nm[1])
 
+            buf = io.BytesIO()
+            fig.savefig(buf, format="svg", bbox_inches="tight", pad_inches=0.4)
+            svg_bytes = buf.getvalue()
+            plt.close(fig)
         except Exception:
-            logger.exception("Error occurred during single layout plot creation.")
+            logger.exception("Error occurred during single layout SVG creation.")
             if fig:
                 plt.close(fig)
             return None
         else:
-            return fig
+            return svg_bytes
 
     @staticmethod
     def _plot_grid(
