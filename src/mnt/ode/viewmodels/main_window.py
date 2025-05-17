@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import TYPE_CHECKING
 
+from matplotlib.figure import Figure
 from PyQt6.QtCore import QObject, QRunnable, QThreadPool, pyqtSignal, pyqtSlot
 
 from mnt.ode.models import (
@@ -21,9 +21,6 @@ from mnt.ode.services import (
     SQDFileService,
 )
 
-if TYPE_CHECKING:
-    from matplotlib.figure import Figure
-
 logger = logging.getLogger(__name__)
 
 
@@ -32,16 +29,16 @@ class LoadFileTask(QRunnable):  # type: ignore[misc]
     """Task to load an SQD file in a background thread."""
 
     class Signals(QObject):  # type: ignore[misc]
-        """Defines signals available from a running worker thread."""
+        """Signals available from a running worker thread."""
 
         finished = pyqtSignal(LayoutModel, str, str)
 
     def __init__(self, sqd_file_service: SQDFileService, file_path: str) -> None:
-        """Initializes the LoadFileTask.
+        """Initialize the LoadFileTask.
 
         Args:
-            sqd_file_service: The service instance to use for file loading.
-            file_path: The string path to the SQD file.
+            sqd_file_service: Service instance for file loading.
+            file_path: Path to the SQD file.
         """
         super().__init__()
         self.sqd_file_service = sqd_file_service
@@ -50,7 +47,7 @@ class LoadFileTask(QRunnable):  # type: ignore[misc]
 
     @pyqtSlot()  # type: ignore[misc]
     def run(self) -> None:
-        """Executes the file loading task."""
+        """Execute the file loading task."""
         layout_model_result: LayoutModel | None = None
         error_message_result: str | None = None
         try:
@@ -64,7 +61,6 @@ class LoadFileTask(QRunnable):  # type: ignore[misc]
             logger.exception("LoadFileTask: Unexpected error loading %s", self.file_path)
             error_message_result = "An unexpected error occurred during file loading."
         finally:
-            # Ensure signal is always emitted
             self.signals.finished.emit(layout_model_result, self.file_path, error_message_result)
 
 
@@ -73,7 +69,7 @@ class GenerateLayoutPlotsTask(QRunnable):  # type: ignore[misc]
     """Task to generate layout plots in a background thread."""
 
     class Signals(QObject):  # type: ignore[misc]
-        """Defines signals for this task."""
+        """Signals for this task."""
 
         finished = pyqtSignal(list, list, str)
 
@@ -83,7 +79,7 @@ class GenerateLayoutPlotsTask(QRunnable):  # type: ignore[misc]
         layout_model: LayoutModel,
         options: LayoutVisualizationOptions | None = None,
     ) -> None:
-        """Initializes the GenerateLayoutPlotsTask.
+        """Initialize the GenerateLayoutPlotsTask.
 
         Args:
             layout_viz_service: Service for generating layout visualizations.
@@ -98,11 +94,19 @@ class GenerateLayoutPlotsTask(QRunnable):  # type: ignore[misc]
 
     @pyqtSlot()  # type: ignore[misc]
     def run(self) -> None:
-        """Executes the plot generation task."""
-        distance_plots: list[Figure | None] | None = None
-        presence_plots: list[Figure | None] | None = None
-        error_message: str | None = None
+        """Execute the plot generation task.
+
+        Raises:
+            LayoutVisualizationError: Not actually passed through, but caught internally.
+        """
+        distance_plots: list[Figure | None] = []
+        presence_plots: list[Figure | None] = []
+        error_message: str = ""
         try:
+            if self.layout_model.sidb_layout is None:
+                msg = "SiDB layout is missing in LayoutModel."
+                raise LayoutVisualizationError(msg)  # noqa: TRY301 - raising here is clear enough
+
             logger.info("GenerateLayoutPlotsTask: Generating figures for distance-encoded layouts...")
             distance_plots = self.layout_viz_service.create_layout_plots(
                 layout=self.layout_model,
@@ -116,7 +120,6 @@ class GenerateLayoutPlotsTask(QRunnable):  # type: ignore[misc]
                 bdl_encoding=InputSignalEncoding.PRESENCE,
                 options=self.options,
             )
-
             logger.info("GenerateLayoutPlotsTask: Plot generation finished.")
 
         except LayoutVisualizationError as e:
@@ -126,11 +129,7 @@ class GenerateLayoutPlotsTask(QRunnable):  # type: ignore[misc]
             logger.exception("GenerateLayoutPlotsTask: Unexpected error during plot generation.")
             error_message = "An unexpected error occurred during plot generation."
         finally:
-            self.signals.finished.emit(
-                distance_plots or [],
-                presence_plots or [],
-                error_message or "",
-            )
+            self.signals.finished.emit(distance_plots, presence_plots, error_message)
 
 
 class MainWindowViewModel(QObject):  # type: ignore[misc]
@@ -140,15 +139,15 @@ class MainWindowViewModel(QObject):  # type: ignore[misc]
     is_busy_changed = pyqtSignal(bool, int)  # GUI switches from busy to idle or vice versa
     status_message_changed = pyqtSignal(str)  # New status message received
     layout_loaded_changed = pyqtSignal(bool)  # Layout parsing started/completed
-    current_file_path_changed = pyqtSignal(str)  # File path updated
-    initial_layout_plots_ready = pyqtSignal(bool)  # Layout plots ready
+    initial_layout_plots_ready = pyqtSignal(bool)  # Layout visualizations ready
+    active_layout_figure_changed = pyqtSignal(Figure)  # Layout visualization to display
 
     def __init__(
         self,
         sqd_file_service: SQDFileService,
         layout_viz_service: LayoutVisualizationService,
     ) -> None:
-        """Initializes the MainWindowViewModel.
+        """Initialize the MainWindowViewModel.
 
         Args:
             sqd_file_service: Service for loading SQD files.
@@ -172,26 +171,29 @@ class MainWindowViewModel(QObject):  # type: ignore[misc]
         self._is_busy: bool = False
         self._status_message: str = "Ready. Please load an SQD file."
 
+        self._active_bdl_encoding: InputSignalEncoding = InputSignalEncoding.DISTANCE
+
         # Layout visualizations with different input encodings
         self._distance_layout_figures: list[Figure | None] = []
         self._presence_layout_figures: list[Figure | None] = []
 
         # Emit initial state
         self.status_message_changed.emit(self._status_message)
-        self.layout_loaded_changed.emit(False)  # noqa: FBT003 - Emit a Boolean; don't treat as positional argument
+
+    # --- Properties ---
 
     @property
     def is_busy(self) -> bool:
-        """Getter to check if the application is busy with a background task.
+        """Whether the application is busy with a background task.
 
         Returns:
-            bool: True if busy, False otherwise.
+            True if busy, False otherwise.
         """
         return self._is_busy
 
     @is_busy.setter
     def is_busy(self, value: bool) -> None:
-        """Setter to update the busy state of the application.
+        """Update the busy state of the application.
 
         Args:
             value: True if the application is busy, False otherwise.
@@ -202,7 +204,7 @@ class MainWindowViewModel(QObject):  # type: ignore[misc]
 
     @property
     def status_message(self) -> str:
-        """Getter for the current status message for the application.
+        """The current status message for the application.
 
         Returns:
             The current status message.
@@ -211,7 +213,7 @@ class MainWindowViewModel(QObject):  # type: ignore[misc]
 
     @status_message.setter
     def status_message(self, value: str) -> None:
-        """Setter for the status message of the application.
+        """Set the status message of the application.
 
         Args:
             value: The new status message to set.
@@ -222,14 +224,24 @@ class MainWindowViewModel(QObject):  # type: ignore[misc]
 
     @property
     def current_file_name(self) -> str:
-        """Getter for the name of the currently loaded file.
+        """The name of the currently loaded file.
 
         Returns:
             The name of the currently loaded file, or 'No File Loaded' if none.
         """
         return self._current_file_path.name if self._current_file_path else "No File Loaded"
 
-    # --- Commands ---
+    @property
+    def active_bdl_encoding(self) -> InputSignalEncoding:
+        """The currently active BDL encoding for layout display.
+
+        Returns:
+            The active InputSignalEncoding.
+        """
+        return self._active_bdl_encoding
+
+    # --- Commands and Slots ---
+
     @pyqtSlot(str)  # type: ignore[misc]
     def load_sqd_file(self, file_path_str: str) -> None:
         """Command to load an SQD file asynchronously.
@@ -254,7 +266,7 @@ class MainWindowViewModel(QObject):  # type: ignore[misc]
     def _handle_load_file_finished(
         self, layout_model: LayoutModel | None, file_path_str: str, error_message: str | None
     ) -> None:
-        """Handles the result of the background file loading task.
+        """Handle the result of the background file loading task.
 
         Args:
             layout_model: The loaded LayoutModel instance.
@@ -266,28 +278,25 @@ class MainWindowViewModel(QObject):  # type: ignore[misc]
             self._current_layout = layout_model
             self._current_file_path = file_path
             self.status_message = f"Successfully loaded: {file_path.name}"
-            self.current_file_path_changed.emit(file_path.name)
-            self.layout_loaded_changed.emit(True)  # noqa: FBT003 - Emit a Boolean; don't treat as positional argument
             logger.info("Layout loaded, path: %s. Triggering layout visualization.", self._current_file_path)
             self._start_layout_plot_generation()
         else:
             self._current_layout = None
             self._current_file_path = None
             self.status_message = f"Error loading {file_path.name}: {error_message or 'Unknown error'}"
-            self.layout_loaded_changed.emit(False)  # noqa: FBT003 - Emit a Boolean; don't treat as positional argument
+            self.layout_loaded_changed.emit(False)  # noqa: FBT003
             logger.error("Failed to load layout from %s. Error: %s", file_path_str, error_message)
-            self.is_busy = False  # Reset busy state on load failure
+            self.is_busy = False
 
     def _start_layout_plot_generation(self) -> None:
-        """Initiates the background task for generating layout plots."""
+        """Initiate the background task for generating layout plots."""
         if not self._current_layout:
             logger.error("Cannot generate plots, no layout loaded.")
             self.is_busy = False
-            self.initial_layout_plots_ready.emit(False)  # noqa: FBT003 - Emit a Boolean; don't treat as positional argument
+            self.initial_layout_plots_ready.emit(False)  # noqa: FBT003
             return
 
         logger.info("Starting layout plot generation task...")
-        # self.is_busy is already True from file loading
         self.status_message = f"Generating visualizations for {self.current_file_name}..."
 
         plot_task = GenerateLayoutPlotsTask(self._layout_viz_service, self._current_layout)
@@ -301,7 +310,7 @@ class MainWindowViewModel(QObject):  # type: ignore[misc]
         presence_plots: list[Figure | None],
         error_message: str,
     ) -> None:
-        """Handles the result of the background plot generation task.
+        """Handle the result of the background plot generation task.
 
         Args:
             distance_plots: List of generated distance layout plots.
@@ -313,17 +322,49 @@ class MainWindowViewModel(QObject):  # type: ignore[misc]
             logger.error("Layout plot generation failed: %s", error_message)
             self._distance_layout_figures = []
             self._presence_layout_figures = []
-            self.initial_layout_plots_ready.emit(False)  # noqa: FBT003 - Emit a Boolean; don't treat as positional argument
+            self.initial_layout_plots_ready.emit(False)  # noqa: FBT003
         else:
             self._distance_layout_figures = distance_plots
             self._presence_layout_figures = presence_plots
-            self.status_message = f"Layout visualizations ready for {self.current_file_name}."
+            self.status_message = f"Successfully loaded {self.current_file_name}"
             logger.info(
                 "Successfully generated %d distance and %d presence layout plots.",
                 len(distance_plots),
                 len(presence_plots),
             )
-            self.initial_layout_plots_ready.emit(True)  # noqa: FBT003 - Emit a Boolean; don't treat as positional argument
-            # TODO(marcel): Optionally, emit a signal here to update the UI with the first plot
+            self.layout_loaded_changed.emit(True)  # noqa: FBT003
+            self.initial_layout_plots_ready.emit(True)  # noqa: FBT003
+            self.show_layout_plot_for_input_index(0)
 
         self.is_busy = False
+
+    @pyqtSlot(int)  # type: ignore[misc]
+    def show_layout_plot_for_input_index(self, index: int) -> None:
+        """Select and emit the layout figure for the given input index and active encoding.
+
+        Args:
+            index: The input index to display.
+        """
+        logger.debug("Request to show plot for index %d, encoding %s", index, self._active_bdl_encoding)
+        figures_to_use = (
+            self._distance_layout_figures
+            if self._active_bdl_encoding == InputSignalEncoding.DISTANCE
+            else self._presence_layout_figures
+        )
+
+        if 0 <= index < len(figures_to_use):
+            figure_to_display = figures_to_use[index]
+            if figure_to_display:
+                self.active_layout_figure_changed.emit(figure_to_display)
+                logger.debug("Emitted figure for index %d", index)
+            else:
+                logger.warning("No figure available for index %d in %s set.", index, self._active_bdl_encoding)
+                self.active_layout_figure_changed.emit(None)  # Emit None to clear
+        else:
+            logger.warning(
+                "Index %d out of range for %s figures (count: %d).",
+                index,
+                self._active_bdl_encoding,
+                len(figures_to_use),
+            )
+            self.active_layout_figure_changed.emit(None)  # Emit None to clear
