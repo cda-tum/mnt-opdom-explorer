@@ -476,8 +476,12 @@ class Settings(QWidget):  # type: ignore[misc]
 
     def _update_all_log_scale_enabled_states(self, *_: ApplicationSettingsModel) -> None:
         """Updates the log scale enabled state for all sweep dimensions."""
-        for dim in ("x", "y", "z"):
-            range_selector: RangeSelectorWidget | None = getattr(self, f"_{dim}_range_selector_widget", None)
+        sweep_widget_map = {
+            "x": self._x_range_selector_widget,
+            "y": self._y_range_selector_widget,
+            "z": self._z_range_selector_widget,
+        }
+        for range_selector in sweep_widget_map.values():
             if range_selector:
                 self._vm._update_dependent_ui_states()  # noqa: SLF001
 
@@ -489,9 +493,12 @@ class Settings(QWidget):  # type: ignore[misc]
             dim_prefix: The dimension prefix ("x", "y", or "z").
             enabled: Whether the log scale checkbox should be enabled.
         """
-        range_selector: RangeSelectorWidget | None = getattr(self, f"_{dim_prefix.lower()}_range_selector_widget", None)
-        if range_selector:
-            range_selector.set_log_scale_enabled(enabled=enabled)
+        if dim_prefix == "x":
+            self._x_range_selector_widget.set_log_scale_enabled(enabled=enabled)
+        elif dim_prefix == "y":
+            self._y_range_selector_widget.set_log_scale_enabled(enabled=enabled)
+        elif dim_prefix == "z":
+            self._z_range_selector_widget.set_log_scale_enabled(enabled=enabled)
 
     @pyqtSlot(str, bool)  # type: ignore[misc]
     def _update_base_parameter_enabled_state(self, param_name: str, enabled: bool) -> None:  # noqa: FBT001
@@ -628,17 +635,21 @@ class Settings(QWidget):  # type: ignore[misc]
             prefix: The dimension prefix ("x", "y", or "z").
             sweep_model: The SweepDimensionModel for the dimension.
         """
-        param_combo: QComboBox = getattr(self, f"_{prefix.lower()}_param_combo")
-        range_selector: RangeSelectorWidget = getattr(self, f"_{prefix.lower()}_range_selector_widget")
-
+        # Use direct attribute access for known widgets
         if prefix == "x":
+            param_combo = self._x_param_combo
+            range_selector = self._x_range_selector_widget
             default_dim = SweepDimension.EPSILON_R
         elif prefix == "y":
+            param_combo = self._y_param_combo
+            range_selector = self._y_range_selector_widget
             default_dim = SweepDimension.LAMBDA_TF
         elif prefix == "z":
+            param_combo = self._z_param_combo
+            range_selector = self._z_range_selector_widget
             default_dim = SweepDimension.NONE
         else:
-            default_dim = sweep_model.dimension
+            return
 
         if param_combo.findData(sweep_model.dimension) == -1:
             param_combo.setCurrentIndex(param_combo.findData(default_dim))
