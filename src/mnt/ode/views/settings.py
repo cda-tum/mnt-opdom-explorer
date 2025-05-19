@@ -385,14 +385,14 @@ class Settings(QWidget):  # type: ignore[misc]
 
     def _connect_ui_to_vm(self) -> None:
         """Connects UI element signals to ViewModel slots."""
-        self.engine_combo.currentTextChanged.connect(
+        self.engine_combo.currentIndexChanged.connect(
             lambda _: self._vm.set_engine(self.engine_combo.currentData().value)
         )
         self.epsilon_r_spinbox.valueChanged.connect(self._vm.set_physical_param_epsilon_r)
         self.lambda_tf_spinbox.valueChanged.connect(self._vm.set_physical_param_lambda_tf)
         self.mu_minus_spinbox.valueChanged.connect(self._vm.set_physical_param_mu_minus)
 
-        self.boolean_function_combo.currentTextChanged.connect(
+        self.boolean_function_combo.currentIndexChanged.connect(
             lambda _: self._vm.set_boolean_function(self.boolean_function_combo.currentData().value)
         )
         self.input_signal_encoding_group.buttonToggled.connect(
@@ -405,7 +405,7 @@ class Settings(QWidget):  # type: ignore[misc]
             else None
         )
 
-        self.algorithm_combo.currentTextChanged.connect(
+        self.algorithm_combo.currentIndexChanged.connect(
             lambda _: self._vm.set_algorithm(self.algorithm_combo.currentData().value)
         )
         self.random_samples_spinbox.valueChanged.connect(self._vm.set_random_samples)
@@ -420,7 +420,7 @@ class Settings(QWidget):  # type: ignore[misc]
         )
 
         # Connect X Sweep
-        self._x_param_combo.currentTextChanged.connect(
+        self._x_param_combo.currentIndexChanged.connect(
             lambda _: self._vm.set_x_sweep_parameter(self._x_param_combo.currentData().value)
         )
         self._x_range_selector_widget.min_value_changed.connect(self._vm.set_x_sweep_min)
@@ -429,7 +429,7 @@ class Settings(QWidget):  # type: ignore[misc]
         self._x_range_selector_widget.log_scale_toggled.connect(self._vm.set_x_sweep_log_scale)
 
         # Connect Y Sweep
-        self._y_param_combo.currentTextChanged.connect(
+        self._y_param_combo.currentIndexChanged.connect(
             lambda _: self._vm.set_y_sweep_parameter(self._y_param_combo.currentData().value)
         )
         self._y_range_selector_widget.min_value_changed.connect(self._vm.set_y_sweep_min)
@@ -438,7 +438,7 @@ class Settings(QWidget):  # type: ignore[misc]
         self._y_range_selector_widget.log_scale_toggled.connect(self._vm.set_y_sweep_log_scale)
 
         # Connect Z Sweep
-        self._z_param_combo.currentTextChanged.connect(
+        self._z_param_combo.currentIndexChanged.connect(
             lambda _: self._vm.set_z_sweep_parameter(self._z_param_combo.currentData().value)
         )
         self._z_range_selector_widget.min_value_changed.connect(self._vm.set_z_sweep_min)
@@ -609,7 +609,17 @@ class Settings(QWidget):  # type: ignore[misc]
 
             # Operational Domain
             op_domain_settings = settings_model.operational_domain
-            self.algorithm_combo.setCurrentIndex(self.algorithm_combo.findData(op_domain_settings.algorithm))
+            idx = self.algorithm_combo.findData(op_domain_settings.algorithm)
+            if idx != -1:
+                self.algorithm_combo.setCurrentIndex(idx)
+            else:
+                # fallback: try to match by value string
+                for i in range(self.algorithm_combo.count()):
+                    if self.algorithm_combo.itemText(i) == op_domain_settings.algorithm:
+                        self.algorithm_combo.setCurrentIndex(i)
+                        break
+                else:
+                    self.algorithm_combo.setCurrentIndex(0)
             self.random_samples_spinbox.setValue(op_domain_settings.random_samples)
 
             if op_domain_settings.operational_condition == OperationalCondition.TOLERATE_KINKS:

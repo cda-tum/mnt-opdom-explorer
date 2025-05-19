@@ -194,10 +194,7 @@ class SettingsViewModel(QObject):  # type: ignore[misc]
             algo = OperationalDomainAlgorithm(algorithm_value)
             if self._settings.operational_domain.algorithm != algo:
                 self._settings.operational_domain.algorithm = algo
-                if algo == OperationalDomainAlgorithm.RANDOM_SAMPLING:
-                    self._settings.operational_domain.random_samples = 1000
-                else:
-                    self._settings.operational_domain.random_samples = 100
+                # Only validate, do not overwrite algorithm or random_samples here.
                 self._settings.operational_domain = OperationalDomainSettingsModel.model_validate(
                     self._settings.operational_domain.model_dump()
                 )
