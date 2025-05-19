@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
+from .icon_group_box import IconGroupBoxWidget
 from .info_tag import InfoTagWidget
 from .range_selector import RangeSelectorWidget
 
-__all__ = ["InfoTagWidget", "RangeSelectorWidget"]
+__all__ = ["IconGroupBoxWidget", "InfoTagWidget", "RangeSelectorWidget"]
