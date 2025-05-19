@@ -22,6 +22,8 @@ from mnt.ode.services import (
     SQDFileService,
 )
 
+from .settings import SettingsViewModel
+
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
@@ -214,6 +216,9 @@ class MainWindowViewModel(QObject):  # type: ignore[misc]
         self._distance_layout_figures: list[bytes | None] = []
         self._presence_layout_figures: list[bytes | None] = []
 
+        # Settings ViewModel for the settings panel
+        self._settings_vm = SettingsViewModel(initial_settings=self._current_settings)
+
         # Emit initial state
         self.status_message_changed.emit(self._status_message)
 
@@ -276,6 +281,11 @@ class MainWindowViewModel(QObject):  # type: ignore[misc]
             The active InputSignalEncoding.
         """
         return self._active_bdl_encoding
+
+    @property
+    def settings_vm(self) -> SettingsViewModel:
+        """Returns the SettingsViewModel instance for the settings panel."""
+        return self._settings_vm
 
     # --- Commands and Slots ---
 
