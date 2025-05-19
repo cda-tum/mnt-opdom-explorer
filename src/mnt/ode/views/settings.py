@@ -516,7 +516,7 @@ class Settings(QWidget):  # type: ignore[misc]
             self.mu_minus_spinbox.setEnabled(enabled)
 
     def _apply_styles(self) -> None:
-        """Applies stylesheets for a modern look and feel using theme constants."""
+        """Applies stylesheets for a consistent look and feel using theme constants."""
         theme_colors = get_theme_colors()
         button_bg_color_name = BUTTON_BG_COLOR.name()
         button_text_color_name = BUTTON_TEXT_COLOR.name()
