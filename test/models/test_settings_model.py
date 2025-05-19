@@ -22,7 +22,7 @@ from mnt.ode.models import (
 def test_parameter_range_defaults() -> None:
     """Test default values for ParameterRangeModel."""
     model = ParameterRangeModel()
-    assert model.min_val == 0.0
+    assert model.min_val == 1.0
     assert model.max_val == 10.0
     assert model.step_size == 0.1
     assert model.scale == AxisScale.LINEAR

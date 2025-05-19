@@ -104,7 +104,7 @@ class ParameterRangeModel(BaseModel):
 
     model_config = ConfigDict(use_enum_values=True)
 
-    min_val: float = Field(default=0.0)
+    min_val: float = Field(default=1.0)
     max_val: float = Field(default=10.0)
     step_size: NonNegativeFloat = Field(default=0.1)
     scale: AxisScale = Field(default=AxisScale.LINEAR)
@@ -179,7 +179,7 @@ class SweepDimensionModel(BaseModel):
             if dimension == SweepDimension.MU_MINUS:
                 return ParameterRangeModel(min_val=-0.5, max_val=-0.1, step_size=0.01, scale=AxisScale.LINEAR)
             if dimension != SweepDimension.NONE:
-                return ParameterRangeModel(min_val=0.0, max_val=10.0, step_size=0.1, scale=AxisScale.LINEAR)
+                return ParameterRangeModel(min_val=1.0, max_val=10.0, step_size=0.1, scale=AxisScale.LINEAR)
             return ParameterRangeModel(min_val=0.0, max_val=0.0, step_size=0.0, scale=AxisScale.LINEAR)
 
         return v
@@ -197,13 +197,13 @@ class OperationalDomainSettingsModel(BaseModel):
     x_sweep: SweepDimensionModel = Field(
         default_factory=lambda: SweepDimensionModel(
             dimension=SweepDimension.EPSILON_R,
-            parameter_range=ParameterRangeModel(min_val=0.0, max_val=10.0, step_size=0.1, scale=AxisScale.LINEAR),
+            parameter_range=ParameterRangeModel(min_val=1.0, max_val=10.0, step_size=0.1, scale=AxisScale.LINEAR),
         )
     )
     y_sweep: SweepDimensionModel = Field(
         default_factory=lambda: SweepDimensionModel(
             dimension=SweepDimension.LAMBDA_TF,
-            parameter_range=ParameterRangeModel(min_val=0.0, max_val=10.0, step_size=0.1, scale=AxisScale.LINEAR),
+            parameter_range=ParameterRangeModel(min_val=1.0, max_val=10.0, step_size=0.1, scale=AxisScale.LINEAR),
         )
     )
     z_sweep: SweepDimensionModel = Field(
