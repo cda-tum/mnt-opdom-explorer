@@ -15,8 +15,6 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from .info_tag import InfoTagWidget
-
 logger = logging.getLogger(__name__)
 
 
@@ -78,31 +76,23 @@ class RangeSelectorWidget(QWidget):  # type: ignore[misc]
 
         main_layout.addLayout(spinbox_layout)
 
-        # Bottom layout for checkbox and info
-        bottom_layout = QHBoxLayout()
-        bottom_layout.setContentsMargins(0, 5, 0, 0)
+        # TODO(marcel): Add info tag back to the range selector
+        checkbox_layout = QHBoxLayout()
+        checkbox_layout.setContentsMargins(0, 5, 0, 0)
 
         self.log_scale_checkbox = QCheckBox("Log Scale")
         self.log_scale_checkbox.toggled.connect(self.log_scale_toggled)
-        bottom_layout.addWidget(self.log_scale_checkbox)
+        checkbox_layout.addWidget(self.log_scale_checkbox)
 
-        bottom_layout.addStretch(1)  # Push info tag to the right
-
-        self.info_tag = InfoTagWidget(
-            "Logarithmic scale is not supported for 3D operational domain plots."
-            "\nIt also requires both Min and Max range values to be positive.",
-            parent=self,
-        )
-        bottom_layout.addWidget(self.info_tag)
-        main_layout.addLayout(bottom_layout)
+        main_layout.addLayout(checkbox_layout)
 
         self.setLayout(main_layout)
 
         # Set some initial default configurations for the spinboxes
-        self.set_spinbox_ranges((0.0, 10.0), (0.0, 10.0), (0.01, 5.0))
+        self.set_spinbox_ranges((0.1, 10.0), (0.1, 10.0), (0.01, 5.0))
         self.set_spinbox_decimals(2, 2, 2)
         self.set_spinbox_single_steps(0.5, 0.5, 0.01)
-        self.set_log_scale_enabled(enabled=False)  # Disabled by default, ViewModel can enable
+        self.set_log_scale_enabled(enabled=True)
 
     # --- Public Methods to Configure and Get Values ---
 
@@ -116,17 +106,17 @@ class RangeSelectorWidget(QWidget):  # type: ignore[misc]
             max_val: The value for the maximum spinbox.
             step_val: The value for the step spinbox.
         """
-        self.min_spinbox.blockSignals(b=True)
-        self.max_spinbox.blockSignals(b=True)
-        self.step_spinbox.blockSignals(b=True)
+        self.min_spinbox.blockSignals(True)  # noqa: FBT003
+        self.max_spinbox.blockSignals(True)  # noqa: FBT003
+        self.step_spinbox.blockSignals(True)  # noqa: FBT003
         try:
             self.min_spinbox.setValue(min_val)
             self.max_spinbox.setValue(max_val)
             self.step_spinbox.setValue(step_val)
         finally:
-            self.min_spinbox.blockSignals(b=False)
-            self.max_spinbox.blockSignals(b=False)
-            self.step_spinbox.blockSignals(b=False)
+            self.min_spinbox.blockSignals(False)  # noqa: FBT003
+            self.max_spinbox.blockSignals(False)  # noqa: FBT003
+            self.step_spinbox.blockSignals(False)  # noqa: FBT003
 
     def get_values(self) -> tuple[float, float, float]:
         """Returns the current values of the min, max, and step spinboxes.
@@ -142,9 +132,9 @@ class RangeSelectorWidget(QWidget):  # type: ignore[misc]
         Args:
             checked: True to check the box, False to uncheck it.
         """
-        self.log_scale_checkbox.blockSignals(b=True)
+        self.log_scale_checkbox.blockSignals(True)  # noqa: FBT003
         self.log_scale_checkbox.setChecked(checked)
-        self.log_scale_checkbox.blockSignals(b=False)
+        self.log_scale_checkbox.blockSignals(False)  # noqa: FBT003
 
     def is_log_scale_checked(self) -> bool:
         """Returns the checked state of the log scale checkbox.
@@ -161,7 +151,7 @@ class RangeSelectorWidget(QWidget):  # type: ignore[misc]
             enabled: True to enable the checkbox, False to disable it.
         """
         self.log_scale_checkbox.setEnabled(enabled)
-        if not enabled:  # If disabling, also uncheck it
+        if not enabled:
             self.set_log_scale_checked(checked=False)
 
     def set_spinbox_ranges(
