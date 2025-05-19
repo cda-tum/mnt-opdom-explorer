@@ -241,18 +241,24 @@ class SettingsViewModel(QObject):  # type: ignore[misc]
             param_name: The parameter name to update (e.g., 'min_val').
             value: The new value to set.
         """
-        sweep_dim_model: SweepDimensionModel = getattr(self._settings.operational_domain, dim_attr)
-        current_value = getattr(sweep_dim_model.parameter_range, param_name)
+        sweep_map = {
+            "x_sweep": self._settings.operational_domain.x_sweep,
+            "y_sweep": self._settings.operational_domain.y_sweep,
+            "z_sweep": self._settings.operational_domain.z_sweep,
+        }
+        sweep_dim_model = sweep_map[dim_attr]
+        param_range = sweep_dim_model.parameter_range
+        current_value = getattr(param_range, param_name)
         needs_update = False
 
         if param_name == "scale":
             if value:
-                min_val = sweep_dim_model.parameter_range.min_val
-                max_val = sweep_dim_model.parameter_range.max_val
+                min_val = param_range.min_val
+                max_val = param_range.max_val
                 if min_val > 0 and max_val > 0:
-                    if current_value != AxisScale.LOGARITHMIC:
+                    if param_range.scale != AxisScale.LOGARITHMIC:
                         needs_update = True
-                        setattr(sweep_dim_model.parameter_range, param_name, AxisScale.LOGARITHMIC)
+                        param_range.scale = AxisScale.LOGARITHMIC
                 else:
                     self.settings_changed.emit(self._settings.model_copy(deep=True))
                     logger.warning(
@@ -262,17 +268,22 @@ class SettingsViewModel(QObject):  # type: ignore[misc]
                         max_val,
                     )
                     return
-            elif current_value != AxisScale.LINEAR:
+            elif param_range.scale != AxisScale.LINEAR:
                 needs_update = True
-                setattr(sweep_dim_model.parameter_range, param_name, AxisScale.LINEAR)
+                param_range.scale = AxisScale.LINEAR
         elif current_value != value:
             needs_update = True
-            setattr(sweep_dim_model.parameter_range, param_name, value)
+            setattr(param_range, param_name, value)
 
         if needs_update:
             try:
                 validated_sweep_model = SweepDimensionModel.model_validate(sweep_dim_model.model_dump())
-                setattr(self._settings.operational_domain, dim_attr, validated_sweep_model)
+                if dim_attr == "x_sweep":
+                    self._settings.operational_domain.x_sweep = validated_sweep_model
+                elif dim_attr == "y_sweep":
+                    self._settings.operational_domain.y_sweep = validated_sweep_model
+                elif dim_attr == "z_sweep":
+                    self._settings.operational_domain.z_sweep = validated_sweep_model
                 if param_name in {"min_val", "max_val"}:
                     pr = getattr(self._settings.operational_domain, dim_attr).parameter_range
                     if pr.scale == AxisScale.LOGARITHMIC and (pr.min_val <= 0 or pr.max_val <= 0):
