@@ -334,6 +334,7 @@ class OperationalDomainPlottingService:
         bg_color = plot_options.background_color
         axes_color = plot_options.axes_color
         label_color = plot_options.label_color
+        title_color = plot_options.title_color
 
         fig = plt.figure(dpi=plot_options.figure_dpi, facecolor=bg_color)
         is_3d = bool(plot_options.z_param)
@@ -431,6 +432,6 @@ class OperationalDomainPlottingService:
             ax.legend(loc="upper left")
 
         if plot_options.title:
-            ax.set_title(plot_options.title)
+            ax.set_title(plot_options.title, color=title_color)
 
         return fig, ax
