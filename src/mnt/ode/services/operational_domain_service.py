@@ -34,6 +34,7 @@ from mnt.pyfiction import (
     operational_domain_grid_search,
     operational_domain_params,
     operational_domain_random_sampling,
+    operational_domain_stats,
     operational_domain_value_range,
     sidb_simulation_engine,
     sidb_simulation_parameters,
@@ -186,29 +187,37 @@ class OperationalDomainService:
             algo = op_dom_settings.algorithm
             random_samples = op_dom_settings.random_samples
             op_domain_result: operational_domain | None = None
+            op_domain_stats = operational_domain_stats()
 
             logger.info("Calling mnt.pyfiction operational domain function (%s)...", algo)
             if algo == OperationalDomainAlgorithm.GRID_SEARCH:
-                op_domain_result = operational_domain_grid_search(lyt, target_tts, op_domain_params)
+                op_domain_result = operational_domain_grid_search(lyt, target_tts, op_domain_params, op_domain_stats)
             elif algo == OperationalDomainAlgorithm.RANDOM_SAMPLING:
-                op_domain_result = operational_domain_random_sampling(lyt, target_tts, random_samples, op_domain_params)
+                op_domain_result = operational_domain_random_sampling(
+                    lyt, target_tts, random_samples, op_domain_params, op_domain_stats
+                )
             elif algo == OperationalDomainAlgorithm.FLOOD_FILL:
-                op_domain_result = operational_domain_flood_fill(lyt, target_tts, random_samples, op_domain_params)
+                op_domain_result = operational_domain_flood_fill(
+                    lyt, target_tts, random_samples, op_domain_params, op_domain_stats
+                )
             elif algo == OperationalDomainAlgorithm.CONTOUR_TRACING:
                 if len(sweep_dimensions) > 2:
                     msg = "Contour Tracing algorithm is not compatible with 3D sweeps."
                     raise OperationalDomainError(msg)  # noqa: TRY301 - Raising here is clear
-                op_domain_result = operational_domain_contour_tracing(lyt, target_tts, random_samples, op_domain_params)
+                op_domain_result = operational_domain_contour_tracing(
+                    lyt, target_tts, random_samples, op_domain_params, op_domain_stats
+                )
 
-            logger.info("Operational domain calculation finished.")
+            msg = (
+                f"Operational domain calculation completed: "
+                f"{op_domain_stats.num_evaluated_parameter_combinations} parameter combinations evaluated, "
+                f"{op_domain_stats.num_simulator_invocations} simulation engine calls."
+            )
+            logger.info(msg)
 
         except Exception as e:
             logger.exception("Error during operational domain calculation.")
             msg = f"Operational domain calculation failed: {e}"
             raise OperationalDomainError(msg) from e
         else:
-            # Wrap the raw result in our Pydantic model if the calculation was successful
-            if op_domain_result is not None:
-                return OperationalDomainResultModel(op_domain=op_domain_result)
-            # Return None if pyfiction returned None (e.g., maybe no operational points found)
-            return None
+            return OperationalDomainResultModel(op_domain=op_domain_result)

@@ -232,6 +232,7 @@ def test_calculate_grid_search_success(
         mock_layout_model.sidb_layout,
         ANY,
         ANY,
+        ANY,
     )
     call_args, _ = mock_fiction_classes["grid_search"].call_args
     assert isinstance(call_args[1], list)
@@ -263,6 +264,7 @@ def test_calculate_random_sampling_success(
         ANY,
         expected_samples,
         ANY,
+        ANY,
     )
 
 
@@ -289,6 +291,7 @@ def test_calculate_flood_fill_success(
         ANY,
         expected_samples,
         ANY,
+        ANY,
     )
 
 
@@ -314,6 +317,7 @@ def test_calculate_contour_tracing_success(
         mock_layout_model.sidb_layout,
         ANY,
         expected_samples,
+        ANY,
         ANY,
     )
 
