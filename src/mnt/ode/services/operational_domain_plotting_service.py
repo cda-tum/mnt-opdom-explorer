@@ -291,6 +291,7 @@ class OperationalDomainPlottingService:
             if color_by_coords:
                 plot_colors = OperationalDomainPlottingService._calculate_colors(y_plot_data, z_plot_data, options)
 
+            # TODO(marcel): z is not a keyword argument for scatter. FIX!!
             ax.scatter(x_plot_data, y_plot_data, z=z_plot_data, c=plot_colors, s=marker_size, label=label, alpha=alpha)
             if log_scale[2]:
                 ax.set_zscale("log")  # type: ignore[attr-defined]
