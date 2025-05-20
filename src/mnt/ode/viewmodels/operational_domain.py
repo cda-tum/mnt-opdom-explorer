@@ -90,7 +90,7 @@ class PlotOperationalDomainTask(QRunnable):  # type: ignore[misc]
             self.signals.finished.emit(None, str(e))
 
 
-class OperationalDomainPlotViewModel(QObject):  # type: ignore[misc]
+class OperationalDomainViewModel(QObject):  # type: ignore[misc]
     """ViewModel for managing operational domain simulation and plotting.
 
     Emits signals for simulation and plotting events, and handles background
