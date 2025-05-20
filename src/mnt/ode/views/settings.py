@@ -70,6 +70,7 @@ class Settings(QWidget):  # type: ignore[misc]
         self._init_ui()
         self._connect_ui_to_vm()
         self._connect_vm_to_ui()
+        self._connect_simulation_signals()
         self._apply_styles()
         self.populate_settings(self._vm.current_settings)
         logger.debug("Settings panel initialized and connected to ViewModel.")
@@ -127,7 +128,7 @@ class Settings(QWidget):  # type: ignore[misc]
         self.run_button.setObjectName("runButton")
         self.run_button.setIcon(self._icon_loader.load_play_icon())
         self.run_button.setMinimumHeight(40)
-        self.run_button.clicked.connect(self._vm.request_run_simulation)
+        self.run_button.clicked.connect(self._on_run_button_clicked)
         outer_layout.addWidget(self.run_button)
 
         self.setLayout(outer_layout)
@@ -455,6 +456,10 @@ class Settings(QWidget):  # type: ignore[misc]
         self._vm.contour_tracing_option_enabled_changed.connect(self._set_contour_tracing_option_enabled)
         self._vm.settings_changed.connect(self._update_all_log_scale_enabled_states)
 
+    def _connect_simulation_signals(self) -> None:
+        """Connect simulation-related signals."""
+        # These should be connected externally by the parent/main window to the appropriate ViewModel signals.
+
     def _set_contour_tracing_option_enabled(self, enabled: bool) -> None:  # noqa: FBT001
         """Enables or disables the 'Contour Tracing' option in the algorithm combo.
 
@@ -558,11 +563,15 @@ class Settings(QWidget):  # type: ignore[misc]
                 font-size: 11pt;
                 font-weight: bold;
             }}
-            QPushButton#runButton:hover {{
+            QPushButton#runButton:hover:enabled {{
                 background-color: {BUTTON_BG_COLOR.lighter(120).name()};
             }}
-            QPushButton#runButton:pressed {{
+            QPushButton#runButton:pressed:enabled {{
                 background-color: {BUTTON_BG_COLOR.darker(120).name()};
+            }}
+            QPushButton#runButton:disabled {{
+                background-color: {BUTTON_BG_COLOR.darker(130).name()};
+                color: {theme_colors["text_disabled"].name()};
             }}
             QComboBox, QDoubleSpinBox, QSpinBox {{
                 min-height: 28px;
@@ -735,3 +744,15 @@ class Settings(QWidget):  # type: ignore[misc]
         can_log_based_on_range = min_val > 0 and max_val > 0
         log_enabled = can_log_based_on_range and not is_3d_sweep_active
         selector.set_log_scale_enabled(enabled=log_enabled)
+
+    def _on_run_button_clicked(self) -> None:
+        """Emit the run_simulation_clicked signal when the run button is clicked."""
+        self.run_simulation_clicked.emit()
+
+    def disable_run_button(self) -> None:
+        """Disable or enable the settings UI and run button during simulation."""
+        self.run_button.setDisabled(True)
+
+    def enable_run_button(self) -> None:
+        """Enable the run button (for rerun scenarios)."""
+        self.run_button.setEnabled(True)
