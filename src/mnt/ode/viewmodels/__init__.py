@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from .main_window import MainWindowViewModel
+from .operational_domain import OperationalDomainPlotViewModel
 from .settings import SettingsViewModel
 
-__all__ = ["MainWindowViewModel", "SettingsViewModel"]
+__all__ = ["MainWindowViewModel", "OperationalDomainPlotViewModel", "SettingsViewModel"]
