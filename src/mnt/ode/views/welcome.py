@@ -34,6 +34,7 @@ from .theme import (
 logger = logging.getLogger(__name__)
 
 
+# TODO(marcel): welcome viewmodel
 class Welcome(QWidget):  # type: ignore[misc]
     """Initial widget displayed to the user, prompting for SQD file input.
 
