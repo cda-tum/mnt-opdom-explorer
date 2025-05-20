@@ -21,6 +21,7 @@ from .theme import (
     BUTTON_TEXT_COLOR,
     get_theme_colors,
 )
+from .widgets import SectionHeaderWidget
 
 if TYPE_CHECKING:
     from ..viewmodels import OperationalDomainViewModel
@@ -60,8 +61,12 @@ class OperationalDomainView(QWidget):  # type: ignore[misc]
     def _init_ui(self) -> None:
         """Initializes the UI layout and widgets."""
         self._layout = QVBoxLayout(self)
-        self._layout.setContentsMargins(0, 0, 0, 0)
+        self._layout.setContentsMargins(5, 5, 5, 5)
         self._layout.setSpacing(0)
+
+        # --- Header ---
+        header_widget = SectionHeaderWidget(self._icon_loader.load_chart_icon(), "Operational Domain")
+        self._layout.addWidget(header_widget)
 
         # Top spacer for vertical centering
         self._top_spacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)

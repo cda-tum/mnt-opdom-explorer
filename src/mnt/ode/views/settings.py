@@ -40,7 +40,7 @@ from .theme import (
     BUTTON_TEXT_COLOR,
     get_theme_colors,
 )
-from .widgets import IconGroupBoxWidget, InfoTagWidget, RangeSelectorWidget
+from .widgets import IconGroupBoxWidget, InfoTagWidget, RangeSelectorWidget, SectionHeaderWidget
 
 if TYPE_CHECKING:
     from mnt.ode.viewmodels import SettingsViewModel
@@ -78,32 +78,11 @@ class Settings(QWidget):  # type: ignore[misc]
     def _init_ui(self) -> None:
         """Sets up the main UI structure of the settings panel."""
         outer_layout = QVBoxLayout(self)
-        outer_layout.setContentsMargins(0, 0, 0, 0)
+        outer_layout.setContentsMargins(5, 5, 5, 5)
 
-        # --- Settings Header (centered) ---
-        header_widget = QWidget()
-        header_layout = QHBoxLayout(header_widget)
-        header_layout.setContentsMargins(0, 0, 0, 0)
-        header_layout.addStretch(1)
-
-        header_icon = QLabel()
-        header_icon.setPixmap(self._icon_loader.load_settings_icon().pixmap(24, 24))
-        header_label = QLabel("Settings")
-        font = header_label.font()
-        font.setPointSize(font.pointSize() + 2)
-        font.setBold(True)
-        header_label.setFont(font)
-        header_layout.addWidget(header_icon)
-        header_layout.addWidget(header_label)
-        header_layout.addStretch(1)
+        # --- Header ---
+        header_widget = SectionHeaderWidget(self._icon_loader.load_settings_icon(), "Settings")
         outer_layout.addWidget(header_widget)
-
-        # --- Separator ---
-        separator = QFrame()
-        separator.setFrameShape(QFrame.Shape.HLine)
-        separator.setFrameShadow(QFrame.Shadow.Sunken)
-        outer_layout.addWidget(separator)
-        outer_layout.addSpacing(15)
 
         # --- Scroll Area ---
         scroll_area = QScrollArea(self)
@@ -527,33 +506,6 @@ class Settings(QWidget):  # type: ignore[misc]
         button_text_color_name = BUTTON_TEXT_COLOR.name()
 
         self.setStyleSheet(f"""
-            Settings {{
-                background-color: {theme_colors["background_primary"].name()};
-            }}
-            QGroupBox {{
-                font-weight: bold;
-                font-size: 13pt;
-                border: 1px solid {theme_colors["border_secondary"].name()};
-                border-radius: 6px;
-                margin-top: 1ex;
-                padding-top: 1ex;
-            }}
-            QGroupBox::title {{
-                subcontrol-origin: margin;
-                subcontrol-position: top left;
-                padding: 0 5px 0 5px;
-                left: 10px;
-                color: {theme_colors["text_primary"].name()};
-            }}
-            QFormLayout QLabel {{
-                font-size: 10pt;
-                color: {theme_colors["text_secondary"].name()};
-                padding-right: 5px;
-            }}
-            QLabel {{
-                 font-size: 10pt;
-                 color: {theme_colors["text_primary"].name()};
-            }}
             QPushButton#runButton {{
                 background-color: {button_bg_color_name};
                 color: {button_text_color_name};
@@ -572,19 +524,6 @@ class Settings(QWidget):  # type: ignore[misc]
             QPushButton#runButton:disabled {{
                 background-color: {BUTTON_BG_COLOR.darker(130).name()};
                 color: {theme_colors["text_disabled"].name()};
-            }}
-            QComboBox, QDoubleSpinBox, QSpinBox {{
-                min-height: 28px;
-                border-radius: 4px;
-                border: 1px solid {theme_colors["border_primary"].name()};
-                background-color: {theme_colors["background_secondary"].name()};
-                color: {theme_colors["text_primary"].name()};
-                padding-left: 5px;
-            }}
-            QComboBox::drop-down {{ border: none; }}
-            QCheckBox, QRadioButton {{
-                font-size: 10pt;
-                color: {theme_colors["text_primary"].name()};
             }}
         """)
 

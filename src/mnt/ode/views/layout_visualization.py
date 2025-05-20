@@ -17,6 +17,9 @@ from PyQt6.QtWidgets import (
 )
 
 from mnt.ode.models import InputSignalEncoding
+from mnt.ode.utils import IconLoader
+
+from .widgets import SectionHeaderWidget
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +36,7 @@ class LayoutVisualizationWidget(QWidget):  # type: ignore[misc]
             parent: Optional parent widget.
         """
         super().__init__(parent)
+        self._icon_loader = IconLoader()
         self._distance_pixmaps: list[QPixmap] = []
         self._presence_pixmaps: list[QPixmap] = []
         self._current_pixmaps: list[QPixmap] = []
@@ -47,7 +51,11 @@ class LayoutVisualizationWidget(QWidget):  # type: ignore[misc]
         """Set up the user interface components."""
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(5, 5, 5, 5)
-        main_layout.setSpacing(10)
+        main_layout.setSpacing(0)
+
+        # --- Header ---
+        header_widget = SectionHeaderWidget(self._icon_loader.load_chip_icon(), "Layout")
+        main_layout.addWidget(header_widget)
 
         self.pixmap_label = QLabel()
         self.pixmap_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
