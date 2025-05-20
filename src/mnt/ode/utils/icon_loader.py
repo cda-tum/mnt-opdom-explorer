@@ -167,6 +167,17 @@ class IconLoader:
         """
         return self.load_icon("cog", color=color)
 
+    def load_chip_icon(self, color: QColor | None = None) -> QIcon:
+        """Loads the chip icon.
+
+        Args:
+            color: Optional override color.
+
+        Returns:
+            The loaded QIcon.
+        """
+        return self.load_icon("chip", color=color)
+
     def load_play_icon(self, color: QColor | None = None) -> QIcon:
         """Loads the play icon.
 
