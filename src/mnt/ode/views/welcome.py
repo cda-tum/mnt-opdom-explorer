@@ -196,7 +196,8 @@ class Welcome(QWidget):  # type: ignore[misc]
                 border: none;
                 padding: 10px 20px;
                 border-radius: 5px;
-                font-size: 14px;
+                font-size: 11pt;
+                font-weight: bold;
             }}
             QPushButton#browseButton:hover {{
                 background-color: {BUTTON_BG_COLOR.lighter(120).name()};
