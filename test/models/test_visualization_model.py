@@ -132,7 +132,7 @@ def test_op_domain_plot_options_defaults() -> None:
     assert options.x_param == SweepDimension.EPSILON_R
     assert options.y_param == SweepDimension.LAMBDA_TF
     assert options.z_param is None
-    assert options.title == "Operational Domain"
+    assert not options.title
     assert options.x_log is False
     assert options.y_log is False
     assert options.z_log is False
@@ -148,6 +148,10 @@ def test_op_domain_plot_options_defaults() -> None:
     assert options.non_operational_marker_alpha == 1.0
     assert options.three_d_color_by_coords is True
     assert options.figure_dpi == 100
+    assert options.background_color == "#FFFFFF"
+    assert options.axes_color == "#000000"
+    assert options.label_color == "#000000"
+    assert options.title_color == "#000000"
 
 
 def test_op_domain_plot_options_valid_override() -> None:

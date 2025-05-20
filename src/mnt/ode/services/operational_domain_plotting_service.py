@@ -255,7 +255,7 @@ class OperationalDomainPlottingService:
         alpha: float,
         *,
         color_by_coords: bool = False,
-        options: OperationalDomainPlotOptions,  # Added options parameter
+        options: OperationalDomainPlotOptions,
     ) -> None:
         """Plots data points on the given axes.
 
@@ -331,13 +331,17 @@ class OperationalDomainPlottingService:
         Returns:
             A tuple containing the created Matplotlib Figure and Axes objects.
         """
-        fig = plt.figure(dpi=plot_options.figure_dpi)
+        bg_color = plot_options.background_color
+        axes_color = plot_options.axes_color
+        label_color = plot_options.label_color
+
+        fig = plt.figure(dpi=plot_options.figure_dpi, facecolor=bg_color)
         is_3d = bool(plot_options.z_param)
         log_scale = (plot_options.x_log, plot_options.y_log, plot_options.z_log)
 
         ax: Axes
         if is_3d:
-            ax = fig.add_subplot(111, projection="3d")
+            ax = fig.add_subplot(111, projection="3d", facecolor=bg_color)
             if plot_options.z_range:
                 ax.set_zlim(plot_options.z_range[0], plot_options.z_range[1])  # type: ignore[attr-defined]
             if plot_options.x_range:
@@ -350,11 +354,12 @@ class OperationalDomainPlottingService:
                 ax.set_zlabel(  # type: ignore[attr-defined]
                     OperationalDomainPlottingService._LATEX_LABELS.get(plot_options.z_param, f"{plot_options.z_param}"),
                     rotation=90,
+                    color=label_color,
                 )
                 ax.zaxis.set_rotate_label(False)  # type: ignore[attr-defined]
             ax.view_init(elev=30, azim=45)  # type: ignore[attr-defined]
         else:
-            ax = fig.add_subplot(111)
+            ax = fig.add_subplot(111, facecolor=bg_color)
             if plot_options.x_range:
                 ax.set_xticks(np.linspace(plot_options.x_range[0], plot_options.x_range[1], 6))  # type: ignore[operator]
             if plot_options.y_range:
@@ -364,11 +369,31 @@ class OperationalDomainPlottingService:
             ax.set_xlim(plot_options.x_range[0], plot_options.x_range[1])
         if plot_options.y_range:
             ax.set_ylim(plot_options.y_range[0], plot_options.y_range[1])
+
+        # Set axes (spines and ticks) color
+        for spine in ax.spines.values():
+            spine.set_color(axes_color)
+        ax.tick_params(colors=axes_color)
+        # For 3D, also set pane colors if needed
+        if is_3d:
+            ax.w_xaxis.line.set_color(axes_color)  # type: ignore[attr-defined]
+            ax.w_yaxis.line.set_color(axes_color)  # type: ignore[attr-defined]
+            ax.w_zaxis.line.set_color(axes_color)  # type: ignore[attr-defined]
+            ax.xaxis.label.set_color(label_color)
+            ax.yaxis.label.set_color(label_color)
+            ax.zaxis.label.set_color(label_color)  # type: ignore[attr-defined]
+        else:
+            ax.xaxis.label.set_color(label_color)
+            ax.yaxis.label.set_color(label_color)
+
+        # Set axis labels
         ax.set_xlabel(
-            OperationalDomainPlottingService._LATEX_LABELS.get(plot_options.x_param, f"{plot_options.x_param}")
+            OperationalDomainPlottingService._LATEX_LABELS.get(plot_options.x_param, f"{plot_options.x_param}"),
+            color=label_color,
         )
         ax.set_ylabel(
-            OperationalDomainPlottingService._LATEX_LABELS.get(plot_options.y_param, f"{plot_options.y_param}")
+            OperationalDomainPlottingService._LATEX_LABELS.get(plot_options.y_param, f"{plot_options.y_param}"),
+            color=label_color,
         )
 
         # Plot operational data

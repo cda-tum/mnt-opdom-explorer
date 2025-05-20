@@ -55,7 +55,7 @@ class OperationalDomainPlotOptions(BaseModel):
     x_param: SweepDimension = Field(default=SweepDimension.EPSILON_R, description="Parameter for the X-axis")
     y_param: SweepDimension = Field(default=SweepDimension.LAMBDA_TF, description="Parameter for the Y-axis")
     z_param: SweepDimension | None = Field(default=None, description="Parameter for the Z-axis (for 3D plots)")
-    title: str | None = Field(default="Operational Domain", description="Title of the plot")
+    title: str | None = Field(default="", description="Title of the plot")
     x_log: bool = Field(default=False, description="Use logarithmic scale for X-axis")
     y_log: bool = Field(default=False, description="Use logarithmic scale for Y-axis")
     z_log: bool = Field(default=False, description="Use logarithmic scale for Z-axis (3D only)")
@@ -75,6 +75,10 @@ class OperationalDomainPlotOptions(BaseModel):
     three_d_color_start: str = Field(default="#801A99", description="Start color for 3D coordinate gradient")
     three_d_color_end: str = Field(default="#FF0000", description="End color for 3D coordinate gradient")
     figure_dpi: int = Field(default=100, description="Figure resolution in dots per inch")
+    background_color: str = Field(default="#FFFFFF", description="Background color for the plot")
+    axes_color: str = Field(default="#000000", description="Color for axes (spines, ticks)")
+    label_color: str = Field(default="#000000", description="Color for axis labels")
+    title_color: str = Field(default="#000000", description="Color for plot title")
 
     @field_validator("z_param")
     @classmethod
