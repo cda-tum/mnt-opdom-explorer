@@ -57,6 +57,7 @@ class LayoutVisualizationWidget(QWidget):  # type: ignore[misc]
         controls_layout = QHBoxLayout()
         controls_layout.setSpacing(10)
 
+        # TODO(marcel): style the slider
         self.input_slider = QSlider(Qt.Orientation.Horizontal)
         self.input_slider.setMinimum(0)
         self.input_slider.setMaximum(0)
