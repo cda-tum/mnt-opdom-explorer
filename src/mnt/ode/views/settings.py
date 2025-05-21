@@ -25,6 +25,7 @@ from PyQt6.QtWidgets import (
 
 from mnt.ode.models import (
     ApplicationSettingsModel,
+    AxisScale,
     BooleanFunction,
     InputSignalEncoding,
     OperationalCondition,
@@ -70,7 +71,6 @@ class Settings(QWidget):  # type: ignore[misc]
         self._init_ui()
         self._connect_ui_to_vm()
         self._connect_vm_to_ui()
-        self._connect_simulation_signals()
         self._apply_styles()
         self.populate_settings(self._vm.current_settings)
         logger.debug("Settings panel initialized and connected to ViewModel.")
@@ -338,9 +338,9 @@ class Settings(QWidget):  # type: ignore[misc]
             (SweepDimension.MU_MINUS, "μ_ [eV]"),
         ]
         if include_none_option:
-            param_combo.addItem("None", SweepDimension.NONE)
+            param_combo.addItem("None", SweepDimension.NONE.value)
         for dim, label in param_combo_items:
-            param_combo.addItem(label, dim)
+            param_combo.addItem(label, dim.value)
         row.addWidget(param_combo, 73)
 
         row.addStretch(1)
@@ -365,35 +365,37 @@ class Settings(QWidget):  # type: ignore[misc]
 
     def _connect_ui_to_vm(self) -> None:
         """Connects UI element signals to ViewModel slots."""
-        self.engine_combo.currentIndexChanged.connect(
-            lambda _: self._vm.set_engine(self.engine_combo.currentData().value)
-        )
+        self.engine_combo.currentIndexChanged.connect(lambda _: self._vm.set_engine(self.engine_combo.currentData()))
         self.epsilon_r_spinbox.valueChanged.connect(self._vm.set_physical_param_epsilon_r)
         self.lambda_tf_spinbox.valueChanged.connect(self._vm.set_physical_param_lambda_tf)
         self.mu_minus_spinbox.valueChanged.connect(self._vm.set_physical_param_mu_minus)
 
         self.boolean_function_combo.currentIndexChanged.connect(
-            lambda _: self._vm.set_boolean_function(self.boolean_function_combo.currentData().value)
+            lambda _: self._vm.set_boolean_function(self.boolean_function_combo.currentData())
         )
         self.input_signal_encoding_group.buttonToggled.connect(
             lambda btn, checked: self._vm.set_input_signal_encoding(
-                InputSignalEncoding.DISTANCE
-                if self.input_signal_encoding_group.id(btn) == 0
-                else InputSignalEncoding.PRESENCE
+                (
+                    InputSignalEncoding.DISTANCE
+                    if self.input_signal_encoding_group.id(btn) == 0
+                    else InputSignalEncoding.PRESENCE
+                ).value
             )
             if checked
             else None
         )
 
         self.algorithm_combo.currentIndexChanged.connect(
-            lambda _: self._vm.set_algorithm(self.algorithm_combo.currentData().value)
+            lambda _: self._vm.set_algorithm(self.algorithm_combo.currentData())
         )
         self.random_samples_spinbox.valueChanged.connect(self._vm.set_random_samples)
         self.operational_condition_group.buttonToggled.connect(
             lambda btn, checked: self._vm.set_operational_condition(
-                OperationalCondition.TOLERATE_KINKS
-                if self.operational_condition_group.id(btn) == 0
-                else OperationalCondition.REJECT_KINKS
+                (
+                    OperationalCondition.TOLERATE_KINKS
+                    if self.operational_condition_group.id(btn) == 0
+                    else OperationalCondition.REJECT_KINKS
+                ).value
             )
             if checked
             else None
@@ -401,7 +403,7 @@ class Settings(QWidget):  # type: ignore[misc]
 
         # Connect X Sweep
         self._x_param_combo.currentIndexChanged.connect(
-            lambda _: self._vm.set_x_sweep_parameter(self._x_param_combo.currentData().value)
+            lambda _: self._vm.set_x_sweep_parameter(self._x_param_combo.currentData())
         )
         self._x_range_selector_widget.min_value_changed.connect(self._vm.set_x_sweep_min)
         self._x_range_selector_widget.max_value_changed.connect(self._vm.set_x_sweep_max)
@@ -410,7 +412,7 @@ class Settings(QWidget):  # type: ignore[misc]
 
         # Connect Y Sweep
         self._y_param_combo.currentIndexChanged.connect(
-            lambda _: self._vm.set_y_sweep_parameter(self._y_param_combo.currentData().value)
+            lambda _: self._vm.set_y_sweep_parameter(self._y_param_combo.currentData())
         )
         self._y_range_selector_widget.min_value_changed.connect(self._vm.set_y_sweep_min)
         self._y_range_selector_widget.max_value_changed.connect(self._vm.set_y_sweep_max)
@@ -419,7 +421,7 @@ class Settings(QWidget):  # type: ignore[misc]
 
         # Connect Z Sweep
         self._z_param_combo.currentIndexChanged.connect(
-            lambda _: self._vm.set_z_sweep_parameter(self._z_param_combo.currentData().value)
+            lambda _: self._vm.set_z_sweep_parameter(self._z_param_combo.currentData())
         )
         self._z_range_selector_widget.min_value_changed.connect(self._vm.set_z_sweep_min)
         self._z_range_selector_widget.max_value_changed.connect(self._vm.set_z_sweep_max)
@@ -434,10 +436,6 @@ class Settings(QWidget):  # type: ignore[misc]
         self._vm.base_parameter_enabled_changed.connect(self._update_base_parameter_enabled_state)
         self._vm.contour_tracing_option_enabled_changed.connect(self._set_contour_tracing_option_enabled)
         self._vm.settings_changed.connect(self._update_all_log_scale_enabled_states)
-
-    def _connect_simulation_signals(self) -> None:
-        """Connect simulation-related signals."""
-        # These should be connected externally by the parent/main window to the appropriate ViewModel signals.
 
     def _set_contour_tracing_option_enabled(self, enabled: bool) -> None:  # noqa: FBT001
         """Enables or disables the 'Contour Tracing' option in the algorithm combo.
@@ -550,7 +548,7 @@ class Settings(QWidget):  # type: ignore[misc]
             self.boolean_function_combo.setCurrentIndex(
                 self.boolean_function_combo.findData(settings_model.gate_function.boolean_function)
             )
-            if settings_model.gate_function.input_signal_encoding == InputSignalEncoding.DISTANCE:
+            if settings_model.gate_function.input_signal_encoding == InputSignalEncoding.DISTANCE.value:
                 self.distance_encoding_radio.setChecked(True)
             else:
                 self.presence_encoding_radio.setChecked(True)
@@ -561,16 +559,20 @@ class Settings(QWidget):  # type: ignore[misc]
             if idx != -1:
                 self.algorithm_combo.setCurrentIndex(idx)
             else:
-                # fallback: try to match by value string
+                # Fallback: try to match by value string
                 for i in range(self.algorithm_combo.count()):
                     if self.algorithm_combo.itemText(i) == op_domain_settings.algorithm:
                         self.algorithm_combo.setCurrentIndex(i)
                         break
-                else:
+                else:  # Fallback to first item if no match
+                    logger.warning(
+                        "Algorithm %s from model not found in combo. Using default for display.",
+                        op_domain_settings.algorithm,
+                    )
                     self.algorithm_combo.setCurrentIndex(0)
             self.random_samples_spinbox.setValue(op_domain_settings.random_samples)
 
-            if op_domain_settings.operational_condition == OperationalCondition.TOLERATE_KINKS:
+            if op_domain_settings.operational_condition == OperationalCondition.TOLERATE_KINKS.value:
                 self.tolerate_kinks_radio.setChecked(True)
             else:
                 self.reject_kinks_radio.setChecked(True)
@@ -593,59 +595,48 @@ class Settings(QWidget):  # type: ignore[misc]
             prefix: The dimension prefix ("x", "y", or "z").
             sweep_model: The SweepDimensionModel for the dimension.
         """
-        # Use direct attribute access for known widgets
         if prefix == "x":
             param_combo = self._x_param_combo
             range_selector = self._x_range_selector_widget
-            default_dim = SweepDimension.EPSILON_R
+            default_dim_value = SweepDimension.EPSILON_R.value
         elif prefix == "y":
             param_combo = self._y_param_combo
             range_selector = self._y_range_selector_widget
-            default_dim = SweepDimension.LAMBDA_TF
+            default_dim_value = SweepDimension.LAMBDA_TF.value
         elif prefix == "z":
             param_combo = self._z_param_combo
             range_selector = self._z_range_selector_widget
-            default_dim = SweepDimension.NONE
+            default_dim_value = SweepDimension.NONE.value
         else:
             return
 
-        if param_combo.findData(sweep_model.dimension) == -1:
-            param_combo.setCurrentIndex(param_combo.findData(default_dim))
+        current_dim_idx = param_combo.findData(sweep_model.dimension)
+        if current_dim_idx == -1:
+            logger.warning(
+                "Dimension %s from model not found in %s-axis combo. Using default %s for display.",
+                sweep_model.dimension,
+                prefix.upper(),
+                default_dim_value,
+            )
+            param_combo.setCurrentIndex(param_combo.findData(default_dim_value))
         else:
-            param_combo.setCurrentIndex(param_combo.findData(sweep_model.dimension))
+            param_combo.setCurrentIndex(current_dim_idx)
 
-        self._configure_range_selector_for_dimension(range_selector, sweep_model.dimension)
+        dimension_enum_member = SweepDimension(sweep_model.dimension)
+        self._configure_range_selector_for_dimension(range_selector, dimension_enum_member)
 
-        if sweep_model.dimension == SweepDimension.MU_MINUS:
-            range_selector.set_spinbox_ranges(
-                min_val_range=(-0.5, -0.1), max_val_range=(-0.5, -0.1), step_val_range=(0.0001, 0.1)
-            )
-            range_selector.set_spinbox_single_steps(0.01, 0.01, 0.001)
-            range_selector.set_spinbox_decimals(2, 2, 3)
-            range_selector.set_values(
-                max(sweep_model.parameter_range.min_val, -0.5),
-                min(sweep_model.parameter_range.max_val, -0.1),
-                max(sweep_model.parameter_range.step_size, 0.0001),
-            )
-        else:
-            range_selector.set_spinbox_ranges(
-                min_val_range=(1.0, 10.0), max_val_range=(1.0, 10.0), step_val_range=(0.01, 5.0)
-            )
-            range_selector.set_spinbox_single_steps(0.5, 0.5, 0.01)
-            range_selector.set_spinbox_decimals(2, 2, 2)
-            range_selector.set_values(
-                max(sweep_model.parameter_range.min_val, 1.0),
-                min(sweep_model.parameter_range.max_val, 10.0),
-                max(sweep_model.parameter_range.step_size, 0.01),
-            )
+        range_selector.set_values(
+            sweep_model.parameter_range.min_val,
+            sweep_model.parameter_range.max_val,
+            sweep_model.parameter_range.step_size,
+        )
 
-        is_z_and_none = prefix == "z" and sweep_model.dimension == SweepDimension.NONE
-        range_selector.setEnabled(not is_z_and_none)
+        range_selector.log_scale_checkbox.setChecked(sweep_model.parameter_range.scale == AxisScale.LOGARITHMIC.value)
 
-        if prefix in {"x", "y"}:
-            range_selector.set_log_scale_enabled(enabled=True)
-        elif prefix == "z":
-            range_selector.set_log_scale_enabled(enabled=not is_z_and_none)
+        is_z_and_none = prefix == "z" and sweep_model.dimension == SweepDimension.NONE.value
+        is_xy_and_none = prefix in {"x", "y"} and sweep_model.dimension == SweepDimension.NONE.value
+
+        range_selector.setEnabled(not (is_z_and_none or is_xy_and_none))
 
     @staticmethod
     def _configure_range_selector_for_dimension(selector: RangeSelectorWidget, dimension: SweepDimension) -> None:
@@ -659,9 +650,16 @@ class Settings(QWidget):  # type: ignore[misc]
             selector.set_spinbox_ranges(
                 min_val_range=(-2.0, 2.0), max_val_range=(-2.0, 2.0), step_val_range=(0.0001, 1.0)
             )
-            selector.set_spinbox_decimals(min_decimals=3, max_decimals=3, step_decimals=4)
+            # Default mu_ values: -0.5, -0.1, step 0.01
+            # min/max_decimals=2 for e.g. -0.50, -0.10
+            # step_decimals=3 for e.g. 0.010 (allows finer adjustment if step_step is 0.001)
+            selector.set_spinbox_decimals(min_decimals=2, max_decimals=2, step_decimals=3)
             selector.set_spinbox_single_steps(min_step=0.01, max_step=0.01, step_step=0.001)
-        else:
+        elif dimension == SweepDimension.NONE:
+            selector.set_spinbox_ranges(min_val_range=(0.0, 0.0), max_val_range=(0.0, 0.0), step_val_range=(0.0, 0.0))
+            selector.set_spinbox_decimals(min_decimals=1, max_decimals=1, step_decimals=1)
+            selector.set_spinbox_single_steps(min_step=0.0, max_step=0.0, step_step=0.0)
+        else:  # EPSILON_R, LAMBDA_TF
             selector.set_spinbox_ranges(
                 min_val_range=(0.1, 100.0), max_val_range=(0.1, 100.0), step_val_range=(0.01, 10.0)
             )

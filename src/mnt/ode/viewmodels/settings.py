@@ -15,7 +15,6 @@ from mnt.ode.models import (
     OperationalCondition,
     OperationalDomainAlgorithm,
     OperationalDomainSettingsModel,
-    ParameterRangeModel,
     SimulationEngine,
     SweepDimension,
     SweepDimensionModel,
@@ -301,10 +300,13 @@ class SettingsViewModel(QObject):  # type: ignore[misc]
             y_dim = self._settings.operational_domain.y_sweep.dimension
             z_dim = self._settings.operational_domain.z_sweep.dimension
             if dim != SweepDimension.NONE and (dim in {y_dim, z_dim}):
-                logger.warning("Sweep dimension %s already used in another axis, ignoring.", dim)
+                logger.warning("Sweep dimension %s already used in Y or Z axis, ignoring change for X.", dim.value)
+                self.settings_changed.emit(self._settings.model_copy(deep=True))
                 return
+
             if self._settings.operational_domain.x_sweep.dimension != dim:
-                self._settings.operational_domain.x_sweep.dimension = dim
+                new_sweep_model = SweepDimensionModel(dimension=dim, parameter_range=None)
+                self._settings.operational_domain.x_sweep = new_sweep_model
                 self._emit_settings_changed()
         except ValueError:
             logger.exception("Invalid X sweep parameter: %s", param_value)
@@ -357,10 +359,13 @@ class SettingsViewModel(QObject):  # type: ignore[misc]
             x_dim = self._settings.operational_domain.x_sweep.dimension
             z_dim = self._settings.operational_domain.z_sweep.dimension
             if dim != SweepDimension.NONE and (dim in {x_dim, z_dim}):
-                logger.warning("Sweep dimension %s already used in another axis, ignoring.", dim)
+                logger.warning("Sweep dimension %s already used in X or Z axis, ignoring change for Y.", dim.value)
+                self.settings_changed.emit(self._settings.model_copy(deep=True))
                 return
+
             if self._settings.operational_domain.y_sweep.dimension != dim:
-                self._settings.operational_domain.y_sweep.dimension = dim
+                new_sweep_model = SweepDimensionModel(dimension=dim, parameter_range=None)
+                self._settings.operational_domain.y_sweep = new_sweep_model
                 self._emit_settings_changed()
         except ValueError:
             logger.exception("Invalid Y sweep parameter: %s", param_value)
@@ -413,12 +418,13 @@ class SettingsViewModel(QObject):  # type: ignore[misc]
             x_dim = self._settings.operational_domain.x_sweep.dimension
             y_dim = self._settings.operational_domain.y_sweep.dimension
             if dim != SweepDimension.NONE and (dim in {x_dim, y_dim}):
-                logger.warning("Sweep dimension %s already used in another axis, ignoring.", dim)
+                logger.warning("Sweep dimension %s already used in X or Y axis, ignoring change for Z.", dim.value)
+                self.settings_changed.emit(self._settings.model_copy(deep=True))
                 return
+
             if self._settings.operational_domain.z_sweep.dimension != dim:
-                self._settings.operational_domain.z_sweep.dimension = dim
-                if dim == SweepDimension.NONE:
-                    self._settings.operational_domain.z_sweep.parameter_range = ParameterRangeModel()
+                new_sweep_model = SweepDimensionModel(dimension=dim, parameter_range=None)
+                self._settings.operational_domain.z_sweep = new_sweep_model
                 self._emit_settings_changed()
         except ValueError:
             logger.exception("Invalid Z sweep parameter: %s", param_value)
