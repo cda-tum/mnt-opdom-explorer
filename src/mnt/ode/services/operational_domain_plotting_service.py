@@ -102,7 +102,7 @@ class OperationalDomainPlottingService:
             x_op, y_op, z_op = OperationalDomainPlottingService._extract_parameters(
                 operational_data, x_col, y_col, z_col
             )
-            x_non_op, y_non_op, z_non_op = OperationalDomainPlottingService._extract_parameters(
+            x_non_op, y_non_op, _ = OperationalDomainPlottingService._extract_parameters(
                 non_operational_data, x_col, y_col, z_col
             )
 
@@ -114,7 +114,6 @@ class OperationalDomainPlottingService:
                 z_op=z_op,
                 x_non_op=x_non_op,
                 y_non_op=y_non_op,
-                z_non_op=z_non_op,
                 plot_options=plot_options,
             )
             logger.info("Plot generation complete.")
@@ -291,8 +290,7 @@ class OperationalDomainPlottingService:
             if color_by_coords:
                 plot_colors = OperationalDomainPlottingService._calculate_colors(y_plot_data, z_plot_data, options)
 
-            # TODO(marcel): z is not a keyword argument for scatter. FIX!!
-            ax.scatter(x_plot_data, y_plot_data, z=z_plot_data, c=plot_colors, s=marker_size, label=label, alpha=alpha)
+            ax.scatter(x_plot_data, y_plot_data, zs=z_plot_data, c=plot_colors, s=marker_size, label=label, alpha=alpha)
             if log_scale[2]:
                 ax.set_zscale("log")  # type: ignore[attr-defined]
 
@@ -314,7 +312,6 @@ class OperationalDomainPlottingService:
         z_op: list[pd.Series[float]],
         x_non_op: list[pd.Series[float]],
         y_non_op: list[pd.Series[float]],
-        z_non_op: list[pd.Series[float]],
         plot_options: OperationalDomainPlotOptions,
     ) -> tuple[Figure, Axes]:
         """Creates the Matplotlib figure and axes, and plots the data.
@@ -325,7 +322,6 @@ class OperationalDomainPlottingService:
             z_op: List of operational Z-data Series.
             x_non_op: List of non-operational X-data Series.
             y_non_op: List of non-operational Y-data Series.
-            z_non_op: List of non-operational Z-data Series.
             plot_options: Configuration options for the plot.
 
         Returns:
@@ -377,9 +373,9 @@ class OperationalDomainPlottingService:
         ax.tick_params(colors=axes_color)
         # For 3D, also set pane colors if needed
         if is_3d:
-            ax.w_xaxis.line.set_color(axes_color)  # type: ignore[attr-defined]
-            ax.w_yaxis.line.set_color(axes_color)  # type: ignore[attr-defined]
-            ax.w_zaxis.line.set_color(axes_color)  # type: ignore[attr-defined]
+            ax.xaxis.line.set_color(axes_color)  # type: ignore[attr-defined]
+            ax.yaxis.line.set_color(axes_color)  # type: ignore[attr-defined]
+            ax.zaxis.line.set_color(axes_color)  # type: ignore[attr-defined]
             ax.xaxis.label.set_color(label_color)
             ax.yaxis.label.set_color(label_color)
             ax.zaxis.label.set_color(label_color)  # type: ignore[attr-defined]
@@ -413,12 +409,12 @@ class OperationalDomainPlottingService:
         )
 
         # Plot non-operational data
-        if plot_options.include_non_operational:
+        if plot_options.include_non_operational and not is_3d:
             OperationalDomainPlottingService._plot_data(
                 ax,
                 x_non_op,
                 y_non_op,
-                z_non_op if is_3d else None,
+                None,
                 log_scale,
                 label="Non-Operational",
                 color=plot_options.non_operational_marker_color,
