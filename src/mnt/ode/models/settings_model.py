@@ -222,7 +222,6 @@ class OperationalDomainSettingsModel(BaseModel):
 
         Raises:
             ValueError: If Contour Tracing is selected with a 3D sweep.
-            ValueError: If non-NONE sweep dimensions are not unique.
         """
         # Always set the default samples based on the algorithm. If the user provided a value during init,
         # it will be overwritten here by the standard default for that algorithm.
@@ -238,17 +237,6 @@ class OperationalDomainSettingsModel(BaseModel):
             and self.algorithm == OperationalDomainAlgorithm.CONTOUR_TRACING
         ):
             msg = "Contour Tracing algorithm is not compatible with 3D sweeps (Z dimension != NONE)"
-            raise ValueError(msg)
-
-        # Ensure swept dimensions (excluding NONE) are unique
-        dims: dict[str, SweepDimension] = {
-            "x_sweep": self.x_sweep.dimension,
-            "y_sweep": self.y_sweep.dimension,
-            "z_sweep": self.z_sweep.dimension,
-        }
-        active_dims = [dim for dim in dims.values() if dim != SweepDimension.NONE]
-        if len(active_dims) != len(set(active_dims)):
-            msg = f"Sweep dimensions must be unique (excluding NONE). Found duplicates in {dims}"
             raise ValueError(msg)
 
         return self

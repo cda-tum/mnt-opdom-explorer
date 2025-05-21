@@ -151,23 +151,6 @@ def test_operational_domain_unique_dimensions_valid() -> None:
     assert model_with_none.z_sweep.dimension == SweepDimension.NONE
 
 
-def test_operational_domain_unique_dimensions_invalid() -> None:
-    """Test validation error for duplicate sweep dimensions."""
-    with pytest.raises(ValidationError, match="Sweep dimensions must be unique"):
-        OperationalDomainSettingsModel(
-            x_sweep=SweepDimensionModel(dimension=SweepDimension.EPSILON_R, parameter_range=ParameterRangeModel()),
-            y_sweep=SweepDimensionModel(dimension=SweepDimension.EPSILON_R, parameter_range=ParameterRangeModel()),
-            z_sweep=SweepDimensionModel(dimension=SweepDimension.NONE, parameter_range=ParameterRangeModel()),
-        )
-
-    with pytest.raises(ValidationError, match="Sweep dimensions must be unique"):
-        OperationalDomainSettingsModel(
-            x_sweep=SweepDimensionModel(dimension=SweepDimension.MU_MINUS, parameter_range=ParameterRangeModel()),
-            y_sweep=SweepDimensionModel(dimension=SweepDimension.LAMBDA_TF, parameter_range=ParameterRangeModel()),
-            z_sweep=SweepDimensionModel(dimension=SweepDimension.MU_MINUS, parameter_range=ParameterRangeModel()),
-        )
-
-
 def test_operational_domain_contour_tracing_3d_invalid() -> None:
     """Test validation error for Contour Tracing with 3D sweep."""
     with pytest.raises(ValidationError, match="Contour Tracing algorithm is not compatible with 3D sweeps"):
