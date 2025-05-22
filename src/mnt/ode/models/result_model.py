@@ -39,6 +39,9 @@ class SinglePointResult(BaseModel):
     results: dict[int, SimulationPointResultType | None] = Field(
         default_factory=dict, description="Simulation results per input pattern index"
     )
+    operational_patterns: dict[int, OperationalStatus] = Field(
+        default_factory=dict, description="Operational status per input pattern index"
+    )
     positive_charges_occurred: bool | None = Field(
         default=None, description="Whether positive charges check was positive"
     )

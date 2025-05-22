@@ -5,17 +5,6 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
-from mnt.ode.models import (
-    ApplicationSettingsModel,
-    InputSignalEncoding,
-    LayoutModel,
-    SiDBLayoutType,
-    SimulationEngine,
-    SimulationPointResultType,
-    SimulationSweepPointType,
-    SinglePointResult,
-    SweepDimension,
-)
 from mnt.pyfiction import (
     automatic_base_number_detection,
     bdl_input_iterator_100,
@@ -24,6 +13,9 @@ from mnt.pyfiction import (
     can_positive_charges_occur,
     exhaustive_ground_state_simulation,
     input_bdl_configuration,
+    is_operational_params,
+    operational_input_patterns,
+    operational_status,
     quickexact,
     quickexact_params,
     quicksim,
@@ -31,6 +23,19 @@ from mnt.pyfiction import (
     sidb_100_lattice,
     sidb_111_lattice,
     sidb_simulation_parameters,
+)
+
+from ..models import (
+    ApplicationSettingsModel,
+    InputSignalEncoding,
+    LayoutModel,
+    SettingsToSymbols,
+    SiDBLayoutType,
+    SimulationEngine,
+    SimulationPointResultType,
+    SimulationSweepPointType,
+    SinglePointResult,
+    SweepDimension,
 )
 
 if TYPE_CHECKING:
@@ -75,7 +80,7 @@ class SimulationService:
 
         # 1. Configure Simulation Parameters
         sim_params = sidb_simulation_parameters()
-        sim_params.base = 2
+        sim_params.base = 3
         sim_params.epsilon_r = settings.physical_simulation.epsilon_r
         sim_params.lambda_tf = settings.physical_simulation.lambda_tf
         sim_params.mu_minus = settings.physical_simulation.mu_minus
@@ -85,14 +90,9 @@ class SimulationService:
         logger.debug("Simulation parameters configured: %s", sim_params)
 
         # 2. Check for Positive Charges
-        positive_charges: bool | None = None
-        try:
-            positive_charges = can_positive_charges_occur(layout_model.sidb_layout, sim_params)
-            if positive_charges:
-                logger.warning("Positive charges may occur for parameter point: %s", parameter_point)
-        except Exception:
-            logger.exception("Error during positive charge check")
-            positive_charges = None
+        positive_charges = can_positive_charges_occur(layout_model.sidb_layout, sim_params)
+        if positive_charges:
+            logger.warning("Positive charges may occur for parameter point: %s", parameter_point)
 
         # 3. Configure BDL Iterator
         bdl_params = bdl_input_iterator_params()
@@ -101,24 +101,15 @@ class SimulationService:
         else:
             bdl_params.input_bdl_config = input_bdl_configuration.PERTURBER_ABSENCE_ENCODED
 
-        try:
-            bdl_iterator: bdl_input_iterator_100 | bdl_input_iterator_111 | None = None
-            if isinstance(layout_model.sidb_layout, sidb_100_lattice):
-                bdl_iterator = bdl_input_iterator_100(layout_model.sidb_layout, bdl_params)
-            elif isinstance(layout_model.sidb_layout, sidb_111_lattice):
-                bdl_iterator = bdl_input_iterator_111(layout_model.sidb_layout, bdl_params)
-            else:
-                msg = "Unsupported layout type for BDL iterator."
-                raise SimulationError(msg)  # noqa: TRY301
-            num_input_patterns = 2 ** bdl_iterator.num_input_pairs()
-            logger.info("BDL iterator created with %d input patterns.", num_input_patterns)
-        except Exception as e:
-            logger.exception("Failed to create BDL iterator for layout.")
-            return SinglePointResult(
-                parameter_point=parameter_point,
-                positive_charges_occurred=positive_charges,
-                error_message=f"Failed to create BDL iterator: {e}",
-            )
+        if isinstance(layout_model.sidb_layout, sidb_100_lattice):
+            bdl_iterator_type = bdl_input_iterator_100
+        elif isinstance(layout_model.sidb_layout, sidb_111_lattice):
+            bdl_iterator_type = bdl_input_iterator_111
+        else:
+            msg = "Unsupported layout type for BDL iterator."
+            raise SimulationError(msg)
+        num_input_patterns = 2 ** bdl_iterator_type(layout_model.sidb_layout, bdl_params).num_input_pairs()
+        logger.info("BDL iterator created with %d input patterns.", num_input_patterns)
 
         # 4. Configure Simulation Engine
         engine_choice = settings.physical_simulation.engine
@@ -137,7 +128,7 @@ class SimulationService:
         if engine_choice == SimulationEngine.QUICKEXACT:
             engine_params = quickexact_params()
             engine_params.simulation_parameters = sim_params
-            engine_params.base_number_detection = automatic_base_number_detection.OFF
+            engine_params.base_number_detection = automatic_base_number_detection.ON
             engine_func = quickexact
             logger.debug("Using QuickExact engine.")
         elif engine_choice == SimulationEngine.EXGS:
@@ -155,6 +146,7 @@ class SimulationService:
         # TODO(marcel): parallelize
         for i in range(num_input_patterns):
             try:
+                bdl_iterator = bdl_iterator_type(layout_model.sidb_layout, bdl_params)[i]
                 current_layout = bdl_iterator.get_layout()
                 if engine_func is None:
                     msg = "Simulation engine function not assigned."
@@ -179,8 +171,24 @@ class SimulationService:
                 except Exception:
                     logger.exception("Error occurred in progress callback.")
 
-            # Increment iterator to the next input pattern
-            bdl_iterator += 1
+        # 6. Track Operational Input Patterns
+        is_op_params = is_operational_params()
+        is_op_params.input_bdl_iterator_params = bdl_params
+        is_op_params.op_condition = SettingsToSymbols.OP_CONDITION_MAP[
+            settings.operational_domain.operational_condition
+        ]
+        is_op_params.simulation_parameters = sim_params
+        is_op_params.sim_engine = SettingsToSymbols.ENGINE_MAP[settings.physical_simulation.engine]
+
+        patterns = operational_input_patterns(
+            layout_model.sidb_layout,
+            [SettingsToSymbols.BOOLEAN_FUNC_MAP[settings.gate_function.boolean_function]()],
+            is_op_params,
+        )
+        operational_patterns = {
+            i: operational_status.OPERATIONAL if i in patterns else operational_status.NON_OPERATIONAL
+            for i in range(num_input_patterns)
+        }
 
         logger.info("Finished all simulations for parameter point: %s", parameter_point)
 
@@ -188,5 +196,6 @@ class SimulationService:
         return SinglePointResult(
             parameter_point=parameter_point,
             results=simulation_results,
+            operational_patterns=operational_patterns,
             positive_charges_occurred=positive_charges,
         )

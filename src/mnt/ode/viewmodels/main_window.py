@@ -8,22 +8,21 @@ from typing import TYPE_CHECKING
 
 from PyQt6.QtCore import QObject, QRunnable, QThreadPool, pyqtSignal, pyqtSlot
 
-from mnt.ode.models import (
+from ..models import (
     ApplicationSettingsModel,
     InputSignalEncoding,
     LayoutModel,
     LayoutVisualizationOptions,
     OperationalDomainPlotOptions,
 )
-from mnt.ode.services import (
+from ..services import (
     LayoutLoadError,
     LayoutVisualizationError,
     LayoutVisualizationService,
     PixmapConversionService,
     SQDFileService,
 )
-from mnt.ode.views.theme import get_theme_colors
-
+from ..views.theme import get_theme_colors
 from .operational_domain import OperationalDomainViewModel
 from .settings import SettingsViewModel
 
@@ -149,29 +148,33 @@ class PixmapConversionTask(QRunnable):  # type: ignore[misc]
     class Signals(QObject):  # type: ignore[misc]
         """Signals for this task."""
 
-        conversion_finished = pyqtSignal(list, list)  # distance_pixmaps, presence_pixmaps
+        conversion_pair_finished = pyqtSignal(list, list)  # distance_pixmaps, presence_pixmaps
+        conversion_single_finished = pyqtSignal(list)  # pixmaps for a single set
 
     def __init__(
         self,
-        distance_svgs: Sequence[bytes | None],
-        presence_svgs: Sequence[bytes | None],
+        svgs1: Sequence[bytes | None],
+        svgs2: Sequence[bytes | None] | None = None,
     ) -> None:
         """Initialize the PixmapConversionTask.
 
         Args:
-            distance_svgs: Distance-encoded layout SVGs to convert.
-            presence_svgs: Presence-encoded layout SVGs to convert.
+            svgs1: Primary list of SVGs to convert.
+            svgs2: Optional secondary list of SVGs to convert.
         """
         super().__init__()
-        self.distance_svgs = distance_svgs
-        self.presence_svgs = presence_svgs
+        self.svgs1 = svgs1
+        self.svgs2 = svgs2
         self.signals = PixmapConversionTask.Signals()
 
     def run(self) -> None:
         """Execute the pixmap conversion task."""
-        distance_pixmaps = PixmapConversionService.convert(self.distance_svgs)
-        presence_pixmaps = PixmapConversionService.convert(self.presence_svgs)
-        self.signals.conversion_finished.emit(distance_pixmaps, presence_pixmaps)
+        pixmaps1 = PixmapConversionService.convert(self.svgs1)
+        if self.svgs2 is not None:
+            pixmaps2 = PixmapConversionService.convert(self.svgs2)
+            self.signals.conversion_pair_finished.emit(pixmaps1, pixmaps2)
+        else:
+            self.signals.conversion_single_finished.emit(pixmaps1)
 
 
 class MainWindowViewModel(QObject):  # type: ignore[misc]
@@ -184,10 +187,13 @@ class MainWindowViewModel(QObject):  # type: ignore[misc]
     initial_layout_plots_ready = pyqtSignal(bool)  # Layout SVGs ready or failed
     layout_pixmaps_ready = pyqtSignal(list, list)  # distance_pixmaps, presence_pixmaps
 
-    # New signals for better MVVM
     can_run_simulation_changed = pyqtSignal(bool)
     current_file_name_changed = pyqtSignal(str)
     operational_domain_vm_ready = pyqtSignal(OperationalDomainViewModel)
+
+    # Signals for CDS display
+    cds_pixmaps_ready = pyqtSignal(list)  # list[QPixmap]
+    reset_layout_display_requested = pyqtSignal()
 
     def __init__(
         self,
@@ -406,7 +412,7 @@ class MainWindowViewModel(QObject):  # type: ignore[misc]
                 len(presence_svgs),
             )
             conversion_task = PixmapConversionTask(distance_svgs, presence_svgs)
-            conversion_task.signals.conversion_finished.connect(self._handle_pixmap_conversion_finished)
+            conversion_task.signals.conversion_pair_finished.connect(self._handle_pixmap_conversion_finished)
             self._thread_pool.start(conversion_task)
         self._emit_can_run_simulation_changed()
 
@@ -474,6 +480,35 @@ class MainWindowViewModel(QObject):  # type: ignore[misc]
         op_domain_vm = OperationalDomainViewModel(
             self._current_layout, settings, self._operational_domain_plot_options, thread_pool=self._thread_pool
         )
+        # Connect to new signals from OperationalDomainViewModel
+        op_domain_vm.single_point_layout_svgs_ready.connect(self._handle_cds_svgs)
+        op_domain_vm.layout_visualization_reset_requested.connect(self._handle_layout_visualization_reset_requested)
+
         self.operational_domain_vm_ready.emit(op_domain_vm)
         self.status_message = "Operational domain view ready."
         self.is_busy = False
+
+    @pyqtSlot(list)  # type: ignore[misc]
+    def _handle_cds_svgs(self, svgs: list[bytes | None]) -> None:
+        """Handles SVGs received from a single point simulation for CDS display."""
+        logger.info("Received %d SVGs from single point simulation. Converting to pixmaps.", len(svgs))
+        self.is_busy = True
+        self.status_message = "Generating visualizations for selected point..."
+
+        conversion_task = PixmapConversionTask(svgs)
+        conversion_task.signals.conversion_single_finished.connect(self._handle_cds_pixmaps_converted)
+        self._thread_pool.start(conversion_task)
+
+    @pyqtSlot(list)  # type: ignore[misc]
+    def _handle_cds_pixmaps_converted(self, pixmaps: list[QPixmap]) -> None:
+        """Handles converted pixmaps for CDS display."""
+        logger.info("Converted %d pixmaps for CDS display.", len(pixmaps))
+        self.cds_pixmaps_ready.emit(pixmaps)
+        self.status_message = "Visualizations for selected point are ready."
+        self.is_busy = False
+
+    @pyqtSlot()  # type: ignore[misc]
+    def _handle_layout_visualization_reset_requested(self) -> None:
+        """Handles the request to reset the layout visualization to its normal state."""
+        logger.info("Layout visualization reset requested by OperationalDomainViewModel.")
+        self.reset_layout_display_requested.emit()

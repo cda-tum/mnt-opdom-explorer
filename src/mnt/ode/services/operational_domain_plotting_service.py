@@ -12,8 +12,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from mnt.ode.models import OperationalDomainPlotOptions, OperationalDomainResultModel, SweepDimension
 from mnt.pyfiction import write_operational_domain, write_operational_domain_params
+
+from ..models import OperationalDomainPlotOptions, OperationalDomainResultModel, SweepDimension
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Mapping

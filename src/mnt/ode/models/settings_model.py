@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from pydantic import (
     BaseModel,
@@ -15,7 +15,23 @@ from pydantic import (
     model_validator,
 )
 
+from mnt.pyfiction import (
+    create_and_tt,
+    create_nand_tt,
+    create_nor_tt,
+    create_or_tt,
+    create_xnor_tt,
+    create_xor_tt,
+    dynamic_truth_table,
+    input_bdl_configuration,
+    operational_condition,
+    sidb_simulation_engine,
+    sweep_parameter,
+)
+
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from pydantic_core.core_schema import FieldValidationInfo
 
 
@@ -76,6 +92,41 @@ class AxisScale(str, Enum):
 
     LINEAR = "Linear"
     LOGARITHMIC = "Logarithmic"
+
+
+class SettingsToSymbols:
+    """Mappings from Application Enums to pyfiction Enums/Values."""
+
+    ENGINE_MAP: ClassVar[dict[SimulationEngine, sidb_simulation_engine]] = {
+        SimulationEngine.EXGS: sidb_simulation_engine.EXGS,
+        SimulationEngine.QUICKEXACT: sidb_simulation_engine.QUICKEXACT,
+        SimulationEngine.QUICKSIM: sidb_simulation_engine.QUICKSIM,
+    }
+
+    OP_CONDITION_MAP: ClassVar[dict[OperationalCondition, operational_condition]] = {
+        OperationalCondition.TOLERATE_KINKS: operational_condition.TOLERATE_KINKS,
+        OperationalCondition.REJECT_KINKS: operational_condition.REJECT_KINKS,
+    }
+
+    SWEEP_DIM_MAP: ClassVar[dict[SweepDimension, sweep_parameter]] = {
+        SweepDimension.EPSILON_R: sweep_parameter.EPSILON_R,
+        SweepDimension.LAMBDA_TF: sweep_parameter.LAMBDA_TF,
+        SweepDimension.MU_MINUS: sweep_parameter.MU_MINUS,
+    }
+
+    BDL_ENCODING_MAP: ClassVar[dict[InputSignalEncoding, input_bdl_configuration]] = {
+        InputSignalEncoding.DISTANCE: input_bdl_configuration.PERTURBER_DISTANCE_ENCODED,
+        InputSignalEncoding.PRESENCE: input_bdl_configuration.PERTURBER_ABSENCE_ENCODED,
+    }
+
+    BOOLEAN_FUNC_MAP: ClassVar[dict[BooleanFunction, Callable[[], dynamic_truth_table]]] = {
+        BooleanFunction.AND: create_and_tt,
+        BooleanFunction.OR: create_or_tt,
+        BooleanFunction.NAND: create_nand_tt,
+        BooleanFunction.NOR: create_nor_tt,
+        BooleanFunction.XOR: create_xor_tt,
+        BooleanFunction.XNOR: create_xnor_tt,
+    }
 
 
 # Pydantic Models

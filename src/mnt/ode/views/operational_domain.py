@@ -283,6 +283,7 @@ class OperationalDomainView(QWidget):  # type: ignore[misc]
     @pyqtSlot()  # type: ignore[misc]
     def _on_rerun_clicked(self) -> None:
         """Handles rerun button click to return to the settings widget."""
+        self._vm.request_layout_visualization_reset()
         self._settings_widget.setDisabled(False)
         parent = self.parent()
         if parent and hasattr(parent, "setCurrentWidget"):

@@ -196,6 +196,10 @@ class MainWindow(QMainWindow):  # type: ignore[misc]
         self._vm.current_file_name_changed.connect(self._update_window_title_with_file)
         self._vm.operational_domain_vm_ready.connect(self._on_operational_domain_vm_ready)
 
+        # Connections for CDS layout display from single point simulation
+        self._vm.cds_pixmaps_ready.connect(self.layout_visualization_widget.display_cds_layouts)
+        self._vm.reset_layout_display_requested.connect(self.layout_visualization_widget.revert_to_normal_layouts)
+
         logger.debug("MainWindow signals connected and bound to ViewModel.")
 
         # --- Connect input signal encoding changes to layout visualization ---

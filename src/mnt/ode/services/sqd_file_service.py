@@ -5,8 +5,9 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
-from mnt.ode.models import LayoutModel
 from mnt.pyfiction import read_sqd_layout_100, sqd_parsing_error
+
+from ..models import LayoutModel
 
 if TYPE_CHECKING:
     from pathlib import Path

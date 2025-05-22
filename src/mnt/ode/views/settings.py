@@ -23,7 +23,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from mnt.ode.models import (
+from ..models import (
     ApplicationSettingsModel,
     AxisScale,
     BooleanFunction,
@@ -34,8 +34,7 @@ from mnt.ode.models import (
     SweepDimension,
     SweepDimensionModel,
 )
-from mnt.ode.utils import IconLoader
-
+from ..utils import IconLoader
 from .theme import (
     BUTTON_BG_COLOR,
     BUTTON_TEXT_COLOR,

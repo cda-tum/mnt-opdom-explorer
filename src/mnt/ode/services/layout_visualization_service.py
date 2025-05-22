@@ -9,14 +9,6 @@ from typing import TYPE_CHECKING
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 
-from mnt.ode.models import (
-    ChargeLayoutVisualizationConfiguration,
-    InputSignalEncoding,
-    LayoutModel,
-    LayoutVisualizationOptions,
-    SiDBChargeLayoutType,
-    SiDBLayoutType,
-)
 from mnt.pyfiction import (
     bdl_input_iterator_100,
     bdl_input_iterator_111,
@@ -30,6 +22,15 @@ from mnt.pyfiction import (
     sidb_charge_state,
     sidb_nm_position,
     sidb_technology,
+)
+
+from ..models import (
+    ChargeLayoutVisualizationConfiguration,
+    InputSignalEncoding,
+    LayoutModel,
+    LayoutVisualizationOptions,
+    SiDBChargeLayoutType,
+    SiDBLayoutType,
 )
 
 if TYPE_CHECKING:
@@ -188,6 +189,7 @@ class LayoutVisualizationService:
         # Compute bounding box of the original layout
         bb_min, bb_max = original_layout.bounding_box_2d()
 
+        # TODO(marcel): parallelize this loop
         for i, charge_lyt in enumerate(charge_layouts):
             if charge_lyt is None:
                 logger.warning("Skipping SVG for input index %d because charge layout is None.", i)
@@ -349,7 +351,7 @@ class LayoutVisualizationService:
         if lyt is None:
             logger.warning("Cannot plot SiDBs: Layout is None.")
             return
-        all_cells = lyt.cells()
+        all_cells = lyt.cells() if charge_lyt is None else charge_lyt.cells()
         for cell in all_cells:
             shifted_cell = offset_coordinate(cell.x + opts.padding_x, cell.y + opts.padding_y)
             nm_pos = sidb_nm_position(lyt, shifted_cell)

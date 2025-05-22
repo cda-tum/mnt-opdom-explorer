@@ -21,9 +21,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from mnt.ode.utils import IconLoader
-
-from ..utils import is_dark_mode
+from ..utils import IconLoader, is_dark_mode
 from .theme import (
     BUTTON_BG_COLOR,
     BUTTON_TEXT_COLOR,

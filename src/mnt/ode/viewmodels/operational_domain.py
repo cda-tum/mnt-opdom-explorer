@@ -7,25 +7,27 @@ import logging
 from matplotlib.figure import Figure
 from PyQt6.QtCore import QObject, QRunnable, Qt, QThreadPool, pyqtSignal, pyqtSlot
 
-from mnt.ode.models import (
+from mnt.pyfiction import groundstate_from_simulation_result
+
+from ..models import (
+    ApplicationSettingsModel,
+    LayoutModel,
+    LayoutVisualizationOptions,
+    OperationalDomainPlotOptions,
     OperationalDomainResultModel,
+    SiDBChargeLayoutType,
+    SimulationSweepPointType,
+    SinglePointResult,
     SweepDimension,
 )
-from mnt.ode.services import (
+from ..services import (
+    LayoutVisualizationService,
     OperationalDomainError,
     OperationalDomainPlottingService,
     OperationalDomainService,
     PlottingError,
     SimulationError,
     SimulationService,
-)
-
-from ..models import (
-    ApplicationSettingsModel,
-    LayoutModel,
-    OperationalDomainPlotOptions,
-    SimulationSweepPointType,
-    SinglePointResult,
 )
 
 logger = logging.getLogger(__name__)
@@ -169,6 +171,8 @@ class OperationalDomainViewModel(QObject):  # type: ignore[misc]
     highlight_point_changed = pyqtSignal(float, float, OperationalDomainPlotOptions)  # x, y, plot options
     single_point_simulation_status_updated = pyqtSignal(int, str)  # percentage, message
     single_point_simulation_finished = pyqtSignal(SinglePointResult, str)  # result, error_message
+    single_point_layout_svgs_ready = pyqtSignal(list)  # list[bytes | None]
+    layout_visualization_reset_requested = pyqtSignal()
 
     def __init__(
         self,
@@ -251,7 +255,12 @@ class OperationalDomainViewModel(QObject):  # type: ignore[misc]
 
     @pyqtSlot(float, float)  # type: ignore[misc]
     def on_plot_clicked(self, raw_x: float, raw_y: float) -> None:
-        """Handles a click on the operational domain plot. Uses raw coordinates."""
+        """Handles a click on the operational domain plot. Uses raw coordinates.
+
+        Args:
+            raw_x: The raw X coordinate of the click.
+            raw_y: The raw Y coordinate of the click.
+        """
         if self._current_plot_options is None:
             logger.warning("Plot clicked but current_plot_options is None. Cannot proceed.")
             self.error_occurred.emit("Plot options not available for click.")
@@ -295,14 +304,44 @@ class OperationalDomainViewModel(QObject):  # type: ignore[misc]
         self._thread_pool.start(single_sim_task)
 
     def _on_single_point_simulation_finished(self, result: SinglePointResult | None, error_message: str) -> None:
-        """Handles the completion of a single point simulation."""
+        """Handles the completion of a single point simulation.
+
+        Args:
+            result: The result of the simulation, or None if failed.
+            error_message: Error message if any, else empty string.
+        """
         if error_message:
             logger.error("Single point simulation failed: %s", error_message)
         elif result:
             logger.info("Single point simulation successful. Result: %s", result)
         else:
             logger.warning("Single point simulation finished with no result and no error message.")
-        self.single_point_simulation_finished.emit(result, error_message)
+        self.single_point_simulation_finished.emit(result, error_message)  # TODO(marcel): might need to emit later
+
+        if result and result.results and self._layout_model.sidb_layout is not None:
+            charge_layouts_to_plot: list[SiDBChargeLayoutType] = []
+            for sim_result_for_input_pattern in result.results.values():
+                ground_states = groundstate_from_simulation_result(sim_result_for_input_pattern)
+                if ground_states:
+                    charge_layouts_to_plot.append(ground_states[0])
+
+            operational_status = [result.operational_patterns.get(i) for i in range(len(result.results))]
+
+            if charge_layouts_to_plot:
+                logger.info("Generating %d SVGs for single point simulation results.", len(charge_layouts_to_plot))
+                try:
+                    vis_options = LayoutVisualizationOptions()
+                    svgs = LayoutVisualizationService.create_charge_distribution_svgs(
+                        original_layout=self._layout_model.sidb_layout,
+                        charge_layouts=charge_layouts_to_plot,
+                        operational_statuses=operational_status,
+                        options=vis_options,
+                    )
+                    self.single_point_layout_svgs_ready.emit(svgs)
+                except Exception:
+                    logger.exception("Error generating SVGs for single point simulation results.")
+            elif not error_message:
+                logger.info("No charge layouts found in single point simulation result to visualize.")
 
     def clear_highlight(self) -> None:
         """Clears the current highlight."""
@@ -313,3 +352,8 @@ class OperationalDomainViewModel(QObject):  # type: ignore[misc]
                 self.highlight_point_changed.emit(None, None, self._current_plot_options)
             else:
                 self.highlight_point_changed.emit(None, None, None)
+
+    def request_layout_visualization_reset(self) -> None:
+        """Requests that the layout visualization be reset to its normal state."""
+        logger.debug("Requesting layout visualization reset.")
+        self.layout_visualization_reset_requested.emit()

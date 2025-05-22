@@ -3,31 +3,12 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING
 
-from mnt.ode.models import (
-    ApplicationSettingsModel,
-    BooleanFunction,
-    InputSignalEncoding,
-    OperationalCondition,
-    OperationalDomainAlgorithm,
-    OperationalDomainResultModel,
-    SiDBLayoutType,
-    SimulationEngine,
-    SweepDimension,
-)
 from mnt.pyfiction import (
     bdl_input_iterator_params,
-    create_and_tt,
-    create_nand_tt,
-    create_nor_tt,
-    create_or_tt,
-    create_xnor_tt,
-    create_xor_tt,
     dynamic_truth_table,
-    input_bdl_configuration,
     is_operational_params,
-    operational_condition,
     operational_domain,
     operational_domain_contour_tracing,
     operational_domain_flood_fill,
@@ -36,14 +17,19 @@ from mnt.pyfiction import (
     operational_domain_random_sampling,
     operational_domain_stats,
     operational_domain_value_range,
-    sidb_simulation_engine,
     sidb_simulation_parameters,
-    sweep_parameter,
+)
+
+from ..models import (
+    ApplicationSettingsModel,
+    OperationalDomainAlgorithm,
+    OperationalDomainResultModel,
+    SettingsToSymbols,
+    SiDBLayoutType,
+    SweepDimension,
 )
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
-
     from mnt.ode.models import LayoutModel
 
 logger = logging.getLogger(__name__)
@@ -55,39 +41,6 @@ class OperationalDomainError(Exception):
 
 class OperationalDomainService:
     """Calculates the operational domain using mnt.pyfiction."""
-
-    # --- Mappings from Application Enums to pyfiction Enums/Values ---
-    _ENGINE_MAP: ClassVar[dict[SimulationEngine, sidb_simulation_engine]] = {
-        SimulationEngine.EXGS: sidb_simulation_engine.EXGS,
-        SimulationEngine.QUICKEXACT: sidb_simulation_engine.QUICKEXACT,
-        SimulationEngine.QUICKSIM: sidb_simulation_engine.QUICKSIM,
-    }
-
-    _OP_CONDITION_MAP: ClassVar[dict[OperationalCondition, operational_condition]] = {
-        OperationalCondition.TOLERATE_KINKS: operational_condition.TOLERATE_KINKS,
-        OperationalCondition.REJECT_KINKS: operational_condition.REJECT_KINKS,
-    }
-
-    _SWEEP_DIM_MAP: ClassVar[dict[SweepDimension, sweep_parameter]] = {
-        SweepDimension.EPSILON_R: sweep_parameter.EPSILON_R,
-        SweepDimension.LAMBDA_TF: sweep_parameter.LAMBDA_TF,
-        SweepDimension.MU_MINUS: sweep_parameter.MU_MINUS,
-    }
-
-    _BDL_ENCODING_MAP: ClassVar[dict[InputSignalEncoding, input_bdl_configuration]] = {
-        InputSignalEncoding.DISTANCE: input_bdl_configuration.PERTURBER_DISTANCE_ENCODED,
-        InputSignalEncoding.PRESENCE: input_bdl_configuration.PERTURBER_ABSENCE_ENCODED,
-    }
-
-    _BOOLEAN_FUNC_MAP: ClassVar[dict[BooleanFunction, Callable[[], dynamic_truth_table]]] = {
-        BooleanFunction.AND: create_and_tt,
-        BooleanFunction.OR: create_or_tt,
-        BooleanFunction.NAND: create_nand_tt,
-        BooleanFunction.NOR: create_nor_tt,
-        BooleanFunction.XOR: create_xor_tt,
-        BooleanFunction.XNOR: create_xnor_tt,
-    }
-    # ------------------------------------------------------------------
 
     @staticmethod
     def calculate_operational_domain(
@@ -128,7 +81,7 @@ class OperationalDomainService:
 
             # 2. Configure BDL Input Parameters
             bdl_input_params = bdl_input_iterator_params()
-            bdl_input_params.input_bdl_config = OperationalDomainService._BDL_ENCODING_MAP.get(
+            bdl_input_params.input_bdl_config = SettingsToSymbols.BDL_ENCODING_MAP.get(
                 gate_func_settings.input_signal_encoding
             )
             if bdl_input_params.input_bdl_config is None:
@@ -138,11 +91,9 @@ class OperationalDomainService:
             # 3. Configure Operationality Parameters
             is_op_params = is_operational_params()
             is_op_params.input_bdl_iterator_params = bdl_input_params
-            is_op_params.op_condition = OperationalDomainService._OP_CONDITION_MAP.get(
-                op_dom_settings.operational_condition
-            )
+            is_op_params.op_condition = SettingsToSymbols.OP_CONDITION_MAP.get(op_dom_settings.operational_condition)
             is_op_params.simulation_parameters = sim_params
-            is_op_params.sim_engine = OperationalDomainService._ENGINE_MAP.get(phys_sim_settings.engine)
+            is_op_params.sim_engine = SettingsToSymbols.ENGINE_MAP.get(phys_sim_settings.engine)
 
             if is_op_params.op_condition is None:
                 msg = f"Invalid operational condition: {op_dom_settings.operational_condition}"
@@ -159,7 +110,7 @@ class OperationalDomainService:
             sweep_dimensions: list[operational_domain_value_range] = []
             for sweep_model in [op_dom_settings.x_sweep, op_dom_settings.y_sweep, op_dom_settings.z_sweep]:
                 if sweep_model.dimension != SweepDimension.NONE:
-                    fiction_dim = OperationalDomainService._SWEEP_DIM_MAP.get(sweep_model.dimension)
+                    fiction_dim = SettingsToSymbols.SWEEP_DIM_MAP.get(sweep_model.dimension)
                     if fiction_dim is None:
                         msg = f"Invalid sweep dimension: {sweep_model.dimension}"
                         raise OperationalDomainError(msg)  # noqa: TRY301 - Raising here is clear
@@ -177,7 +128,7 @@ class OperationalDomainService:
             op_domain_params.sweep_dimensions = sweep_dimensions
 
             # 6. Get Target Boolean Function (Truth Table)
-            tt_func = OperationalDomainService._BOOLEAN_FUNC_MAP.get(gate_func_settings.boolean_function)
+            tt_func = SettingsToSymbols.BOOLEAN_FUNC_MAP.get(gate_func_settings.boolean_function)
             if tt_func is None:
                 msg = f"Unsupported Boolean function: {gate_func_settings.boolean_function}"
                 raise OperationalDomainError(msg)  # noqa: TRY301 - Raising here is clear
