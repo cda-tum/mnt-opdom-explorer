@@ -19,9 +19,8 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from mnt.ode.viewmodels import OperationalDomainViewModel
-
 from ..utils.icon_loader import IconLoader
+from ..viewmodels.operational_domain import OperationalDomainViewModel
 from .layout_visualization import LayoutVisualizationWidget
 from .operational_domain import OperationalDomainView
 from .settings import Settings
