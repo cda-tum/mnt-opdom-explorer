@@ -152,6 +152,10 @@ def test_op_domain_plot_options_defaults() -> None:
     assert options.axes_color == "#000000"
     assert options.label_color == "#000000"
     assert options.title_color == "#000000"
+    assert options.highlight_dot_color == "yellow"
+    assert options.highlight_dot_size == 50
+    assert options.highlight_label_color == "black"
+    assert options.highlight_label_font_size == 10
 
 
 def test_op_domain_plot_options_valid_override() -> None:

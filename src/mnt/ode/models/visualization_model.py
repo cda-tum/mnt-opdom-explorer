@@ -79,6 +79,10 @@ class OperationalDomainPlotOptions(BaseModel):
     axes_color: str = Field(default="#000000", description="Color for axes (spines, ticks)")
     label_color: str = Field(default="#000000", description="Color for axis labels")
     title_color: str = Field(default="#000000", description="Color for plot title")
+    highlight_dot_color: str = Field(default="yellow", description="Color for the clicked point highlight dot")
+    highlight_dot_size: int = Field(default=50, description="Marker size for the clicked point highlight dot (area)")
+    highlight_label_color: str = Field(default="black", description="Color for the clicked point coordinate label")
+    highlight_label_font_size: int = Field(default=10, description="Font size for the clicked point coordinate label")
 
     @field_validator("z_param")
     @classmethod
