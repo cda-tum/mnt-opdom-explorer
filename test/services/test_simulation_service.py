@@ -168,7 +168,7 @@ def test_run_simulation_quickexact_success(
     mock_quickexact_func.side_effect = [mock_sim_result_pattern_0, mock_sim_result_pattern_1]
     progress_calls = []
 
-    def progress_callback(p: int) -> None:
+    def progress_callback(p: int, _: str) -> None:
         progress_calls.append(p)
 
     # Act
@@ -368,7 +368,7 @@ def test_run_simulation_pattern_error(
     ]
     progress_calls = []
 
-    def progress_callback(p: int) -> None:
+    def progress_callback(p: int, _: str) -> None:
         progress_calls.append(p)
 
     # Act

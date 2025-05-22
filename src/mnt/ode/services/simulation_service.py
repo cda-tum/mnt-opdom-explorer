@@ -52,7 +52,7 @@ class SimulationService:
         layout_model: LayoutModel,
         settings: ApplicationSettingsModel,
         parameter_point: SimulationSweepPointType,
-        progress_callback: Callable[[int], None] | None = None,
+        progress_callback: Callable[[int, str], None] | None = None,
     ) -> SinglePointResult:
         """Runs simulations for all input patterns at a single parameter point.
 
@@ -63,7 +63,7 @@ class SimulationService:
             settings: The application settings containing simulation parameters.
             parameter_point: The specific parameter values (epsilon_r, lambda_tf, mu_minus)
                              for this simulation run.
-            progress_callback: An optional callback function to report progress (0-100).
+            progress_callback: An optional callback function to report progress (percentage, message).
 
         Returns:
             A SinglePointResult object containing the results and status.
@@ -173,8 +173,9 @@ class SimulationService:
             # Report progress
             if progress_callback:
                 progress_percent = int(((i + 1) / num_input_patterns) * 100)
+                progress_message = f"Simulating input pattern {i + 1}/{num_input_patterns}..."
                 try:
-                    progress_callback(progress_percent)
+                    progress_callback(progress_percent, progress_message)
                 except Exception:
                     logger.exception("Error occurred in progress callback.")
 
