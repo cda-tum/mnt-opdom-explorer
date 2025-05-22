@@ -98,10 +98,12 @@ class LayoutVisualizationWidget(QWidget):  # type: ignore[misc]
             logger.info("Active input encoding changed to: %s", encoding)
             self._active_encoding = encoding
             self.update_active_pixmaps()
+            # Preserve the slider state
             current_slider_val = self.input_slider.value()
-            if current_slider_val >= len(self._current_pixmaps):
-                current_slider_val = 0
             self._display_pixmap_at_index(current_slider_val)
+        else:
+            # Even if encoding is the same, ensure the correct pixmap is shown
+            self._display_pixmap_at_index(self.input_slider.value())
 
     def update_active_pixmaps(self) -> None:
         """Update the active pixmaps based on the current input signal encoding."""
