@@ -13,6 +13,7 @@ from mnt.ode.models import (
     InputSignalEncoding,
     LayoutModel,
     LayoutVisualizationOptions,
+    OperationalDomainPlotOptions,
 )
 from mnt.ode.services import (
     LayoutLoadError,
@@ -21,11 +22,15 @@ from mnt.ode.services import (
     PixmapConversionService,
     SQDFileService,
 )
+from mnt.ode.views.theme import get_theme_colors
 
+from .operational_domain import OperationalDomainViewModel
 from .settings import SettingsViewModel
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
+
+    from PyQt6.QtGui import QPixmap
 
 logger = logging.getLogger(__name__)
 
@@ -141,34 +146,32 @@ class GenerateLayoutPlotsTask(QRunnable):  # type: ignore[misc]
 class PixmapConversionTask(QRunnable):  # type: ignore[misc]
     """QRunnable to convert SVGs to pixmaps using the pixmap_conversion_service."""
 
+    class Signals(QObject):  # type: ignore[misc]
+        """Signals for this task."""
+
+        conversion_finished = pyqtSignal(list, list)  # distance_pixmaps, presence_pixmaps
+
     def __init__(
         self,
         distance_svgs: Sequence[bytes | None],
         presence_svgs: Sequence[bytes | None],
-        pixmaps_ready_signal: pyqtSignal,
-        plots_ready_signal: pyqtSignal,
     ) -> None:
         """Initialize the PixmapConversionTask.
 
         Args:
             distance_svgs: Distance-encoded layout SVGs to convert.
             presence_svgs: Presence-encoded layout SVGs to convert.
-            pixmaps_ready_signal: Signal emitted when pixmaps are ready.
-            plots_ready_signal: Signal emitted when plots are ready.
         """
         super().__init__()
         self.distance_svgs = distance_svgs
         self.presence_svgs = presence_svgs
-        self.pixmaps_ready_signal = pixmaps_ready_signal
-        self.plots_ready_signal = plots_ready_signal
+        self.signals = PixmapConversionTask.Signals()
 
     def run(self) -> None:
         """Execute the pixmap conversion task."""
         distance_pixmaps = PixmapConversionService.convert(self.distance_svgs)
         presence_pixmaps = PixmapConversionService.convert(self.presence_svgs)
-        self.pixmaps_ready_signal.emit(distance_pixmaps, presence_pixmaps)
-        # TODO(marcel): is that signal needed?
-        self.plots_ready_signal.emit(True)  # noqa: FBT003
+        self.signals.conversion_finished.emit(distance_pixmaps, presence_pixmaps)
 
 
 class MainWindowViewModel(QObject):  # type: ignore[misc]
@@ -178,8 +181,13 @@ class MainWindowViewModel(QObject):  # type: ignore[misc]
     is_busy_changed = pyqtSignal(bool, int)  # GUI switches from busy to idle or vice versa
     status_message_changed = pyqtSignal(str)  # New status message received
     layout_loaded_changed = pyqtSignal(bool)  # Layout parsing started/completed
-    initial_layout_plots_ready = pyqtSignal(bool)  # Layout visualizations ready
+    initial_layout_plots_ready = pyqtSignal(bool)  # Layout SVGs ready or failed
     layout_pixmaps_ready = pyqtSignal(list, list)  # distance_pixmaps, presence_pixmaps
+
+    # New signals for better MVVM
+    can_run_simulation_changed = pyqtSignal(bool)
+    current_file_name_changed = pyqtSignal(str)
+    operational_domain_vm_ready = pyqtSignal(OperationalDomainViewModel)
 
     def __init__(
         self,
@@ -211,6 +219,7 @@ class MainWindowViewModel(QObject):  # type: ignore[misc]
         self._status_message: str = "Ready. Please load an SQD file."
 
         self._active_bdl_encoding: InputSignalEncoding = InputSignalEncoding.DISTANCE
+        self._operational_domain_plot_options: OperationalDomainPlotOptions | None = None
 
         # Layout visualizations with different input encodings
         self._distance_layout_figures: list[bytes | None] = []
@@ -243,6 +252,7 @@ class MainWindowViewModel(QObject):  # type: ignore[misc]
         if self._is_busy != value:
             self._is_busy = value
             self.is_busy_changed.emit(self._is_busy, 0)  # Progress 0 for general busy state
+            self._emit_can_run_simulation_changed()
 
     @property
     def status_message(self) -> str:
@@ -289,6 +299,11 @@ class MainWindowViewModel(QObject):  # type: ignore[misc]
 
     # --- Commands and Slots ---
 
+    def _emit_can_run_simulation_changed(self) -> None:
+        """Emits the can_run_simulation_changed signal based on current state."""
+        can_run = (self._current_layout is not None) and (not self.is_busy)
+        self.can_run_simulation_changed.emit(can_run)
+
     @pyqtSlot(str)  # type: ignore[misc]
     def load_sqd_file(self, file_path_str: str) -> None:
         """Command to load an SQD file asynchronously.
@@ -324,6 +339,7 @@ class MainWindowViewModel(QObject):  # type: ignore[misc]
         if layout_model:
             self._current_layout = layout_model
             self._current_file_path = file_path
+            self.current_file_name_changed.emit(self.current_file_name)
             # Set a status message indicating further processing is ongoing
             self.status_message = f"Preparing visualizations for {file_path.name}..."
             # Also emit a progress/loading message for the welcome widget
@@ -333,10 +349,12 @@ class MainWindowViewModel(QObject):  # type: ignore[misc]
         else:
             self._current_layout = None
             self._current_file_path = None
+            self.current_file_name_changed.emit(self.current_file_name)
             self.status_message = f"Error loading {file_path.name}: {error_message or 'Unknown error'}"
             self.layout_loaded_changed.emit(False)  # noqa: FBT003
             logger.error("Failed to load layout from %s. Error: %s", file_path_str, error_message)
-            self.is_busy = False
+            self.is_busy = False  # Also sets can_run_simulation via property setter
+        self._emit_can_run_simulation_changed()
 
     def _start_layout_plot_generation(self) -> None:
         """Initiate the background task for generating layout plots."""
@@ -344,6 +362,7 @@ class MainWindowViewModel(QObject):  # type: ignore[misc]
             logger.error("Cannot generate plots, no layout loaded.")
             self.is_busy = False
             self.initial_layout_plots_ready.emit(False)  # noqa: FBT003
+            self._emit_can_run_simulation_changed()
             return
 
         logger.info("Starting layout plot generation task...")
@@ -375,20 +394,86 @@ class MainWindowViewModel(QObject):  # type: ignore[misc]
             self._distance_layout_figures = []
             self._presence_layout_figures = []
             self.initial_layout_plots_ready.emit(False)  # noqa: FBT003
-            self.layout_loaded_changed.emit(False)  # noqa: FBT003
             self.is_busy = False
         else:
             self._distance_layout_figures = distance_svgs
             self._presence_layout_figures = presence_svgs
-            self.status_message = f"Successfully loaded {self.current_file_name}"
+            # SVGs are ready, now convert to pixmaps
+            self.initial_layout_plots_ready.emit(True)  # noqa: FBT003
             logger.info(
-                "Successfully generated %d distance and %d presence layout SVGs.",
+                "Successfully generated %d distance and %d presence layout SVGs. Starting pixmap conversion.",
                 len(distance_svgs),
                 len(presence_svgs),
             )
-            # Convert pixmaps in background using QRunnable
-            self._thread_pool.start(
-                PixmapConversionTask(
-                    distance_svgs, presence_svgs, self.layout_pixmaps_ready, self.initial_layout_plots_ready
-                )
+            conversion_task = PixmapConversionTask(distance_svgs, presence_svgs)
+            conversion_task.signals.conversion_finished.connect(self._handle_pixmap_conversion_finished)
+            self._thread_pool.start(conversion_task)
+        self._emit_can_run_simulation_changed()
+
+    @pyqtSlot(list, list)  # type: ignore[misc]
+    def _handle_pixmap_conversion_finished(
+        self, distance_pixmaps: list[QPixmap], presence_pixmaps: list[QPixmap]
+    ) -> None:
+        """Handle the result of the pixmap conversion task."""
+        logger.info("Pixmap conversion finished. Emitting layout_pixmaps_ready.")
+        self.layout_pixmaps_ready.emit(distance_pixmaps, presence_pixmaps)
+        self.status_message = f"Visualizations ready for {self.current_file_name}."
+        self.is_busy = False  # Final step of loading, so set busy to false.
+
+    @pyqtSlot()  # type: ignore[misc]
+    def request_operational_domain_simulation(self) -> None:
+        """Prepares for an operational domain simulation."""
+        if self.is_busy:
+            logger.warning("Request for operational domain simulation ignored: Already busy.")
+            self.status_message = "Operation in progress, please wait."
+            return
+        if not self._current_layout:
+            logger.error("Cannot run simulation: Layout model is not loaded.")
+            self.status_message = "Error: No layout loaded."
+            return
+
+        logger.info("Preparing operational domain simulation...")
+        self.is_busy = True  # Mark as busy during preparation
+        self.status_message = "Preparing simulation parameters..."
+
+        settings = self.settings_vm.current_settings
+
+        theme_colors = get_theme_colors()
+
+        self._operational_domain_plot_options = OperationalDomainPlotOptions(
+            x_param=settings.operational_domain.x_sweep.dimension,
+            y_param=settings.operational_domain.y_sweep.dimension,
+            z_param=settings.operational_domain.z_sweep.dimension
+            if settings.operational_domain.z_sweep.dimension != "NONE"
+            else None,
+            x_log=settings.operational_domain.x_sweep.parameter_range.scale == "Logarithmic",
+            y_log=settings.operational_domain.y_sweep.parameter_range.scale == "Logarithmic",
+            z_log=settings.operational_domain.z_sweep.parameter_range.scale == "Logarithmic"
+            if settings.operational_domain.z_sweep.dimension != "NONE"
+            else False,
+            x_range=(
+                settings.operational_domain.x_sweep.parameter_range.min_val,
+                settings.operational_domain.x_sweep.parameter_range.max_val,
+            ),
+            y_range=(
+                settings.operational_domain.y_sweep.parameter_range.min_val,
+                settings.operational_domain.y_sweep.parameter_range.max_val,
+            ),
+            z_range=(
+                settings.operational_domain.z_sweep.parameter_range.min_val,
+                settings.operational_domain.z_sweep.parameter_range.max_val,
             )
+            if settings.operational_domain.z_sweep.dimension != "NONE"
+            else None,
+            background_color=theme_colors["background_primary"].name(),
+            axes_color=theme_colors["text_primary"].name(),
+            label_color=theme_colors["text_primary"].name(),
+            title_color=theme_colors["text_primary"].name(),
+        )
+
+        op_domain_vm = OperationalDomainViewModel(
+            self._current_layout, settings, self._operational_domain_plot_options, thread_pool=self._thread_pool
+        )
+        self.operational_domain_vm_ready.emit(op_domain_vm)
+        self.status_message = "Operational domain view ready."
+        self.is_busy = False

@@ -19,18 +19,17 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from mnt.ode.models import ApplicationSettingsModel, OperationalDomainPlotOptions
 from mnt.ode.viewmodels import OperationalDomainViewModel
 
 from ..utils.icon_loader import IconLoader
 from .layout_visualization import LayoutVisualizationWidget
 from .operational_domain import OperationalDomainView
 from .settings import Settings
-from .theme import get_theme_colors
 from .welcome import Welcome
 from .widgets import StatusBarWidget
 
 if TYPE_CHECKING:
+    from mnt.ode.models import ApplicationSettingsModel
     from mnt.ode.viewmodels import MainWindowViewModel
 
 logger = logging.getLogger(__name__)
@@ -54,6 +53,7 @@ class MainWindow(QMainWindow):  # type: ignore[misc]
         self._create_actions()
         self._create_menus()
         self._connect_signals_and_bind_vm()
+        self._vm._emit_can_run_simulation_changed()  # noqa: SLF001
         logger.info("MainWindow initialized.")
 
     def _init_ui(self) -> None:
@@ -145,7 +145,6 @@ class MainWindow(QMainWindow):  # type: ignore[misc]
         self.run_op_domain_action.setEnabled(False)  # Initially disabled
 
         self.help_action = QAction("&Documentation", self)
-        # self.help_action.triggered.connect(self._open_documentation)  # noqa: ERA001
 
         self.report_issue_action = QAction("&Report an Issue...", self)
         self.report_issue_action.triggered.connect(self._open_issue_report)
@@ -154,7 +153,6 @@ class MainWindow(QMainWindow):  # type: ignore[misc]
         self.email_support_action.triggered.connect(self._open_email)
 
         self.about_action = QAction("&About...", self)
-        # self.about_action.triggered.connect(self._show_about_dialog)  # noqa: ERA001
 
     def _create_menus(self) -> None:
         """Creates the main menu bar."""
@@ -185,6 +183,7 @@ class MainWindow(QMainWindow):  # type: ignore[misc]
         self.open_action.triggered.connect(self._trigger_open_file_dialog)
         self.welcome_widget.file_selected.connect(self._vm.load_sqd_file)
         self.settings_widget.run_simulation_clicked.connect(self._on_run_operational_domain_simulation)
+        self.run_op_domain_action.triggered.connect(self._on_run_operational_domain_simulation)
 
         # --- ViewModel Signals to UI Slots ---
         self._vm.status_message_changed.connect(self.status_bar.set_status_message)
@@ -192,6 +191,11 @@ class MainWindow(QMainWindow):  # type: ignore[misc]
         self._vm.layout_loaded_changed.connect(self._handle_layout_loaded_changed)
         self._vm.initial_layout_plots_ready.connect(self._handle_initial_plots_ready)
         self._vm.layout_pixmaps_ready.connect(self._handle_layout_pixmaps_ready)
+
+        # New MVVM connections
+        self._vm.can_run_simulation_changed.connect(self.run_op_domain_action.setEnabled)
+        self._vm.current_file_name_changed.connect(self._update_window_title_with_file)
+        self._vm.operational_domain_vm_ready.connect(self._on_operational_domain_vm_ready)
 
         logger.debug("MainWindow signals connected and bound to ViewModel.")
 
@@ -217,12 +221,10 @@ class MainWindow(QMainWindow):  # type: ignore[misc]
         """Handles layout loaded state. Only handles failure, not success."""
         if loaded_successfully:
             logger.debug("Layout loaded successfully. Waiting for plots to be ready before switching view.")
-            self.run_op_domain_action.setEnabled(True)
             self.statusBar().setVisible(True)
         else:
             logger.debug("Layout loading or plot generation failed. Staying on/returning to welcome view.")
             self.stacked_widget.setCurrentWidget(self.welcome_widget)
-            self.run_op_domain_action.setEnabled(False)
             self.setWindowTitle("MNT Operational Domain Explorer")
             self.statusBar().setVisible(False)
 
@@ -246,13 +248,10 @@ class MainWindow(QMainWindow):  # type: ignore[misc]
             if busy:
                 self.welcome_widget.set_loading_state(loading=True, progress=None if progress == 0 else progress)
             else:
-                # Ensure loading state is reset if we are on welcome and no longer busy
                 self.welcome_widget.set_loading_state(loading=False)
 
         self.menu_bar.setEnabled(not busy)
         self.open_action.setEnabled(not busy)
-        can_run = (self._vm._current_layout is not None) and (not busy)  # noqa: SLF001
-        self.run_op_domain_action.setEnabled(can_run)
 
     @pyqtSlot(bool)  # type: ignore[misc]
     def _handle_initial_plots_ready(self, success: bool) -> None:  # noqa: FBT001
@@ -268,16 +267,13 @@ class MainWindow(QMainWindow):  # type: ignore[misc]
         self.layout_visualization_widget.set_layout_pixmaps(distance_pixmaps, presence_pixmaps)
         self.stacked_widget.setCurrentWidget(self.main_analysis_container)
         self.statusBar().setVisible(True)
-        self._vm.is_busy = False
 
     @pyqtSlot()  # type: ignore[misc]
     def _go_to_welcome_screen(self) -> None:
         """Switches to the welcome screen."""
         self.stacked_widget.setCurrentWidget(self.welcome_widget)
         self.setWindowTitle("MNT Operational Domain Explorer")
-        self.run_op_domain_action.setEnabled(False)
-        self.statusBar().setVisible(False)  # Hide status bar on welcome screen
-        # Reset welcome widget loading state so it's interactable
+        self.statusBar().setVisible(False)
         self.welcome_widget.set_loading_state(loading=False)
 
     @staticmethod
@@ -296,69 +292,36 @@ class MainWindow(QMainWindow):  # type: ignore[misc]
 
     @pyqtSlot()  # type: ignore[misc]
     def _on_run_operational_domain_simulation(self) -> None:
-        """Handles the simulation run triggered from the settings UI."""
+        """Handles the simulation run triggered from the settings UI or menu."""
+        logger.info("Run operational domain simulation triggered by UI.")
         self.settings_widget.disable_run_button()
-        self.status_bar.show_indeterminate("Running simulation...")
+        self.status_bar.show_indeterminate("Preparing simulation...")
+        self._vm.request_operational_domain_simulation()
 
-        # Prepare ViewModel and View for operational domain plot
-        layout_model = self._vm._current_layout  # noqa: SLF001
-        if layout_model is None:
-            logger.error("Cannot run simulation: Layout model is not loaded.")
-            self.status_bar.hide_progress("Error: No layout loaded.")
-            self.settings_widget.enable_run_button()
-            return
-
-        settings = self._vm.settings_vm.current_settings
-
-        theme_colors = get_theme_colors()
-        plot_options = OperationalDomainPlotOptions(
-            x_param=settings.operational_domain.x_sweep.dimension,
-            y_param=settings.operational_domain.y_sweep.dimension,
-            z_param=settings.operational_domain.z_sweep.dimension
-            if settings.operational_domain.z_sweep.dimension != "NONE"
-            else None,
-            x_log=settings.operational_domain.x_sweep.parameter_range.scale == "Logarithmic",
-            y_log=settings.operational_domain.y_sweep.parameter_range.scale == "Logarithmic",
-            z_log=settings.operational_domain.z_sweep.parameter_range.scale == "Logarithmic"
-            if settings.operational_domain.z_sweep.dimension != "NONE"
-            else False,
-            x_range=(
-                settings.operational_domain.x_sweep.parameter_range.min_val,
-                settings.operational_domain.x_sweep.parameter_range.max_val,
-            ),
-            y_range=(
-                settings.operational_domain.y_sweep.parameter_range.min_val,
-                settings.operational_domain.y_sweep.parameter_range.max_val,
-            ),
-            z_range=(
-                settings.operational_domain.z_sweep.parameter_range.min_val,
-                settings.operational_domain.z_sweep.parameter_range.max_val,
-            )
-            if settings.operational_domain.z_sweep.dimension != "NONE"
-            else None,
-            background_color=theme_colors["background_primary"].name(),
-            axes_color=theme_colors["text_primary"].name(),
-            label_color=theme_colors["text_primary"].name(),
-            title_color=theme_colors["text_primary"].name(),
-        )
-
-        self.operational_domain_plot_vm = OperationalDomainViewModel(
-            layout_model, settings, plot_options, thread_pool=self._thread_pool
-        )
+    @pyqtSlot(OperationalDomainViewModel)  # type: ignore[misc]
+    def _on_operational_domain_vm_ready(self, op_domain_vm: OperationalDomainViewModel) -> None:
+        """Handles the signal that the OperationalDomainViewModel is ready."""
+        logger.info("OperationalDomainViewModel is ready. Creating view and starting simulation.")
+        self.operational_domain_plot_vm = op_domain_vm
         self.operational_domain_plot_widget = OperationalDomainView(
-            self.operational_domain_plot_vm, self.settings_widget, self.status_bar, parent=self.right_pane_stack
+            op_domain_vm, self.settings_widget, self.status_bar, parent=self.right_pane_stack
         )
 
-        # Connect signals for simulation state changes
-        self.operational_domain_plot_vm.simulation_started.connect(self._on_simulation_started)
-        self.operational_domain_plot_vm.simulation_finished.connect(self._on_simulation_finished)
-        self.operational_domain_plot_vm.error_occurred.connect(self._on_simulation_error)
+        op_domain_vm.simulation_started.connect(self._on_simulation_started)
+        op_domain_vm.simulation_finished.connect(self._on_simulation_finished)
+        op_domain_vm.error_occurred.connect(self._on_simulation_error)
 
-        # Add to stack if not already present
+        if self.right_pane_stack.widget(1) is not self.settings_widget:
+            old_widget = self.right_pane_stack.widget(1)
+            if old_widget:
+                self.right_pane_stack.removeWidget(old_widget)
+                old_widget.deleteLater()
+
         if self.right_pane_stack.indexOf(self.operational_domain_plot_widget) == -1:
             self.right_pane_stack.addWidget(self.operational_domain_plot_widget)
+
         self.right_pane_stack.setCurrentWidget(self.operational_domain_plot_widget)
-        self.operational_domain_plot_vm.run_operational_domain()
+        op_domain_vm.run_operational_domain()
 
     @pyqtSlot()  # type: ignore[misc]
     def _on_simulation_started(self) -> None:
@@ -378,7 +341,6 @@ class MainWindow(QMainWindow):  # type: ignore[misc]
         self.status_bar.hide_progress("Error occurred.")
         self.settings_widget.enable_run_button()
         self.right_pane_stack.setCurrentWidget(self.settings_widget)
-        # Optionally, show an error dialog here
 
     def keyPressEvent(self, event: QKeyEvent) -> None:  # noqa: N802
         """Handles key press events (e.g., Escape to close)."""
