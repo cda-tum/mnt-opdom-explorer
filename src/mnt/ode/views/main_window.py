@@ -19,6 +19,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
+from ..models import ApplicationSettingsModel
 from ..utils.icon_loader import IconLoader
 from ..viewmodels.operational_domain import OperationalDomainViewModel
 from .layout_visualization import LayoutVisualizationWidget
@@ -28,7 +29,6 @@ from .welcome import Welcome
 from .widgets import StatusBarWidget
 
 if TYPE_CHECKING:
-    from mnt.ode.models import ApplicationSettingsModel
     from mnt.ode.viewmodels import MainWindowViewModel
 
 logger = logging.getLogger(__name__)
@@ -201,7 +201,7 @@ class MainWindow(QMainWindow):  # type: ignore[misc]
         # --- Connect input signal encoding changes to layout visualization ---
         self._vm.settings_vm.settings_changed.connect(self._on_settings_changed_update_layout_encoding)
 
-    @pyqtSlot(object)  # type: ignore[misc]
+    @pyqtSlot(ApplicationSettingsModel)  # type: ignore[misc]
     def _on_settings_changed_update_layout_encoding(self, settings_model: ApplicationSettingsModel) -> None:
         """Update layout visualization when input signal encoding changes."""
         self.layout_visualization_widget.set_active_input_encoding(settings_model.gate_function.input_signal_encoding)

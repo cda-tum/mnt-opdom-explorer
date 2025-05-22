@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
-from PyQt6.QtCore import Qt, pyqtSlot
+from PyQt6.QtCore import Qt, pyqtSignal, pyqtSlot
 from PyQt6.QtWidgets import (
     QPushButton,
     QSizePolicy,
@@ -15,7 +15,8 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from ..utils.icon_loader import IconLoader
+from ..models import OperationalDomainPlotOptions, SinglePointResult
+from ..utils import IconLoader
 from .theme import (
     BUTTON_BG_COLOR,
     BUTTON_TEXT_COLOR,
@@ -24,6 +25,10 @@ from .theme import (
 from .widgets import SectionHeaderWidget
 
 if TYPE_CHECKING:
+    from matplotlib.artist import Artist
+    from matplotlib.axes import Axes
+    from matplotlib.backend_bases import MouseEvent
+
     from ..viewmodels import OperationalDomainViewModel
     from .settings import Settings
     from .widgets import StatusBarWidget
@@ -32,6 +37,8 @@ if TYPE_CHECKING:
 # TODO(marcel): if reloaded, close the old plot to reduce memory usage
 class OperationalDomainView(QWidget):  # type: ignore[misc]
     """View for displaying the operational domain plot."""
+
+    plot_clicked = pyqtSignal(float, float)  # (x, y)
 
     def __init__(
         self,
@@ -54,6 +61,9 @@ class OperationalDomainView(QWidget):  # type: ignore[misc]
         self._status_bar = status_bar
         self._icon_loader = IconLoader()
         self._canvas: FigureCanvas | None = None
+        self._ax: Axes | None = None
+        self._highlight_dot: Artist | None = None
+        self._highlight_label: Artist | None = None
 
         self._init_ui()
         self._connect_signals()
@@ -128,6 +138,10 @@ class OperationalDomainView(QWidget):  # type: ignore[misc]
         self._vm.plot_ready.connect(self._on_plot_ready)
         self._vm.error_occurred.connect(self._on_error)
         self._rerun_button.clicked.connect(self._on_rerun_clicked)
+        self._vm.highlight_point_changed.connect(self._on_highlight_point_changed)
+        self._vm.single_point_simulation_status_updated.connect(self._on_single_point_sim_status_update)
+        self._vm.single_point_simulation_finished.connect(self._on_single_point_sim_finished)
+        self.plot_clicked.connect(self._vm.on_plot_clicked)
 
     @pyqtSlot()  # type: ignore[misc]
     def _on_simulation_started(self) -> None:
@@ -139,23 +153,122 @@ class OperationalDomainView(QWidget):  # type: ignore[misc]
     @pyqtSlot()  # type: ignore[misc]
     def _on_simulation_finished(self) -> None:
         """Handles UI updates when simulation finishes."""
-        self._status_bar.hide_progress("Simulation finished.")
+        self._status_bar.hide_progress("Operational domain reconstruction finished.")
         self._rerun_button.setEnabled(True)
 
     @pyqtSlot(Figure)  # type: ignore[misc]
     def _on_plot_ready(self, fig: Figure) -> None:
-        """Displays the generated plot in the view.
+        """Displays the generated plot in the view and connects click events.
 
         Args:
             fig: The matplotlib Figure to display.
         """
-        if self._canvas:
+        if self._canvas is not None:
+            # Disconnect old canvas's click event if it exists and was connected
+            if hasattr(self._canvas, "button_press_cid") and self._canvas.button_press_cid:
+                self._canvas.mpl_disconnect(self._canvas.button_press_cid)
             self._layout.removeWidget(self._canvas)
             self._canvas.deleteLater()
             self._canvas = None
+
+        # Clear any existing highlight drawn on the old plot
+        self._clear_highlight_artists()
+
+        self._ax = fig.get_axes()[0] if fig.get_axes() else None  # type: ignore[operator]
         self._canvas = FigureCanvas(fig)
         self._canvas.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self._layout.insertWidget(1, self._canvas, stretch=1)
+        self._layout.insertWidget(
+            self._layout.indexOf(self._top_spacer) + 1 if self._top_spacer else 1, self._canvas, stretch=1
+        )
+
+        if self._canvas is not None:
+            self._canvas.button_press_cid = self._canvas.mpl_connect("button_press_event", self._handle_canvas_click)
+
+    def _clear_highlight_artists(self) -> None:
+        """Removes the current highlight dot and label artists from the plot if they exist."""
+        changed = False
+        if self._highlight_dot:
+            try:
+                self._highlight_dot.remove()
+                changed = True
+            except ValueError:  # Already removed or not in axes
+                pass
+            self._highlight_dot = None
+        if self._highlight_label:
+            try:
+                self._highlight_label.remove()
+                changed = True
+            except ValueError:  # Already removed or not in axes
+                pass
+            self._highlight_label = None
+
+        if changed and self._canvas is not None and self._ax is not None:
+            self._canvas.draw_idle()
+
+    @pyqtSlot(float, float, OperationalDomainPlotOptions)  # type: ignore[misc]
+    def _on_highlight_point_changed(
+        self, x: float | None, y: float | None, plot_options: OperationalDomainPlotOptions | None
+    ) -> None:
+        """Draws or clears the highlight dot and label on the plot."""
+        self._clear_highlight_artists()
+
+        if x is not None and y is not None and plot_options and self._ax is not None and self._canvas is not None:
+            self._highlight_dot = self._ax.scatter(
+                x,
+                y,
+                s=plot_options.highlight_dot_size,
+                color=plot_options.highlight_dot_color,
+                edgecolors="black",
+                linewidth=0.5,
+                zorder=10,  # Ensure it's on top
+            )
+
+            # Add text label
+            label_text = f"({x:.2f}, {y:.2f})"
+            self._highlight_label = self._ax.text(
+                x,
+                y,
+                label_text,
+                color=plot_options.highlight_label_color,
+                fontsize=plot_options.highlight_label_font_size,
+                ha="center",
+                va="bottom",
+                zorder=11,
+                bbox={"facecolor": "white", "alpha": 0.7, "pad": 2, "edgecolor": "none"},
+            )
+            self._canvas.draw_idle()
+
+    def _handle_canvas_click(self, event: MouseEvent) -> None:
+        """Internal handler for matplotlib canvas click, emits plot_clicked signal."""
+        if event.inaxes == self._ax and self._ax is not None:
+            # Check if we are in 3D plot mode by inspecting the axes name
+            if hasattr(self._ax, "name") and self._ax.name == "3d":
+                return
+
+            # Proceed with 2D plot click logic
+            x_data, y_data = event.xdata, event.ydata
+            if x_data is not None and y_data is not None:
+                self.plot_clicked.emit(x_data, y_data)
+            else:  # Click outside data area but inside axes
+                self._vm.clear_highlight()
+
+    @pyqtSlot(int, str)  # type: ignore[misc]
+    def _on_single_point_sim_status_update(self, percentage: int, message: str) -> None:
+        """Updates the status bar with the single point simulation progress."""
+        if 0 <= percentage < 100:
+            self._status_bar.show_progress(value=percentage, message=message)
+        else:  # For 100% or indeterminate cases if message is still relevant
+            self._status_bar.show_indeterminate(message)
+
+    @pyqtSlot(SinglePointResult, str)  # type: ignore[misc]
+    def _on_single_point_sim_finished(self, result: SinglePointResult | None, error_message: str) -> None:
+        """Handles completion of the single point simulation for UI feedback."""
+        if error_message:
+            self._status_bar.hide_progress(f"Single point sim error: {error_message}")
+        elif result is not None:
+            self._status_bar.hide_progress("Single point simulation complete.")
+        else:  # Fallback or unexpected result type
+            self._status_bar.hide_progress("Single point simulation finished with an unknown state.")
 
     @pyqtSlot(str)  # type: ignore[misc]
     def _on_error(self, message: str) -> None:
