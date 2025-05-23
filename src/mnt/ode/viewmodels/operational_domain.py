@@ -7,8 +7,6 @@ import logging
 from matplotlib.figure import Figure
 from PyQt6.QtCore import QObject, QRunnable, Qt, QThreadPool, pyqtSignal, pyqtSlot
 
-from mnt.pyfiction import groundstate_from_simulation_result
-
 from ..models import (
     ApplicationSettingsModel,
     LayoutModel,
@@ -321,9 +319,10 @@ class OperationalDomainViewModel(QObject):  # type: ignore[misc]
         if result and result.results and self._layout_model.sidb_layout is not None:
             charge_layouts_to_plot: list[SiDBChargeLayoutType] = []
             for sim_result_for_input_pattern in result.results.values():
-                ground_states = groundstate_from_simulation_result(sim_result_for_input_pattern)
-                if ground_states:
-                    charge_layouts_to_plot.append(ground_states[0])
+                if sim_result_for_input_pattern is not None:
+                    ground_states = sim_result_for_input_pattern.groundstates()
+                    if ground_states:
+                        charge_layouts_to_plot.append(ground_states[0])
 
             operational_status = [result.operational_patterns.get(i) for i in range(len(result.results))]
 
