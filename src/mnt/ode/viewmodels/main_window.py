@@ -88,6 +88,7 @@ class GenerateLayoutPlotsTask(QRunnable):  # type: ignore[misc]
         layout_viz_service: LayoutVisualizationService,
         layout_model: LayoutModel,
         options: LayoutVisualizationOptions | None = None,
+        thread_pool: QThreadPool | None = None,
     ) -> None:
         """Initialize the GenerateLayoutPlotsTask.
 
@@ -95,12 +96,14 @@ class GenerateLayoutPlotsTask(QRunnable):  # type: ignore[misc]
             layout_viz_service: Service for generating layout visualizations.
             layout_model: The loaded layout model.
             options: Visualization options.
+            thread_pool: Thread pool for parallel execution within the service.
         """
         super().__init__()
         self.layout_viz_service = layout_viz_service
         self.layout_model = layout_model
         self.options = options or LayoutVisualizationOptions()
         self.signals = GenerateLayoutPlotsTask.Signals()
+        self.thread_pool = thread_pool
 
     @pyqtSlot()  # type: ignore[misc]
     def run(self) -> None:
@@ -122,6 +125,7 @@ class GenerateLayoutPlotsTask(QRunnable):  # type: ignore[misc]
                 layout=self.layout_model,
                 bdl_encoding=InputSignalEncoding.DISTANCE,
                 options=self.options,
+                thread_pool=self.thread_pool,
             )
 
             logger.info("GenerateLayoutPlotsTask: Generating SVGs for presence-encoded layouts...")
@@ -129,6 +133,7 @@ class GenerateLayoutPlotsTask(QRunnable):  # type: ignore[misc]
                 layout=self.layout_model,
                 bdl_encoding=InputSignalEncoding.PRESENCE,
                 options=self.options,
+                thread_pool=self.thread_pool,
             )
             logger.info("GenerateLayoutPlotsTask: SVG generation finished.")
 
@@ -376,7 +381,9 @@ class MainWindowViewModel(QObject):  # type: ignore[misc]
         # Also emit a progress/loading message for the welcome widget
         self.status_message_changed.emit(f"Generating visualizations for {self.current_file_name}...")
 
-        plot_task = GenerateLayoutPlotsTask(self._layout_viz_service, self._current_layout)
+        plot_task = GenerateLayoutPlotsTask(
+            self._layout_viz_service, self._current_layout, thread_pool=self._thread_pool
+        )  # Pass thread_pool
         plot_task.signals.finished.connect(self._handle_generate_layout_plots_finished)
         self._thread_pool.start(plot_task)
 

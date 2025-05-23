@@ -336,6 +336,7 @@ class OperationalDomainViewModel(QObject):  # type: ignore[misc]
                         charge_layouts=charge_layouts_to_plot,
                         operational_statuses=operational_status,
                         options=vis_options,
+                        thread_pool=self._thread_pool,
                     )
                     self.single_point_layout_svgs_ready.emit(svgs)
                 except Exception:

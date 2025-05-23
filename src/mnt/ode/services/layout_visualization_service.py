@@ -4,10 +4,12 @@ from __future__ import annotations
 
 import io
 import logging
+from collections.abc import Callable
 from typing import TYPE_CHECKING
 
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
+from PyQt6.QtCore import QEventLoop, QObject, QRunnable, QThreadPool, pyqtSignal, pyqtSlot
 
 from mnt.pyfiction import (
     bdl_input_iterator_100,
@@ -46,6 +48,90 @@ class LayoutVisualizationError(Exception):
     """Custom exception for errors during layout visualization."""
 
 
+# Type alias for the specific function signature _create_single_svg expects
+_CreateSingleSvgFuncType = Callable[
+    [
+        SiDBLayoutType,  # layout_to_plot
+        SiDBLayoutType,  # original_layout
+        LayoutVisualizationOptions,  # opts
+        ChargeLayoutVisualizationConfiguration,  # plot_config
+        offset_coordinate,  # bb_min
+        offset_coordinate,  # bb_max
+    ],
+    bytes | None,
+]
+
+# Type alias for the tuple of arguments that _create_single_svg (and thus func) receives
+_CreateSingleSvgArgsTupleType = tuple[
+    SiDBLayoutType,
+    SiDBLayoutType,
+    LayoutVisualizationOptions,
+    ChargeLayoutVisualizationConfiguration,
+    offset_coordinate,
+    offset_coordinate,
+]
+
+
+class _SvgWorkerSignals(QObject):  # type: ignore[misc]
+    """Signals for SvgWorker."""
+
+    finished = pyqtSignal(int, bytes)  # index, svg_bytes
+    error = pyqtSignal(int)  # index
+
+
+class _SvgWorker(QRunnable):  # type: ignore[misc]
+    """Worker thread for generating a single SVG."""
+
+    def __init__(
+        self,
+        index: int,
+        func: _CreateSingleSvgFuncType,
+        layout_to_plot_arg: SiDBLayoutType,
+        original_layout_arg: SiDBLayoutType,
+        opts_arg: LayoutVisualizationOptions,
+        plot_config_arg: ChargeLayoutVisualizationConfiguration,
+        bb_min_arg: offset_coordinate,
+        bb_max_arg: offset_coordinate,
+    ) -> None:
+        """Initialize the worker with the function and arguments.
+
+        Args:
+            index: The input index.
+            func: The function to execute.
+            layout_to_plot_arg: The layout to plot.
+            original_layout_arg: The original layout.
+            opts_arg: Visualization options.
+            plot_config_arg: Plot configuration.
+            bb_min_arg: Minimum bounding box coordinate.
+            bb_max_arg: Maximum bounding box coordinate.
+        """
+        super().__init__()
+        self.index: int = index
+        self.func: _CreateSingleSvgFuncType = func
+        self.args: _CreateSingleSvgArgsTupleType = (
+            layout_to_plot_arg,
+            original_layout_arg,
+            opts_arg,
+            plot_config_arg,
+            bb_min_arg,
+            bb_max_arg,
+        )
+        self.signals = _SvgWorkerSignals()
+
+    @pyqtSlot()  # type: ignore[misc]
+    def run(self) -> None:
+        """Execute the SVG generation task."""
+        try:
+            svg_bytes = self.func(*self.args)
+            if svg_bytes is not None:
+                self.signals.finished.emit(self.index, svg_bytes)
+            else:
+                self.signals.error.emit(self.index)
+        except Exception:
+            logger.exception("Unhandled exception in _SvgWorker for index %d", self.index)
+            self.signals.error.emit(self.index)
+
+
 class LayoutVisualizationService:
     """Generates SVG visualizations of SiDB layouts."""
 
@@ -54,6 +140,7 @@ class LayoutVisualizationService:
         layout: LayoutModel,
         bdl_encoding: InputSignalEncoding,
         options: LayoutVisualizationOptions | None = None,
+        thread_pool: QThreadPool | None = None,
     ) -> list[bytes | None]:
         """Generates SVGs for each possible BDL input combination.
 
@@ -64,6 +151,7 @@ class LayoutVisualizationService:
             layout: The original SiDB layout object (without perturbers).
             bdl_encoding: The input signal encoding method to use for the iterator.
             options: Configuration options for the plot's appearance. Uses defaults if None.
+            thread_pool: Optional QThreadPool for parallel execution. Runs sequentially if None.
 
         Returns:
             A list of SVG byte objects, one for each input pattern.
@@ -77,7 +165,6 @@ class LayoutVisualizationService:
             raise LayoutVisualizationError(msg)
 
         opts = options or LayoutVisualizationOptions()
-        svgs: list[bytes | None] = []
 
         # Configure BDL Iterator
         bdl_params = bdl_input_iterator_params()
@@ -87,7 +174,9 @@ class LayoutVisualizationService:
             bdl_params.input_bdl_config = input_bdl_configuration.PERTURBER_ABSENCE_ENCODED
 
         try:
-            bdl_iterator: bdl_input_iterator_100 | bdl_input_iterator_111 | None = None
+            # Create an initial BDL iterator to determine properties like the number of input pairs.
+            # This iterator instance is primarily for setup; new iterators are created per pattern.
+            bdl_iterator: bdl_input_iterator_100 | bdl_input_iterator_111
             if isinstance(layout.sidb_layout, sidb_100_lattice):
                 bdl_iterator = bdl_input_iterator_100(layout.sidb_layout, bdl_params)
             elif isinstance(layout.sidb_layout, sidb_111_lattice):
@@ -96,29 +185,105 @@ class LayoutVisualizationService:
                 msg = "Unsupported layout type for BDL iterator."
                 raise LayoutVisualizationError(msg)  # noqa: TRY301
 
-            num_input_patterns = 2 ** bdl_iterator.num_input_pairs()
-            logger.info("Generating %d layout SVGs.", num_input_patterns)
+            actual_num_input_pairs = bdl_iterator.num_input_pairs()
+            num_input_patterns = 2**actual_num_input_pairs
+            logger.info("Generating %d layout SVGs for %d input pairs.", num_input_patterns, actual_num_input_pairs)
+            svgs: list[bytes | None] = [None] * num_input_patterns  # Pre-allocate
 
             # Compute bounding box of the original layout
             bb_min, bb_max = layout.sidb_layout.bounding_box_2d()
 
-            # TODO(marcel): parallelize this loop
+            # Pre-calculate all layout states and corresponding info
+            layouts_to_process_info = []
+
             for i in range(num_input_patterns):
-                layout_to_plot = bdl_iterator.get_layout()
-                # Create plot configuration just with the binary string for input labels
-                bin_value_str = f"{i:0{bdl_iterator.num_input_pairs()}b}"
+                iter_for_pattern: bdl_input_iterator_100 | bdl_input_iterator_111
+                if isinstance(layout.sidb_layout, sidb_100_lattice):
+                    iter_for_pattern = bdl_input_iterator_100(layout.sidb_layout, bdl_params)
+                else:  # isinstance(layout.sidb_layout, sidb_111_lattice)
+                    iter_for_pattern = bdl_input_iterator_111(layout.sidb_layout, bdl_params)
+
+                layout_to_plot = iter_for_pattern[i].get_layout()
+
+                bin_value_str = f"{i:0{actual_num_input_pairs}b}"
+                layouts_to_process_info.append({
+                    "index": i,
+                    "layout_to_plot": layout_to_plot,
+                    "bin_value_str": bin_value_str,
+                })
+
+            # Parallel execution using thread_pool or sequential fallback
+            if thread_pool is None:
+                logger.warning("No thread pool provided for create_layout_svgs, running sequentially.")
+                for task_info in layouts_to_process_info:
+                    index = task_info["index"]
+                    layout_to_plot = task_info["layout_to_plot"]
+                    bin_value_str = task_info["bin_value_str"]
+                    plot_config = ChargeLayoutVisualizationConfiguration(binary_input_string=bin_value_str)
+
+                    svg_bytes = LayoutVisualizationService._create_single_svg(
+                        layout_to_plot=layout_to_plot,
+                        original_layout=layout.sidb_layout,
+                        opts=opts,
+                        plot_config=plot_config,
+                        bb_min=bb_min,
+                        bb_max=bb_max,
+                    )
+                    svgs[index] = svg_bytes
+                return svgs
+
+            # Parallel execution using thread_pool
+            completed_tasks_count = 0
+            event_loop = QEventLoop()
+
+            def on_worker_finished(index: int, svg_data: bytes) -> None:
+                """Callback for when a worker finishes successfully.
+
+                Args:
+                    index: The input pattern index for which the SVG was generated.
+                    svg_data: The generated SVG data.
+                """
+                nonlocal completed_tasks_count
+                svgs[index] = svg_data
+                completed_tasks_count += 1
+                if completed_tasks_count == num_input_patterns:
+                    event_loop.quit()
+
+            def on_worker_error(index: int) -> None:
+                """Callback for when a worker encounters an error.
+
+                Args:
+                    index: The input pattern index for which the SVG generation failed.
+                """
+                nonlocal completed_tasks_count
+                svgs[index] = None
+                completed_tasks_count += 1
+                if completed_tasks_count == num_input_patterns:
+                    event_loop.quit()
+
+            for task_info in layouts_to_process_info:
+                index = task_info["index"]
+                layout_to_plot = task_info["layout_to_plot"]
+                bin_value_str = task_info["bin_value_str"]
+
                 plot_config = ChargeLayoutVisualizationConfiguration(binary_input_string=bin_value_str)
 
-                svg_bytes = LayoutVisualizationService._create_single_svg(
-                    layout_to_plot=layout_to_plot,
-                    original_layout=layout.sidb_layout,
-                    opts=opts,
-                    plot_config=plot_config,
-                    bb_min=bb_min,
-                    bb_max=bb_max,
+                worker = _SvgWorker(
+                    index,
+                    LayoutVisualizationService._create_single_svg,
+                    layout_to_plot,
+                    layout.sidb_layout,
+                    opts,
+                    plot_config,
+                    bb_min,
+                    bb_max,
                 )
-                svgs.append(svg_bytes)
-                bdl_iterator += 1  # Increment iterator
+                worker.signals.finished.connect(on_worker_finished)
+                worker.signals.error.connect(on_worker_error)
+                thread_pool.start(worker)
+
+            if num_input_patterns > 0:
+                event_loop.exec()
 
         except Exception as e:
             logger.exception("Error occurred during layout SVG generation for inputs.")
@@ -134,6 +299,7 @@ class LayoutVisualizationService:
         operational_statuses: Sequence[operational_status | None] | None = None,
         kink_statuses: Sequence[operational_status | None] | None = None,
         options: LayoutVisualizationOptions | None = None,
+        thread_pool: QThreadPool | None = None,
     ) -> list[bytes | None]:
         """Generates SVGs for a sequence of provided charge distribution layouts.
 
@@ -145,6 +311,7 @@ class LayoutVisualizationService:
             kink_statuses: Optional sequence of kink-induced statuses corresponding
                            to each charge layout. Length must match charge_layouts.
             options: Configuration options for the plot's appearance. Uses defaults if None.
+            thread_pool: Optional QThreadPool for parallel execution. Runs sequentially if None.
 
         Returns:
             A list of SVG byte objects, one for each charge layout.
@@ -168,7 +335,7 @@ class LayoutVisualizationService:
             raise LayoutVisualizationError(msg)
 
         opts = options or LayoutVisualizationOptions()
-        svgs: list[bytes | None] = []
+        svgs: list[bytes | None] = [None] * n  # Pre-allocate
 
         num_input_pairs = 0
         try:
@@ -189,33 +356,95 @@ class LayoutVisualizationService:
         # Compute bounding box of the original layout
         bb_min, bb_max = original_layout.bounding_box_2d()
 
-        # TODO(marcel): parallelize this loop
-        for i, charge_lyt in enumerate(charge_layouts):
-            if charge_lyt is None:
+        tasks_to_submit_info = []
+        for i, charge_lyt_item in enumerate(charge_layouts):
+            if charge_lyt_item is None:
                 logger.warning("Skipping SVG for input index %d because charge layout is None.", i)
-                svgs.append(None)
+                # svgs[i] is already None due to pre-allocation
                 continue
 
-            op_status = operational_statuses[i] if operational_statuses else None
-            kink_status = kink_statuses[i] if kink_statuses else None
-            bin_value_str = f"{i:0{num_input_pairs}b}" if num_input_pairs > 0 else None
+            op_stat = operational_statuses[i] if operational_statuses else None
+            kink_stat = kink_statuses[i] if kink_statuses else None
+            bin_val_str = f"{i:0{num_input_pairs}b}" if num_input_pairs > 0 else None
 
             plot_config = ChargeLayoutVisualizationConfiguration(
-                charge_layout=charge_lyt,
-                operational_status=op_status,
-                kink_induced_operational_status=kink_status,
-                binary_input_string=bin_value_str,
+                charge_layout=charge_lyt_item,
+                operational_status=op_stat,
+                kink_induced_operational_status=kink_stat,
+                binary_input_string=bin_val_str,
             )
+            tasks_to_submit_info.append({"index": i, "plot_config": plot_config, "charge_layout_item": charge_lyt_item})
 
-            svg_bytes = LayoutVisualizationService._create_single_svg(
-                layout_to_plot=original_layout,
-                original_layout=original_layout,
-                opts=opts,
-                plot_config=plot_config,
-                bb_min=bb_min,
-                bb_max=bb_max,
+        if not tasks_to_submit_info:  # All charge_layouts were None or charge_layouts was empty
+            return svgs
+
+        if thread_pool is None:  # Fallback to sequential
+            logger.warning("No thread pool provided for create_charge_distribution_svgs, running sequentially.")
+            for task_info in tasks_to_submit_info:
+                index = task_info["index"]
+                plot_config = task_info["plot_config"]
+
+                svg_bytes = LayoutVisualizationService._create_single_svg(
+                    layout_to_plot=original_layout,
+                    original_layout=original_layout,
+                    opts=opts,
+                    plot_config=plot_config,
+                    bb_min=bb_min,
+                    bb_max=bb_max,
+                )
+                svgs[index] = svg_bytes
+            return svgs
+
+        # Parallel execution using thread_pool
+        completed_tasks_count = 0
+        event_loop = QEventLoop()
+        num_tasks_to_process = len(tasks_to_submit_info)
+
+        def on_worker_finished(index: int, svg_data: bytes) -> None:
+            """Callback for when a worker finishes successfully.
+
+            Args:
+                index: The input pattern index for which the SVG was generated.
+                svg_data: The generated SVG data.
+            """
+            nonlocal completed_tasks_count
+            svgs[index] = svg_data
+            completed_tasks_count += 1
+            if completed_tasks_count == num_tasks_to_process:
+                event_loop.quit()
+
+        def on_worker_error(index: int) -> None:
+            """Callback for when a worker encounters an error.
+
+            Args:
+                index: The input pattern index for which the SVG generation failed.
+            """
+            nonlocal completed_tasks_count
+            svgs[index] = None
+            completed_tasks_count += 1
+            if completed_tasks_count == num_tasks_to_process:
+                event_loop.quit()
+
+        for task_info in tasks_to_submit_info:
+            index = task_info["index"]
+            plot_config = task_info["plot_config"]
+
+            worker = _SvgWorker(
+                index,
+                LayoutVisualizationService._create_single_svg,
+                original_layout,
+                original_layout,
+                opts,
+                plot_config,
+                bb_min,
+                bb_max,
             )
-            svgs.append(svg_bytes)
+            worker.signals.finished.connect(on_worker_finished)
+            worker.signals.error.connect(on_worker_error)
+            thread_pool.start(worker)
+
+        if num_tasks_to_process > 0:
+            event_loop.exec()
 
         return svgs
 
