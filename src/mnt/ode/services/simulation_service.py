@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import concurrent.futures
 import logging
+import threading
 from typing import TYPE_CHECKING
 
 from mnt.pyfiction import (
@@ -141,35 +143,48 @@ class SimulationService:
             engine_func = quicksim
             logger.debug("Using QuickSim engine.")
 
+        if engine_func is None:
+            msg = "Simulation engine function not assigned."
+            raise SimulationError(msg)
+        if engine_params is None:
+            msg = "Simulation engine parameters not assigned."
+            raise SimulationError(msg)
+
         # 5. Run Simulation Loop
         simulation_results: dict[int, SimulationPointResultType | None] = {}
-        # TODO(marcel): parallelize
-        for i in range(num_input_patterns):
+        results_lock = threading.Lock()
+        completed_simulations = 0
+
+        def _simulate_single_pattern(pattern_idx: int) -> None:
+            nonlocal completed_simulations
             try:
-                bdl_iterator = bdl_iterator_type(layout_model.sidb_layout, bdl_params)[i]
-                current_layout = bdl_iterator.get_layout()
-                if engine_func is None:
-                    msg = "Simulation engine function not assigned."
-                    raise SimulationError(msg)  # noqa: TRY301
-                if engine_params is None:
-                    msg = "Simulation engine parameters not assigned."
-                    raise SimulationError(msg)  # noqa: TRY301
+                bdl_iter = bdl_iterator_type(layout_model.sidb_layout, bdl_params)[pattern_idx]
+                current_layout = bdl_iter.get_layout()
                 sim_result: SimulationPointResultType = engine_func(current_layout, engine_params)
-                simulation_results[i] = sim_result
-                logger.debug("Simulation successful for input pattern %d.", i)
+                with results_lock:
+                    simulation_results[pattern_idx] = sim_result
+                logger.debug("Simulation successful for input pattern %d.", pattern_idx)
 
             except Exception:
-                logger.exception("Simulation failed for input pattern %d at point %s", i, parameter_point)
-                simulation_results[i] = None
+                logger.exception("Simulation failed for input pattern %d at point %s", pattern_idx, parameter_point)
+                with results_lock:
+                    simulation_results[pattern_idx] = None
+            finally:
+                with results_lock:
+                    completed_simulations += 1
+                    if progress_callback:
+                        progress_percent = int((completed_simulations / num_input_patterns) * 100)
+                        progress_message = f"Simulating input pattern {completed_simulations}/{num_input_patterns}..."
+                        progress_callback(progress_percent, progress_message)
 
-            # Report progress
-            if progress_callback:
-                progress_percent = int(((i + 1) / num_input_patterns) * 100)
-                progress_message = f"Simulating input pattern {i + 1}/{num_input_patterns}..."
-                try:
-                    progress_callback(progress_percent, progress_message)
-                except Exception:
-                    logger.exception("Error occurred in progress callback.")
+        if num_input_patterns > 0:
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                futures = [executor.submit(_simulate_single_pattern, i) for i in range(num_input_patterns)]
+                # Wait for all futures to complete
+                for future in concurrent.futures.as_completed(futures):
+                    future.result()
+        elif progress_callback:  # Handle case with 0 input patterns for progress
+            progress_callback(100, "No input patterns to simulate.")
 
         # 6. Track Operational Input Patterns
         is_op_params = is_operational_params()
