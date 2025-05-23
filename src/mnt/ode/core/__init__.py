@@ -1,1 +1,0 @@
-"""Core logic package."""
