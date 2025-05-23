@@ -371,7 +371,7 @@ class OperationalDomainPlottingService:
         # Set axes (spines and ticks) color
         for spine in ax.spines.values():
             spine.set_color(axes_color)
-        ax.tick_params(colors=axes_color)
+        ax.tick_params(colors=axes_color, which="both")
         # For 3D, also set pane colors if needed
         if is_3d:
             ax.xaxis.line.set_color(axes_color)  # type: ignore[attr-defined]
