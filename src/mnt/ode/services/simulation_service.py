@@ -110,7 +110,10 @@ class SimulationService:
         else:
             msg = "Unsupported layout type for BDL iterator."
             raise SimulationError(msg)
-        num_input_patterns = 2 ** bdl_iterator_type(layout_model.sidb_layout, bdl_params).num_input_pairs()
+
+        # Instantiate iterator to get num_input_pairs.
+        iterator_instance = bdl_iterator_type(layout_model.sidb_layout, bdl_params)
+        num_input_patterns = 2 ** iterator_instance.num_input_pairs()
         logger.info("BDL iterator created with %d input patterns.", num_input_patterns)
 
         # 4. Configure Simulation Engine

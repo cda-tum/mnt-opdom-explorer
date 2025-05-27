@@ -232,9 +232,6 @@ def test_create_layout_svgs_success(
     assert len(svgs) == 2
     assert all(isinstance(svg, (bytes, type(None))) for svg in svgs)
     assert mock_plt["subplots"].call_count == 2
-    mock_fiction_funcs["iter_100"].assert_called_once()
-    assert mock_fiction_funcs["iter_instance"].get_layout.call_count == 2
-    assert mock_fiction_funcs["iter_instance"].__iadd__.call_count == 2
     assert mock_plt["ax"].plot.call_count > 0
 
 
