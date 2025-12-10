@@ -15,7 +15,7 @@ dependencies = [
     "mnt.pyfiction==0.6.10",
     "pandas==2.2.3",
     "qtawesome==1.4.0",
-    "scikit-learn==1.6.1",
+    "scikit-learn==1.8.0",
 ]
 dynamic = ["version"]
 
@@ -145,7 +145,7 @@ docs = [
     "mnt.pyfiction==0.6.10",
     "pandas==2.2.3",
     "qtawesome==1.4.0",
-    "scikit-learn==1.6.1",
+    "scikit-learn==1.8.0",
 ]
 test = [
     "nox>=2024.10.9",
