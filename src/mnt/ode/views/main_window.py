@@ -21,6 +21,8 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
+from mnt.ode.viewmodels import WelcomeViewModel
+
 from ..models import ApplicationSettingsModel
 from ..utils.icon_loader import IconLoader
 from ..utils.metadata import get_app_display_name, get_organization_name, get_package_metadata
@@ -40,14 +42,16 @@ logger = logging.getLogger(__name__)
 class MainWindow(QMainWindow):  # type: ignore[misc]
     """Main application window (View)."""
 
-    def __init__(self, view_model: MainWindowViewModel) -> None:
+    def __init__(self, view_model: MainWindowViewModel, welcome_viewmodel: WelcomeViewModel | None = None) -> None:
         """Initializes the MainWindow.
 
         Args:
             view_model: The main window's ViewModel instance.
+            welcome_viewmodel: The welcome screen's ViewModel instance. If None, creates one.
         """
         super().__init__()
         self._vm = view_model
+        self._welcome_vm = welcome_viewmodel or WelcomeViewModel()
         self._icon_loader = IconLoader()
 
         logger.debug("Initializing MainWindow UI...")
@@ -67,7 +71,7 @@ class MainWindow(QMainWindow):  # type: ignore[misc]
         self.setCentralWidget(self.stacked_widget)
 
         # --- View 1: Welcome Widget ---
-        self.welcome_widget = Welcome()
+        self.welcome_widget = Welcome(view_model=self._welcome_vm)
         self.stacked_widget.addWidget(self.welcome_widget)
 
         # --- View 2: Main Analysis View (Splitter) ---
@@ -296,9 +300,9 @@ class MainWindow(QMainWindow):  # type: ignore[misc]
             self.status_bar.hide_progress("Ready.")
         if self.stacked_widget.currentWidget() is self.welcome_widget:
             if busy:
-                self.welcome_widget.set_loading_state(loading=True, progress=None if progress == 0 else progress)
+                self._welcome_vm.set_loading_state(loading=True, progress=None if progress == 0 else progress)
             else:
-                self.welcome_widget.set_loading_state(loading=False)
+                self._welcome_vm.set_loading_state(loading=False)
 
         self.menu_bar.setEnabled(not busy)
         self.open_action.setEnabled(not busy)
@@ -324,7 +328,7 @@ class MainWindow(QMainWindow):  # type: ignore[misc]
         self.stacked_widget.setCurrentWidget(self.welcome_widget)
         self.setWindowTitle("MNT Operational Domain Explorer")
         self.statusBar().setVisible(False)
-        self.welcome_widget.set_loading_state(loading=False)
+        self._welcome_vm.reset_loading_state()
 
     @staticmethod
     @pyqtSlot()  # type: ignore[misc]

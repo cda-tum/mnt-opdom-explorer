@@ -11,7 +11,7 @@ from PyQt6.QtCore import QThreadPool
 
 from .services import LayoutVisualizationService, SQDFileService
 from .utils import IconLoader
-from .viewmodels import MainWindowViewModel
+from .viewmodels import MainWindowViewModel, WelcomeViewModel
 
 
 class ServiceContainer:
@@ -93,6 +93,15 @@ class ServiceContainer:
             layout_viz_service=self.layout_viz_service,
             thread_pool=self.thread_pool,
         )
+
+    @staticmethod
+    def create_welcome_viewmodel() -> WelcomeViewModel:
+        """Create a WelcomeViewModel.
+
+        Returns:
+            A WelcomeViewModel instance.
+        """
+        return WelcomeViewModel()
 
     def reset(self) -> None:
         """Reset all services (useful for testing).

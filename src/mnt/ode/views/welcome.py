@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from PyQt6.QtCore import Qt, pyqtSignal, pyqtSlot
 from PyQt6.QtGui import QColor, QDragEnterEvent, QDragLeaveEvent, QDropEvent, QFont
@@ -29,10 +30,12 @@ from .theme import (
     get_theme_colors,
 )
 
+if TYPE_CHECKING:
+    from ..viewmodels import WelcomeViewModel
+
 logger = logging.getLogger(__name__)
 
 
-# TODO(marcel): welcome viewmodel
 class Welcome(QWidget):  # type: ignore[misc]
     """Initial widget displayed to the user, prompting for SQD file input.
 
@@ -42,19 +45,22 @@ class Welcome(QWidget):  # type: ignore[misc]
 
     file_selected = pyqtSignal(str)
 
-    def __init__(self, parent: QWidget | None = None) -> None:
+    def __init__(self, view_model: WelcomeViewModel, parent: QWidget | None = None) -> None:
         """Initializes the Welcome widget.
 
         Args:
+            view_model: The WelcomeViewModel instance.
             parent: The parent widget, if any.
         """
         super().__init__(parent)
+        self._vm = view_model
         self._icon_loader = IconLoader()
-        self._loading: bool = False
         self._is_dark_mode = is_dark_mode()
 
         self._init_ui()
         self._apply_styles()
+        self._connect_vm_to_ui()
+        logger.debug("Welcome view initialized with ViewModel.")
 
     def _init_ui(self) -> None:
         """Initializes the user interface components."""
@@ -215,41 +221,25 @@ class Welcome(QWidget):  # type: ignore[misc]
             }}
         """)
 
-    @pyqtSlot()  # type: ignore[misc]
-    def _open_file_dialog(self) -> None:
-        """Opens a file dialog to select an SQD file."""
-        if self._loading:
-            logger.info("File dialog opening prevented: A file is already being processed.")
-            return
+    def _connect_vm_to_ui(self) -> None:
+        """Connects ViewModel signals to UI update slots."""
+        self._vm.loading_state_changed.connect(self._update_loading_ui)
+        self._vm.file_selected.connect(self.file_selected.emit)
 
-        file_path_str, _ = QFileDialog.getOpenFileName(self, "Open SiDB Layout File", "", "SQD Files (*.sqd)")
-        if file_path_str:
-            logger.info("File selected via dialog: %s", file_path_str)
-            self._process_file(Path(file_path_str))
-
-    def _process_file(self, file_path: Path) -> None:
-        """Handles the selected file path and emits the signal.
-
-        Args:
-            file_path: The path to the selected SQD file.
-        """
-        self.set_loading_state(loading=True, message=f"Processing {file_path.name}...")
-        self.file_selected.emit(str(file_path))
-
-    def set_loading_state(self, *, loading: bool, message: str | None = None, progress: int | None = None) -> None:
-        """Updates the UI to reflect the loading state.
+    @pyqtSlot(bool, str, object)  # type: ignore[misc]
+    def _update_loading_ui(self, loading: bool, message: str, progress: int | None) -> None:  # noqa: FBT001
+        """Updates the UI based on the loading state from ViewModel.
 
         Args:
             loading: Whether the widget is in a loading state.
-            message: Optional message to display during loading.
-            progress: Optional progress value (0-100) to show in the progress bar.
+            message: Message to display during loading.
+            progress: Progress value (0-100) or None for indeterminate.
         """
-        self._loading = loading
         self.browse_button.setEnabled(not loading)
         self.setAcceptDrops(not loading)
 
         if loading:
-            self.loading_label.setText(message or "Loading...")
+            self.loading_label.setText(message)
             self.loading_label.setVisible(True)
             self.progress_bar.setVisible(True)
             if progress is not None:
@@ -263,13 +253,25 @@ class Welcome(QWidget):  # type: ignore[misc]
             self.progress_bar.setRange(0, 100)
             self.progress_bar.setValue(0)
 
+    @pyqtSlot()  # type: ignore[misc]
+    def _open_file_dialog(self) -> None:
+        """Opens a file dialog to select an SQD file."""
+        if self._vm.is_loading:
+            logger.info("File dialog opening prevented: A file is already being processed.")
+            return
+
+        file_path_str, _ = QFileDialog.getOpenFileName(self, "Open SiDB Layout File", "", "SQD Files (*.sqd)")
+        if file_path_str:
+            logger.info("File selected via dialog: %s", file_path_str)
+            self._vm.select_file(file_path_str)
+
     def dragEnterEvent(self, event: QDragEnterEvent) -> None:  # noqa: N802 - camelCase is required by PyQt6
         """Handles drag enter events. Updates style. Accepts the event if it contains URLs.
 
         Args:
             event: The drag enter event.
         """
-        if self._loading:
+        if self._vm.is_loading:
             event.ignore()
             return
 
@@ -305,7 +307,7 @@ class Welcome(QWidget):  # type: ignore[misc]
         self.drop_area_frame.setObjectName("dropAreaFrame")
         self._update_frame_style()
 
-        if self._loading:
+        if self._vm.is_loading:
             event.ignore()
             return
 
@@ -316,7 +318,7 @@ class Welcome(QWidget):  # type: ignore[misc]
                     file_path = Path(url.toLocalFile())
                     if file_path.suffix.lower() == ".sqd":
                         logger.info("File dropped: %s", file_path)
-                        self._process_file(file_path)
+                        self._vm.select_file(str(file_path))
                         return
             logger.warning("Drop event contained URLs, but no valid .sqd file found.")
         else:

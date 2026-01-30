@@ -118,9 +118,13 @@ def run_app() -> int:
     main_view_model = container.create_main_window_viewmodel()
     logger.debug("MainWindowViewModel created with dependencies injected.")
 
+    logger.debug("Creating WelcomeViewModel...")
+    welcome_view_model = container.create_welcome_viewmodel()
+    logger.debug("WelcomeViewModel created.")
+
     # --- View Instantiation ---
     logger.debug("Instantiating MainWindow...")
-    main_window = MainWindow(view_model=main_view_model)
+    main_window = MainWindow(view_model=main_view_model, welcome_viewmodel=welcome_view_model)
     if app_icon:
         main_window.setWindowIcon(app_icon)
     main_window.show()
