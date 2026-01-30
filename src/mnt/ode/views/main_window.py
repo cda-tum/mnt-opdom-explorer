@@ -24,7 +24,6 @@ from PyQt6.QtWidgets import (
 from ..models import ApplicationSettingsModel
 from ..utils.icon_loader import IconLoader
 from ..utils.metadata import get_app_display_name, get_organization_name, get_package_metadata
-from ..viewmodels import WelcomeViewModel
 from ..viewmodels.operational_domain import OperationalDomainViewModel
 from .constants import (
     ICON_SIZE_SMALL,
@@ -40,7 +39,7 @@ from .welcome import Welcome
 from .widgets import StatusBarWidget
 
 if TYPE_CHECKING:
-    from mnt.ode.viewmodels import MainWindowViewModel
+    from mnt.ode.viewmodels import MainWindowViewModel, WelcomeViewModel  # noqa: TC004
 
 logger = logging.getLogger(__name__)
 

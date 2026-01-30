@@ -16,7 +16,6 @@ OperationalStatus: TypeAlias = operational_status
 OperationalDomainResultType: TypeAlias = operational_domain
 
 
-# TODO(marcel): add tests
 class SinglePointResult(BaseModel):
     """Represents the physical simulation results for all input patterns at a single parameter point.
 
