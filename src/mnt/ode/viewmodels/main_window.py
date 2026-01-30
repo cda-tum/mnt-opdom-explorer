@@ -52,20 +52,22 @@ class MainWindowViewModel(QObject):  # type: ignore[misc]
         self,
         sqd_file_service: SQDFileService,
         layout_viz_service: LayoutVisualizationService,
+        thread_pool: QThreadPool | None = None,
     ) -> None:
         """Initialize the MainWindowViewModel.
 
         Args:
             sqd_file_service: Service for loading SQD files.
             layout_viz_service: Service for visualizing layouts.
+            thread_pool: Optional thread pool for background tasks. If None, uses global instance.
         """
         super().__init__()
 
         self._sqd_file_service = sqd_file_service
         self._layout_viz_service = layout_viz_service
-        self._thread_pool = QThreadPool(self)
+        self._thread_pool = thread_pool or QThreadPool.globalInstance()
         logger.info(
-            "MainWindowViewModel initialized. Max QThreadPool threads: %d",
+            "MainWindowViewModel initialized. Using QThreadPool with max threads: %d",
             self._thread_pool.maxThreadCount(),
         )
 

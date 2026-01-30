@@ -91,6 +91,7 @@ class ServiceContainer:
         return MainWindowViewModel(
             sqd_file_service=self.sqd_file_service,
             layout_viz_service=self.layout_viz_service,
+            thread_pool=self.thread_pool,
         )
 
     def reset(self) -> None:

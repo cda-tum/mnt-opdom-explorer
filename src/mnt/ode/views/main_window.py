@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
-from PyQt6.QtCore import Qt, QThreadPool, QUrl, pyqtSlot
+from PyQt6.QtCore import Qt, QUrl, pyqtSlot
 from PyQt6.QtGui import QAction, QCloseEvent, QDesktopServices, QKeyEvent, QKeySequence, QPixmap
 from PyQt6.QtWidgets import (
     QApplication,
@@ -65,9 +65,6 @@ class MainWindow(QMainWindow):  # type: ignore[misc]
 
         self.stacked_widget = QStackedWidget()
         self.setCentralWidget(self.stacked_widget)
-
-        # --- Thread Pool for all background tasks ---
-        self._thread_pool = QThreadPool(self)
 
         # --- View 1: Welcome Widget ---
         self.welcome_widget = Welcome()
