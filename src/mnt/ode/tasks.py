@@ -28,12 +28,12 @@ from .services import (
     OperationalDomainError,
     OperationalDomainPlottingService,
     OperationalDomainService,
-    PixmapConversionService,
     PlottingError,
     SimulationError,
     SimulationService,
     SQDFileService,
 )
+from .utils import convert_svgs_to_pixmaps
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -188,9 +188,9 @@ class PixmapConversionTask(QRunnable):  # type: ignore[misc]
 
     def run(self) -> None:
         """Execute the pixmap conversion task."""
-        pixmaps1 = PixmapConversionService.convert(self.svgs1)
+        pixmaps1 = convert_svgs_to_pixmaps(self.svgs1)
         if self.svgs2 is not None:
-            pixmaps2 = PixmapConversionService.convert(self.svgs2)
+            pixmaps2 = convert_svgs_to_pixmaps(self.svgs2)
             self.signals.conversion_pair_finished.emit(pixmaps1, pixmaps2)
         else:
             self.signals.conversion_single_finished.emit(pixmaps1)

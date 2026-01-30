@@ -5,7 +5,6 @@ from __future__ import annotations
 from .layout_visualization_service import LayoutVisualizationError, LayoutVisualizationService
 from .operational_domain_plotting_service import OperationalDomainPlottingService, PlottingError
 from .operational_domain_service import OperationalDomainError, OperationalDomainService
-from .pixmap_conversion_service import PixmapConversionService
 from .simulation_service import SimulationError, SimulationService
 from .sqd_file_service import LayoutLoadError, SQDFileService
 
@@ -16,7 +15,6 @@ __all__ = [
     "OperationalDomainError",
     "OperationalDomainPlottingService",
     "OperationalDomainService",
-    "PixmapConversionService",
     "PlottingError",
     "SQDFileService",
     "SimulationError",
