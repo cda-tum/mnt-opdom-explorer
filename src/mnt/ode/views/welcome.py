@@ -23,6 +23,18 @@ from PyQt6.QtWidgets import (
 )
 
 from ..utils import IconLoader, is_dark_mode
+from .constants import (
+    BUTTON_MIN_HEIGHT,
+    BUTTON_MIN_WIDTH,
+    FONT_SIZE_NORMAL,
+    FONT_SIZE_SUBTITLE,
+    FONT_SIZE_TITLE,
+    ICON_SIZE_LARGE,
+    PROGRESS_BAR_HEIGHT,
+    PROGRESS_BAR_MIN_WIDTH,
+    WELCOME_DROP_AREA_SPACING,
+    WELCOME_WIDGET_MARGIN,
+)
 from .theme import (
     BUTTON_BG_COLOR,
     BUTTON_TEXT_COLOR,
@@ -68,7 +80,9 @@ class Welcome(QWidget):  # type: ignore[misc]
 
         main_layout = QVBoxLayout(self)
         # Overall padding for the Welcome widget content
-        main_layout.setContentsMargins(30, 30, 30, 30)
+        main_layout.setContentsMargins(
+            WELCOME_WIDGET_MARGIN, WELCOME_WIDGET_MARGIN, WELCOME_WIDGET_MARGIN, WELCOME_WIDGET_MARGIN
+        )
 
         # --- Drop Area ---
         self.drop_area_frame = QFrame(self)
@@ -77,19 +91,19 @@ class Welcome(QWidget):  # type: ignore[misc]
 
         drop_layout = QVBoxLayout(self.drop_area_frame)
         drop_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        drop_layout.setSpacing(20)
+        drop_layout.setSpacing(WELCOME_DROP_AREA_SPACING)
 
         # Icon
         self.icon_label = QLabel(self)
         self.icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         upload_icon = self._icon_loader.load_file_upload_icon()
-        self.icon_label.setPixmap(upload_icon.pixmap(128, 128))
+        self.icon_label.setPixmap(upload_icon.pixmap(ICON_SIZE_LARGE, ICON_SIZE_LARGE))
         drop_layout.addWidget(self.icon_label)
 
         # Instructional Text
         self.drop_text_label = QLabel("Drag & Drop an SQD File Here", self)
         font = self.drop_text_label.font()
-        font.setPointSize(18)
+        font.setPointSize(FONT_SIZE_TITLE)
         font.setWeight(QFont.Weight.Bold)
         self.drop_text_label.setFont(font)
         self.drop_text_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -97,7 +111,7 @@ class Welcome(QWidget):  # type: ignore[misc]
 
         self.or_text_label = QLabel("or", self)
         font_or = self.or_text_label.font()
-        font_or.setPointSize(14)
+        font_or.setPointSize(FONT_SIZE_SUBTITLE)
         self.or_text_label.setFont(font_or)
         self.or_text_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         drop_layout.addWidget(self.or_text_label)
@@ -109,9 +123,9 @@ class Welcome(QWidget):  # type: ignore[misc]
         self.browse_button.setText("Browse Files...")
         self.browse_button.clicked.connect(self._open_file_dialog)
         self.browse_button.setObjectName("browseButton")
-        self.browse_button.setMinimumHeight(45)
+        self.browse_button.setMinimumHeight(BUTTON_MIN_HEIGHT)
         self.browse_button.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
-        self.browse_button.setMinimumWidth(200)
+        self.browse_button.setMinimumWidth(BUTTON_MIN_WIDTH)
         drop_layout.addWidget(self.browse_button, 0, Qt.AlignmentFlag.AlignCenter)
 
         # Make drop_area_frame the primary expanding widget
@@ -126,15 +140,15 @@ class Welcome(QWidget):  # type: ignore[misc]
 
         self.loading_label = QLabel("Loading...", self)
         font_loading = self.loading_label.font()
-        font_loading.setPointSize(12)
+        font_loading.setPointSize(FONT_SIZE_NORMAL)
         self.loading_label.setFont(font_loading)
         self.loading_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         loading_indicators_layout.addWidget(self.loading_label)
 
         self.progress_bar = QProgressBar(self)
         self.progress_bar.setTextVisible(False)
-        self.progress_bar.setMaximumHeight(12)
-        self.progress_bar.setMinimumWidth(400)
+        self.progress_bar.setMaximumHeight(PROGRESS_BAR_HEIGHT)
+        self.progress_bar.setMinimumWidth(PROGRESS_BAR_MIN_WIDTH)
         self.progress_bar.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         loading_indicators_layout.addWidget(self.progress_bar)
 

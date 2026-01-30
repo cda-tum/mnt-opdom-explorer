@@ -29,6 +29,31 @@ from mnt.pyfiction import (
     sweep_parameter,
 )
 
+from .settings_constants import (
+    DEFAULT_EPSILON_R,
+    DEFAULT_LAMBDA_TF,
+    DEFAULT_MU_MINUS,
+    DEFAULT_MU_SWEEP_MAX,
+    DEFAULT_MU_SWEEP_MIN,
+    DEFAULT_MU_SWEEP_STEP,
+    DEFAULT_RANDOM_SAMPLES_BASE,
+    DEFAULT_RANDOM_SAMPLES_RANDOM_SAMPLING,
+    DEFAULT_RANGE_MAX,
+    DEFAULT_RANGE_MIN,
+    DEFAULT_RANGE_STEP,
+    MAX_EPSILON_R,
+    MAX_LAMBDA_TF,
+    MAX_MU_MINUS,
+    MAX_RANDOM_SAMPLES,
+    MIN_EPSILON_R,
+    MIN_LAMBDA_TF,
+    MIN_MU_MINUS,
+    MIN_RANDOM_SAMPLES,
+    NONE_RANGE_MAX,
+    NONE_RANGE_MIN,
+    NONE_RANGE_STEP,
+)
+
 if TYPE_CHECKING:
     from collections.abc import Callable
 
@@ -136,9 +161,15 @@ class PhysicalSimulationSettingsModel(BaseModel):
     model_config = ConfigDict(use_enum_values=True)
 
     engine: SimulationEngine = SimulationEngine.QUICKEXACT
-    epsilon_r: float = Field(default=5.6, ge=1.0, le=10.0, description="Dielectric constant [dimensionless]")
-    lambda_tf: float = Field(default=5.0, ge=1.0, le=10.0, description="Thomas-Fermi screening length [nm]")
-    mu_minus: float = Field(default=-0.28, ge=-1.0, le=1.0, description="Energy difference [eV]")
+    epsilon_r: float = Field(
+        default=DEFAULT_EPSILON_R, ge=MIN_EPSILON_R, le=MAX_EPSILON_R, description="Dielectric constant [dimensionless]"
+    )
+    lambda_tf: float = Field(
+        default=DEFAULT_LAMBDA_TF, ge=MIN_LAMBDA_TF, le=MAX_LAMBDA_TF, description="Thomas-Fermi screening length [nm]"
+    )
+    mu_minus: float = Field(
+        default=DEFAULT_MU_MINUS, ge=MIN_MU_MINUS, le=MAX_MU_MINUS, description="Energy difference [eV]"
+    )
 
 
 class GateFunctionSettingsModel(BaseModel):
@@ -155,9 +186,9 @@ class ParameterRangeModel(BaseModel):
 
     model_config = ConfigDict(use_enum_values=True)
 
-    min_val: float = Field(default=1.0)
-    max_val: float = Field(default=10.0)
-    step_size: NonNegativeFloat = Field(default=0.1)
+    min_val: float = Field(default=DEFAULT_RANGE_MIN)
+    max_val: float = Field(default=DEFAULT_RANGE_MAX)
+    step_size: NonNegativeFloat = Field(default=DEFAULT_RANGE_STEP)
     scale: AxisScale = Field(default=AxisScale.LINEAR)
 
     @field_validator("max_val")
@@ -197,7 +228,10 @@ class ParameterRangeModel(BaseModel):
         """
         if v == AxisScale.LOGARITHMIC and ("min_val" not in info.data or "max_val" not in info.data):
             return v
-        if v == AxisScale.LOGARITHMIC and (info.data.get("min_val", 0) <= 0 or info.data.get("max_val", 0) <= 0):
+        if v == AxisScale.LOGARITHMIC and (
+            info.data.get("min_val", NONE_RANGE_MIN) <= NONE_RANGE_MIN
+            or info.data.get("max_val", NONE_RANGE_MIN) <= NONE_RANGE_MIN
+        ):
             msg = "Logarithmic scale requires min_val and max_val to be positive"
             raise ValueError(msg)
         return v
@@ -228,10 +262,22 @@ class SweepDimensionModel(BaseModel):
         if v is None:
             dimension = info.data.get("dimension")
             if dimension == SweepDimension.MU_MINUS:
-                return ParameterRangeModel(min_val=-0.5, max_val=-0.1, step_size=0.01, scale=AxisScale.LINEAR)
+                return ParameterRangeModel(
+                    min_val=DEFAULT_MU_SWEEP_MIN,
+                    max_val=DEFAULT_MU_SWEEP_MAX,
+                    step_size=DEFAULT_MU_SWEEP_STEP,
+                    scale=AxisScale.LINEAR,
+                )
             if dimension != SweepDimension.NONE:
-                return ParameterRangeModel(min_val=1.0, max_val=10.0, step_size=0.1, scale=AxisScale.LINEAR)
-            return ParameterRangeModel(min_val=0.0, max_val=0.0, step_size=0.0, scale=AxisScale.LINEAR)
+                return ParameterRangeModel(
+                    min_val=DEFAULT_RANGE_MIN,
+                    max_val=DEFAULT_RANGE_MAX,
+                    step_size=DEFAULT_RANGE_STEP,
+                    scale=AxisScale.LINEAR,
+                )
+            return ParameterRangeModel(
+                min_val=NONE_RANGE_MIN, max_val=NONE_RANGE_MAX, step_size=NONE_RANGE_STEP, scale=AxisScale.LINEAR
+            )
 
         return v
 
@@ -243,24 +289,41 @@ class OperationalDomainSettingsModel(BaseModel):
 
     algorithm: OperationalDomainAlgorithm = OperationalDomainAlgorithm.GRID_SEARCH
     # Provide a base default; the validator below will adjust it based on the algorithm.
-    random_samples: PositiveInt = Field(default=100, ge=1, le=10000)
+    random_samples: PositiveInt = Field(
+        default=DEFAULT_RANDOM_SAMPLES_BASE, ge=MIN_RANDOM_SAMPLES, le=MAX_RANDOM_SAMPLES
+    )
     operational_condition: OperationalCondition = OperationalCondition.TOLERATE_KINKS
     x_sweep: SweepDimensionModel = Field(
         default_factory=lambda: SweepDimensionModel(
             dimension=SweepDimension.EPSILON_R,
-            parameter_range=ParameterRangeModel(min_val=1.0, max_val=10.0, step_size=0.1, scale=AxisScale.LINEAR),
+            parameter_range=ParameterRangeModel(
+                min_val=DEFAULT_RANGE_MIN,
+                max_val=DEFAULT_RANGE_MAX,
+                step_size=DEFAULT_RANGE_STEP,
+                scale=AxisScale.LINEAR,
+            ),
         )
     )
     y_sweep: SweepDimensionModel = Field(
         default_factory=lambda: SweepDimensionModel(
             dimension=SweepDimension.LAMBDA_TF,
-            parameter_range=ParameterRangeModel(min_val=1.0, max_val=10.0, step_size=0.1, scale=AxisScale.LINEAR),
+            parameter_range=ParameterRangeModel(
+                min_val=DEFAULT_RANGE_MIN,
+                max_val=DEFAULT_RANGE_MAX,
+                step_size=DEFAULT_RANGE_STEP,
+                scale=AxisScale.LINEAR,
+            ),
         )
     )
     z_sweep: SweepDimensionModel = Field(
         default_factory=lambda: SweepDimensionModel(
             dimension=SweepDimension.NONE,
-            parameter_range=ParameterRangeModel(min_val=0.0, max_val=0.0, step_size=0.0, scale=AxisScale.LINEAR),
+            parameter_range=ParameterRangeModel(
+                min_val=NONE_RANGE_MIN,
+                max_val=NONE_RANGE_MAX,
+                step_size=NONE_RANGE_STEP,
+                scale=AxisScale.LINEAR,
+            ),
         )
     )
 
@@ -278,9 +341,9 @@ class OperationalDomainSettingsModel(BaseModel):
         # it will be overwritten here by the standard default for that algorithm.
         # If they want a non-standard value, they must set it *after* initialization.
         if self.algorithm == OperationalDomainAlgorithm.RANDOM_SAMPLING:
-            self.random_samples = 1000
+            self.random_samples = DEFAULT_RANDOM_SAMPLES_RANDOM_SAMPLING
         else:
-            self.random_samples = 100  # Default for Grid Search, Flood Fill, Contour
+            self.random_samples = DEFAULT_RANDOM_SAMPLES_BASE  # Default for Grid Search, Flood Fill, Contour
 
         # Ensure Contour Tracing is not used with 3D sweeps
         if (

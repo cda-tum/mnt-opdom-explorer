@@ -21,12 +21,18 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from mnt.ode.viewmodels import WelcomeViewModel
-
 from ..models import ApplicationSettingsModel
 from ..utils.icon_loader import IconLoader
 from ..utils.metadata import get_app_display_name, get_organization_name, get_package_metadata
+from ..viewmodels import WelcomeViewModel
 from ..viewmodels.operational_domain import OperationalDomainViewModel
+from .constants import (
+    ICON_SIZE_SMALL,
+    MAIN_WINDOW_HEIGHT,
+    MAIN_WINDOW_SPACING,
+    MAIN_WINDOW_TOP_BAR_MARGIN,
+    MAIN_WINDOW_WIDTH,
+)
 from .layout_visualization import LayoutVisualizationWidget
 from .operational_domain import OperationalDomainView
 from .settings import Settings
@@ -51,7 +57,9 @@ class MainWindow(QMainWindow):  # type: ignore[misc]
         """
         super().__init__()
         self._vm = view_model
-        self._welcome_vm = welcome_viewmodel or WelcomeViewModel()
+        if welcome_viewmodel is None:
+            welcome_viewmodel = WelcomeViewModel()
+        self._welcome_vm = welcome_viewmodel
         self._icon_loader = IconLoader()
 
         logger.debug("Initializing MainWindow UI...")
@@ -65,7 +73,7 @@ class MainWindow(QMainWindow):  # type: ignore[misc]
     def _init_ui(self) -> None:
         """Sets up the main UI structure."""
         self.setWindowTitle("MNT Operational Domain Explorer")
-        self.resize(1200, 800)
+        self.resize(MAIN_WINDOW_WIDTH, MAIN_WINDOW_HEIGHT)
 
         self.stacked_widget = QStackedWidget()
         self.setCentralWidget(self.stacked_widget)
@@ -81,18 +89,20 @@ class MainWindow(QMainWindow):  # type: ignore[misc]
         # --- Main vertical layout ---
         self.main_analysis_layout = QVBoxLayout(self.main_analysis_container)
         self.main_analysis_layout.setContentsMargins(0, 0, 0, 0)
-        self.main_analysis_layout.setSpacing(0)
+        self.main_analysis_layout.setSpacing(MAIN_WINDOW_SPACING)
 
         # --- Top bar with back button only (minimal height) ---
         top_bar = QWidget()
         top_bar_layout = QHBoxLayout(top_bar)
-        top_bar_layout.setContentsMargins(5, 5, 5, 0)
-        top_bar_layout.setSpacing(0)
+        top_bar_layout.setContentsMargins(
+            MAIN_WINDOW_TOP_BAR_MARGIN, MAIN_WINDOW_TOP_BAR_MARGIN, MAIN_WINDOW_TOP_BAR_MARGIN, 0
+        )
+        top_bar_layout.setSpacing(MAIN_WINDOW_SPACING)
         self.back_button = QPushButton()
         self.back_button.setIcon(self._icon_loader.load_back_arrow_icon())
         self.back_button.setFlat(True)
         self.back_button.setToolTip("Back to Welcome Screen")
-        self.back_button.setFixedSize(36, 36)
+        self.back_button.setFixedSize(ICON_SIZE_SMALL, ICON_SIZE_SMALL)
         self.back_button.clicked.connect(self._go_to_welcome_screen)
         top_bar_layout.addWidget(self.back_button, alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
         top_bar_layout.addStretch(1)

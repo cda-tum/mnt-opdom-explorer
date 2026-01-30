@@ -35,6 +35,43 @@ from ..models import (
     SweepDimensionModel,
 )
 from ..utils import IconLoader
+from .constants import (
+    BUTTON_BORDER_RADIUS,
+    BUTTON_DISABLED_DARKER,
+    BUTTON_HOVER_LIGHTER,
+    BUTTON_PADDING_HORIZONTAL,
+    BUTTON_PADDING_VERTICAL,
+    BUTTON_PRESSED_DARKER,
+    EPSILON_R_DECIMALS,
+    EPSILON_R_MAX,
+    EPSILON_R_MIN,
+    EPSILON_R_STEP,
+    FONT_SIZE_BUTTON,
+    INFO_TAG_STRETCH,
+    LABEL_STRETCH,
+    LAMBDA_TF_DECIMALS,
+    LAMBDA_TF_MAX,
+    LAMBDA_TF_MIN,
+    LAMBDA_TF_STEP,
+    MU_MINUS_DECIMALS,
+    MU_MINUS_MAX,
+    MU_MINUS_MIN,
+    MU_MINUS_STEP,
+    RADIO_BUTTON_STRETCH,
+    RANDOM_SAMPLES_MAX,
+    RANDOM_SAMPLES_MIN,
+    RANDOM_SAMPLES_STEP,
+    RUN_BUTTON_MIN_HEIGHT,
+    SETTINGS_FORM_SPACING,
+    SETTINGS_INNER_MARGIN,
+    SETTINGS_OUTER_MARGIN,
+    SETTINGS_SECTION_SPACING,
+    SWEEP_DIM_COMBO_STRETCH,
+    SWEEP_DIM_LABEL_STRETCH,
+    SWEEP_DIM_LOG_CHECKBOX_STRETCH,
+    SWEEP_DIM_SPACING,
+    WIDGET_STRETCH,
+)
 from .theme import (
     BUTTON_BG_COLOR,
     BUTTON_TEXT_COLOR,
@@ -77,7 +114,9 @@ class Settings(QWidget):  # type: ignore[misc]
     def _init_ui(self) -> None:
         """Sets up the main UI structure of the settings panel."""
         outer_layout = QVBoxLayout(self)
-        outer_layout.setContentsMargins(5, 5, 5, 5)
+        outer_layout.setContentsMargins(
+            SETTINGS_OUTER_MARGIN, SETTINGS_OUTER_MARGIN, SETTINGS_OUTER_MARGIN, SETTINGS_OUTER_MARGIN
+        )
 
         # --- Header ---
         header_widget = SectionHeaderWidget(self._icon_loader.load_settings_icon(), "Settings")
@@ -90,8 +129,10 @@ class Settings(QWidget):  # type: ignore[misc]
 
         self.scroll_content_widget = QWidget()
         main_layout = QVBoxLayout(self.scroll_content_widget)
-        main_layout.setContentsMargins(10, 10, 10, 10)
-        main_layout.setSpacing(15)
+        main_layout.setContentsMargins(
+            SETTINGS_INNER_MARGIN, SETTINGS_INNER_MARGIN, SETTINGS_INNER_MARGIN, SETTINGS_INNER_MARGIN
+        )
+        main_layout.setSpacing(SETTINGS_SECTION_SPACING)
 
         main_layout.addWidget(self._create_physical_simulation_group())
         main_layout.addWidget(self._create_gate_function_group())
@@ -105,7 +146,7 @@ class Settings(QWidget):  # type: ignore[misc]
         self.run_button = QPushButton("Run Operational Domain Simulation")
         self.run_button.setObjectName("runButton")
         self.run_button.setIcon(self._icon_loader.load_play_icon())
-        self.run_button.setMinimumHeight(40)
+        self.run_button.setMinimumHeight(RUN_BUTTON_MIN_HEIGHT)
         self.run_button.clicked.connect(self._on_run_button_clicked)
         outer_layout.addWidget(self.run_button)
 
@@ -119,7 +160,7 @@ class Settings(QWidget):  # type: ignore[misc]
         """
         group_box = IconGroupBoxWidget("Physical Simulation", self._icon_loader.load_atom_icon())
         layout = QFormLayout()
-        layout.setSpacing(10)
+        layout.setSpacing(SETTINGS_FORM_SPACING)
 
         self.engine_combo = QComboBox()
         for e in SimulationEngine:
@@ -127,47 +168,47 @@ class Settings(QWidget):  # type: ignore[misc]
         engine_info = InfoTagWidget("Select the simulation engine to use.")
         engine_row = QHBoxLayout()
         engine_label = QLabel("Simulation Engine:")
-        engine_row.addWidget(engine_label, 30)
-        engine_row.addWidget(self.engine_combo, 69)
-        engine_row.addWidget(engine_info, 1)
+        engine_row.addWidget(engine_label, LABEL_STRETCH)
+        engine_row.addWidget(self.engine_combo, WIDGET_STRETCH)
+        engine_row.addWidget(engine_info, INFO_TAG_STRETCH)
         layout.addRow(engine_row)
 
         self.epsilon_r_spinbox = QDoubleSpinBox()
-        self.epsilon_r_spinbox.setRange(1.0, 20.0)
-        self.epsilon_r_spinbox.setDecimals(2)
-        self.epsilon_r_spinbox.setSingleStep(0.1)
+        self.epsilon_r_spinbox.setRange(EPSILON_R_MIN, EPSILON_R_MAX)
+        self.epsilon_r_spinbox.setDecimals(EPSILON_R_DECIMALS)
+        self.epsilon_r_spinbox.setSingleStep(EPSILON_R_STEP)
         epsilon_info = InfoTagWidget("epsilon_r is the dielectric constant.")
         epsilon_row = QHBoxLayout()
         epsilon_label = QLabel("εᵣ:")
-        epsilon_row.addWidget(epsilon_label, 30)
-        epsilon_row.addWidget(self.epsilon_r_spinbox, 69)
-        epsilon_row.addWidget(epsilon_info, 1)
+        epsilon_row.addWidget(epsilon_label, LABEL_STRETCH)
+        epsilon_row.addWidget(self.epsilon_r_spinbox, WIDGET_STRETCH)
+        epsilon_row.addWidget(epsilon_info, INFO_TAG_STRETCH)
         layout.addRow(epsilon_row)
 
         self.lambda_tf_spinbox = QDoubleSpinBox()
-        self.lambda_tf_spinbox.setRange(1.0, 10.0)
-        self.lambda_tf_spinbox.setDecimals(2)
-        self.lambda_tf_spinbox.setSingleStep(0.1)
+        self.lambda_tf_spinbox.setRange(LAMBDA_TF_MIN, LAMBDA_TF_MAX)
+        self.lambda_tf_spinbox.setDecimals(LAMBDA_TF_DECIMALS)
+        self.lambda_tf_spinbox.setSingleStep(LAMBDA_TF_STEP)
         lambda_info = InfoTagWidget("lambda_TF is the Thomas-Fermi screening length in nm.")
         lambda_row = QHBoxLayout()
         lambda_label = QLabel("λ_TF [nm]:")
-        lambda_row.addWidget(lambda_label, 30)
-        lambda_row.addWidget(self.lambda_tf_spinbox, 69)
-        lambda_row.addWidget(lambda_info, 1)
+        lambda_row.addWidget(lambda_label, LABEL_STRETCH)
+        lambda_row.addWidget(self.lambda_tf_spinbox, WIDGET_STRETCH)
+        lambda_row.addWidget(lambda_info, INFO_TAG_STRETCH)
         layout.addRow(lambda_row)
 
         self.mu_minus_spinbox = QDoubleSpinBox()
-        self.mu_minus_spinbox.setRange(-1.0, 1.0)
-        self.mu_minus_spinbox.setDecimals(3)
-        self.mu_minus_spinbox.setSingleStep(0.01)
+        self.mu_minus_spinbox.setRange(MU_MINUS_MIN, MU_MINUS_MAX)
+        self.mu_minus_spinbox.setDecimals(MU_MINUS_DECIMALS)
+        self.mu_minus_spinbox.setSingleStep(MU_MINUS_STEP)
         mu_info = InfoTagWidget(
             "μ_ is the energy difference between the Fermi Energy and the charge transition level (0/−) in eV."  # noqa: RUF001
         )
         mu_row = QHBoxLayout()
         mu_label = QLabel("μ_ [eV]:")
-        mu_row.addWidget(mu_label, 30)
-        mu_row.addWidget(self.mu_minus_spinbox, 69)
-        mu_row.addWidget(mu_info, 1)
+        mu_row.addWidget(mu_label, LABEL_STRETCH)
+        mu_row.addWidget(self.mu_minus_spinbox, WIDGET_STRETCH)
+        mu_row.addWidget(mu_info, INFO_TAG_STRETCH)
         layout.addRow(mu_row)
 
         group_box.add_layout(layout)
@@ -181,7 +222,7 @@ class Settings(QWidget):  # type: ignore[misc]
         """
         group_box = IconGroupBoxWidget("Gate Function", self._icon_loader.load_function_icon())
         layout = QFormLayout()
-        layout.setSpacing(10)
+        layout.setSpacing(SETTINGS_FORM_SPACING)
 
         self.boolean_function_combo = QComboBox()
         for func_enum in BooleanFunction:
@@ -195,9 +236,9 @@ class Settings(QWidget):  # type: ignore[misc]
         )
         bool_row = QHBoxLayout()
         bool_label = QLabel("Target Boolean Function:")
-        bool_row.addWidget(bool_label, 30)
-        bool_row.addWidget(self.boolean_function_combo, 69)
-        bool_row.addWidget(bool_info, 1)
+        bool_row.addWidget(bool_label, LABEL_STRETCH)
+        bool_row.addWidget(self.boolean_function_combo, WIDGET_STRETCH)
+        bool_row.addWidget(bool_info, INFO_TAG_STRETCH)
         layout.addRow(bool_row)
 
         self.input_signal_encoding_group = QButtonGroup(self)
@@ -207,15 +248,15 @@ class Settings(QWidget):  # type: ignore[misc]
         self.presence_encoding_radio = QRadioButton(InputSignalEncoding.PRESENCE.value)
         self.input_signal_encoding_group.addButton(self.distance_encoding_radio, id=0)
         self.input_signal_encoding_group.addButton(self.presence_encoding_radio, id=1)
-        encoding_layout.addWidget(encoding_label, 30)
-        encoding_layout.addWidget(self.distance_encoding_radio, 34)
-        encoding_layout.addWidget(self.presence_encoding_radio, 34)
+        encoding_layout.addWidget(encoding_label, LABEL_STRETCH)
+        encoding_layout.addWidget(self.distance_encoding_radio, RADIO_BUTTON_STRETCH)
+        encoding_layout.addWidget(self.presence_encoding_radio, RADIO_BUTTON_STRETCH)
         encoding_info = InfoTagWidget(
             "Encoding method used for placing the perturbers that represent the input signals.\n"
             "Distance Encoding: Input signals are encoded by the distance of the perturber (0 = far, 1 = close).\n"
             "Presence Encoding: Input signals are encoded by the presence of the perturber (0 = absence, 1 = presence)."
         )
-        encoding_layout.addWidget(encoding_info, 1)
+        encoding_layout.addWidget(encoding_info, INFO_TAG_STRETCH)
         layout.addRow(encoding_layout)
 
         group_box.add_layout(layout)
@@ -229,10 +270,10 @@ class Settings(QWidget):  # type: ignore[misc]
         """
         group_box = IconGroupBoxWidget("Operational Domain Calculation", self._icon_loader.load_chart_icon())
         main_op_layout = QVBoxLayout()
-        main_op_layout.setSpacing(15)
+        main_op_layout.setSpacing(SETTINGS_SECTION_SPACING)
 
         form_layout = QFormLayout()
-        form_layout.setSpacing(10)
+        form_layout.setSpacing(SETTINGS_FORM_SPACING)
 
         self.algorithm_combo = QComboBox()
         for a in OperationalDomainAlgorithm:
@@ -249,14 +290,14 @@ class Settings(QWidget):  # type: ignore[misc]
         )
         algo_row = QHBoxLayout()
         algo_label = QLabel("Algorithm:")
-        algo_row.addWidget(algo_label, 30)
-        algo_row.addWidget(self.algorithm_combo, 69)
-        algo_row.addWidget(algo_info, 1)
+        algo_row.addWidget(algo_label, LABEL_STRETCH)
+        algo_row.addWidget(self.algorithm_combo, WIDGET_STRETCH)
+        algo_row.addWidget(algo_info, INFO_TAG_STRETCH)
         form_layout.addRow(algo_row)
 
         self.random_samples_spinbox = QSpinBox()
-        self.random_samples_spinbox.setRange(10, 100000)
-        self.random_samples_spinbox.setSingleStep(100)
+        self.random_samples_spinbox.setRange(RANDOM_SAMPLES_MIN, RANDOM_SAMPLES_MAX)
+        self.random_samples_spinbox.setSingleStep(RANDOM_SAMPLES_STEP)
         random_info = InfoTagWidget(
             "Number of random samples to take. If the Random Sampling algorithm is selected, "
             "this represents the total number of simulation samples to conduct.\n"
@@ -265,9 +306,9 @@ class Settings(QWidget):  # type: ignore[misc]
         )
         random_row = QHBoxLayout()
         random_label = QLabel("Random Samples:")
-        random_row.addWidget(random_label, 30)
-        random_row.addWidget(self.random_samples_spinbox, 69)
-        random_row.addWidget(random_info, 1)
+        random_row.addWidget(random_label, LABEL_STRETCH)
+        random_row.addWidget(self.random_samples_spinbox, WIDGET_STRETCH)
+        random_row.addWidget(random_info, INFO_TAG_STRETCH)
         form_layout.addRow(random_row)
 
         self.operational_condition_group = QButtonGroup(self)
@@ -277,9 +318,9 @@ class Settings(QWidget):  # type: ignore[misc]
         self.reject_kinks_radio = QRadioButton(OperationalCondition.REJECT_KINKS.value)
         self.operational_condition_group.addButton(self.tolerate_kinks_radio, id=0)
         self.operational_condition_group.addButton(self.reject_kinks_radio, id=1)
-        op_condition_layout.addWidget(op_condition_label, 30)
-        op_condition_layout.addWidget(self.tolerate_kinks_radio, 34)
-        op_condition_layout.addWidget(self.reject_kinks_radio, 34)
+        op_condition_layout.addWidget(op_condition_label, LABEL_STRETCH)
+        op_condition_layout.addWidget(self.tolerate_kinks_radio, RADIO_BUTTON_STRETCH)
+        op_condition_layout.addWidget(self.reject_kinks_radio, RADIO_BUTTON_STRETCH)
         op_condition_info = InfoTagWidget(
             "Condition to decide if a layout is considered operational or "
             "non-operational at any given parameter point.\n"
@@ -287,7 +328,7 @@ class Settings(QWidget):  # type: ignore[misc]
             "exhibits kink states as long as the output BDL pair is in the correct logic state.\n"
             "Reject Kinks: The layout is considered non-operational if any wire exhibits kink states."
         )
-        op_condition_layout.addWidget(op_condition_info, 1)
+        op_condition_layout.addWidget(op_condition_info, INFO_TAG_STRETCH)
         form_layout.addRow(op_condition_layout)
 
         main_op_layout.addLayout(form_layout)
@@ -321,14 +362,14 @@ class Settings(QWidget):  # type: ignore[misc]
         container = QWidget()
         layout = QVBoxLayout(container)
         layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(5)
+        layout.setSpacing(SWEEP_DIM_SPACING)
 
         row = QHBoxLayout()
         row.setContentsMargins(0, 0, 0, 0)
-        row.setSpacing(5)
+        row.setSpacing(SWEEP_DIM_SPACING)
 
         dim_label = QLabel(f"{dimension}-Axis:")
-        row.addWidget(dim_label, 10)
+        row.addWidget(dim_label, SWEEP_DIM_LABEL_STRETCH)
 
         param_combo = QComboBox()
         param_combo_items = [
@@ -340,18 +381,18 @@ class Settings(QWidget):  # type: ignore[misc]
             param_combo.addItem("None", SweepDimension.NONE.value)
         for dim, label in param_combo_items:
             param_combo.addItem(label, dim.value)
-        row.addWidget(param_combo, 73)
+        row.addWidget(param_combo, SWEEP_DIM_COMBO_STRETCH)
 
         row.addStretch(1)
 
         range_selector = RangeSelectorWidget()
         log_checkbox = range_selector.log_scale_checkbox
-        row.addWidget(log_checkbox, 15)
+        row.addWidget(log_checkbox, SWEEP_DIM_LOG_CHECKBOX_STRETCH)
 
         log_info = InfoTagWidget(
             "Enable logarithmic scaling for this sweep dimension (only if min/max > 0 and not in 3D mode)."
         )
-        row.addWidget(log_info, 1)
+        row.addWidget(log_info, INFO_TAG_STRETCH)
 
         layout.addLayout(row)
         layout.addWidget(range_selector)
@@ -507,19 +548,19 @@ class Settings(QWidget):  # type: ignore[misc]
                 background-color: {button_bg_color_name};
                 color: {button_text_color_name};
                 border: none;
-                padding: 10px 20px;
-                border-radius: 5px;
-                font-size: 11pt;
+                padding: {BUTTON_PADDING_VERTICAL}px {BUTTON_PADDING_HORIZONTAL}px;
+                border-radius: {BUTTON_BORDER_RADIUS}px;
+                font-size: {FONT_SIZE_BUTTON}pt;
                 font-weight: bold;
             }}
             QPushButton#runButton:hover:enabled {{
-                background-color: {BUTTON_BG_COLOR.lighter(120).name()};
+                background-color: {BUTTON_BG_COLOR.lighter(BUTTON_HOVER_LIGHTER).name()};
             }}
             QPushButton#runButton:pressed:enabled {{
-                background-color: {BUTTON_BG_COLOR.darker(120).name()};
+                background-color: {BUTTON_BG_COLOR.darker(BUTTON_PRESSED_DARKER).name()};
             }}
             QPushButton#runButton:disabled {{
-                background-color: {BUTTON_BG_COLOR.darker(130).name()};
+                background-color: {BUTTON_BG_COLOR.darker(BUTTON_DISABLED_DARKER).name()};
                 color: {theme_colors["text_disabled"].name()};
             }}
         """)
