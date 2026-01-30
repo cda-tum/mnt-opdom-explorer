@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 
 from matplotlib.figure import Figure
-from PyQt6.QtCore import QObject, QRunnable, Qt, QThreadPool, pyqtSignal, pyqtSlot
+from PyQt6.QtCore import QObject, Qt, QThreadPool, pyqtSignal, pyqtSlot
 
 from ..models import (
     ApplicationSettingsModel,
@@ -20,138 +20,10 @@ from ..models import (
 )
 from ..services import (
     LayoutVisualizationService,
-    OperationalDomainError,
-    OperationalDomainPlottingService,
-    OperationalDomainService,
-    PlottingError,
-    SimulationError,
-    SimulationService,
 )
+from ..tasks import PlotOperationalDomainTask, RunOperationalDomainTask, RunSinglePointSimulationTask
 
 logger = logging.getLogger(__name__)
-
-
-class RunOperationalDomainTask(QRunnable):  # type: ignore[misc]
-    """QRunnable task for running operational domain calculation in a background thread."""
-
-    class Signals(QObject):  # type: ignore[misc]
-        """Signals for RunOperationalDomainTask."""
-
-        finished = pyqtSignal(OperationalDomainResultModel, str)  # result, error_message
-
-    def __init__(self, layout_model: LayoutModel, settings: ApplicationSettingsModel) -> None:
-        """Initializes the task with a layout model and the application settings.
-
-        Args:
-            layout_model: The layout model to use for calculation.
-            settings: The application settings model.
-        """
-        super().__init__()
-        self._layout_model = layout_model
-        self._settings = settings
-        self.signals = RunOperationalDomainTask.Signals()
-
-    def run(self) -> None:
-        """Executes the operational domain calculation in a background thread."""
-        try:
-            result = OperationalDomainService.calculate_operational_domain(self._layout_model, self._settings)
-            self.signals.finished.emit(result, "")
-        except OperationalDomainError as e:
-            logger.exception("Operational domain calculation failed.")
-            self.signals.finished.emit(None, str(e))
-
-
-class PlotOperationalDomainTask(QRunnable):  # type: ignore[misc]
-    """QRunnable task for plotting operational domain in a background thread."""
-
-    class Signals(QObject):  # type: ignore[misc]
-        """Signals for PlotOperationalDomainTask."""
-
-        finished = pyqtSignal(
-            Figure, OperationalDomainPlotOptions, str
-        )  # matplotlib Figure, plot_options, error_message
-
-    def __init__(
-        self, op_domain_result: OperationalDomainResultModel, plot_options: OperationalDomainPlotOptions
-    ) -> None:
-        """Initializes the task with the operational domain result and plot options.
-
-        Args:
-            op_domain_result: The result model from operational domain calculation.
-            plot_options: Plotting options.
-        """
-        super().__init__()
-        self._op_domain_result = op_domain_result
-        self._plot_options = plot_options
-        self.signals = PlotOperationalDomainTask.Signals()
-
-    def run(self) -> None:
-        """Executes the plotting in a background thread."""
-        try:
-            fig = OperationalDomainPlottingService.plot_operational_domain(self._op_domain_result, self._plot_options)
-            self.signals.finished.emit(fig, self._plot_options, "")
-        except PlottingError as e:
-            logger.exception("Operational domain plotting failed.")
-            self.signals.finished.emit(None, self._plot_options, str(e))
-
-
-class RunSinglePointSimulationTask(QRunnable):  # type: ignore[misc]
-    """QRunnable task for running a simulation at a single point."""
-
-    class Signals(QObject):  # type: ignore[misc]
-        """Signals for RunSinglePointSimulationTask."""
-
-        status_updated = pyqtSignal(int, str)  # percentage, message
-        finished = pyqtSignal(SinglePointResult, str)  # result (SinglePointResult | None), error_message
-
-    def __init__(
-        self,
-        layout_model: LayoutModel,
-        settings: ApplicationSettingsModel,
-        parameter_point: SimulationSweepPointType,
-    ) -> None:
-        """Initializes the task with a layout model, settings, and parameter point.
-
-        Args:
-            layout_model: The layout model to use for simulation.
-            settings: The application settings model.
-            parameter_point: The parameter point for the simulation.
-        """
-        super().__init__()
-        self._layout_model = layout_model
-        self._settings = settings
-        self._parameter_point = parameter_point
-        self.signals = RunSinglePointSimulationTask.Signals()
-
-    def _progress_callback(self, progress: int, message: str) -> None:
-        """Callback function to update progress and status messages.
-
-        Args:
-            progress: Progress percentage (0-100).
-            message: Status message to display.
-        """
-        self.signals.status_updated.emit(progress, message)
-
-    def run(self) -> None:
-        """Executes the single point simulation in a background thread."""
-        try:
-            logger.info(
-                "Running single point simulation for parameters: %s",
-                self._parameter_point,
-            )
-            result = SimulationService.run_simulation_at_point(
-                self._layout_model,
-                self._settings,
-                self._parameter_point,
-                progress_callback=self._progress_callback,
-            )
-            self.signals.finished.emit(result, "")
-        except SimulationError as e:
-            logger.exception("Single point simulation failed.")
-            self.signals.finished.emit(None, str(e))
-        except Exception as e:
-            logger.exception("Unexpected error in single point simulation.")
-            self.signals.finished.emit(None, f"Unexpected error: {e}")
 
 
 class OperationalDomainViewModel(QObject):  # type: ignore[misc]
