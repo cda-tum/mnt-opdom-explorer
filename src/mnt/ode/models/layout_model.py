@@ -21,12 +21,20 @@ SiDBChargeLayoutType: TypeAlias = charge_distribution_surface_100 | charge_distr
 class LayoutModel(BaseModel):
     """Represents the loaded SiDB layout data.
 
+    This model holds pyfiction objects directly. This is an intentional architectural
+    decision as mnt-opdom-explorer is a GUI wrapper for mnt.pyfiction. Creating
+    adapter layers would add complexity without providing practical benefits since:
+    - No serialization is needed (models are transient)
+    - mnt.pyfiction is the core domain library, not just "any external dependency"
+    - Performance would suffer with unnecessary mapping layers
+
     Attributes:
         source_file_path: The path to the SQD file from which the layout was loaded.
         sidb_layout: The layout object returned by pyfiction's reader function.
+                     Can be either sidb_100_lattice or sidb_111_lattice.
     """
 
-    # Allow arbitrary types, enabling the use of pyfiction's untyped objects
+    # Allow pyfiction objects (untyped C++ bindings) - intentional architectural decision
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     source_file_path: Path = Field(..., description="Path to the source SQD file")

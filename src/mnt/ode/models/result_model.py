@@ -51,12 +51,16 @@ class SinglePointResult(BaseModel):
 class OperationalDomainResultModel(BaseModel):
     """Represents the calculated operational domain results.
 
+    This model holds pyfiction operational_domain objects directly. This is intentional
+    as the app is a GUI wrapper for mnt.pyfiction.
+
     Attributes:
         op_domain: The operational_domain object returned by mnt.pyfiction.
-                   This object contains the parameter points and their corresponding operational statuses.
+                   This object contains the parameter points and their corresponding
+                   operational statuses from the reconstruction algorithm.
     """
 
-    # Allow arbitrary types, enabling the use of pyfiction's untyped objects
+    # Allow pyfiction objects (untyped C++ bindings) - intentional architectural decision
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     op_domain: OperationalDomainResultType = Field(
