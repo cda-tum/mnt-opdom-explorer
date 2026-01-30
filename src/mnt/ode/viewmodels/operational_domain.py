@@ -199,6 +199,18 @@ class OperationalDomainViewModel(QObject):  # type: ignore[misc]
         self._highlighted_y: float | None = None
         self._current_plot_options: OperationalDomainPlotOptions | None = None
 
+    @property
+    def is_clickable(self) -> bool:
+        """Returns True if the plot is clickable (2D plot), False for 3D plots.
+
+        Returns:
+            True if plot is 2D and clickable, False if 3D.
+        """
+        if self._current_plot_options is None:
+            return False
+        # Plot is clickable only if it's 2D (no z_param)
+        return self._current_plot_options.z_param is None
+
     @pyqtSlot()  # type: ignore[misc]
     def run_operational_domain(self) -> None:
         """Starts the operational domain simulation in a background thread."""

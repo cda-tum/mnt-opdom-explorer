@@ -239,13 +239,13 @@ class OperationalDomainView(QWidget):  # type: ignore[misc]
             self._canvas.draw_idle()
 
     def _handle_canvas_click(self, event: MouseEvent) -> None:
-        """Internal handler for matplotlib canvas click, emits plot_clicked signal."""
+        """Internal handler for matplotlib canvas click, delegates to ViewModel."""
         if event.inaxes == self._ax and self._ax is not None:
-            # Check if we are in 3D plot mode by inspecting the axes name
-            if hasattr(self._ax, "name") and self._ax.name == "3d":
+            # Delegate clickability check to ViewModel (removes 3D detection business logic from View)
+            if not self._vm.is_clickable:
                 return
 
-            # Proceed with 2D plot click logic
+            # Extract coordinates and delegate to ViewModel
             x_data, y_data = event.xdata, event.ydata
             if x_data is not None and y_data is not None:
                 self.plot_clicked.emit(x_data, y_data)
