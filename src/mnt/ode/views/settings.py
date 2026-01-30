@@ -464,7 +464,7 @@ class Settings(QWidget):  # type: ignore[misc]
         }
         for range_selector in sweep_widget_map.values():
             if range_selector:
-                self._vm._update_dependent_ui_states()  # noqa: SLF001
+                self._vm.update_dependent_ui_states()
 
     @pyqtSlot(str, bool)  # type: ignore[misc]
     def _update_log_scale_enabled_state(self, dim_prefix: str, enabled: bool) -> None:  # noqa: FBT001
@@ -585,7 +585,7 @@ class Settings(QWidget):  # type: ignore[misc]
             for widget in self.findChildren(QWidget):
                 widget.blockSignals(False)  # noqa: FBT003
 
-        self._vm._update_dependent_ui_states()  # noqa: SLF001
+        self._vm.update_dependent_ui_states()
 
     def _populate_sweep_dimension_ui(self, prefix: str, sweep_model: SweepDimensionModel) -> None:
         """Populates a specific sweep dimension's UI controls.

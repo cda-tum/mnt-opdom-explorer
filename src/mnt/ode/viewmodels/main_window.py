@@ -262,7 +262,7 @@ class MainWindowViewModel(QObject):  # type: ignore[misc]
         if self._is_busy != value:
             self._is_busy = value
             self.is_busy_changed.emit(self._is_busy, 0)  # Progress 0 for general busy state
-            self._emit_can_run_simulation_changed()
+            self.emit_can_run_simulation_changed()
 
     @property
     def status_message(self) -> str:
@@ -309,7 +309,7 @@ class MainWindowViewModel(QObject):  # type: ignore[misc]
 
     # --- Commands and Slots ---
 
-    def _emit_can_run_simulation_changed(self) -> None:
+    def emit_can_run_simulation_changed(self) -> None:
         """Emits the can_run_simulation_changed signal based on current state."""
         can_run = (self._current_layout is not None) and (not self.is_busy)
         self.can_run_simulation_changed.emit(can_run)
@@ -364,7 +364,7 @@ class MainWindowViewModel(QObject):  # type: ignore[misc]
             self.layout_loaded_changed.emit(False)  # noqa: FBT003
             logger.error("Failed to load layout from %s. Error: %s", file_path_str, error_message)
             self.is_busy = False  # Also sets can_run_simulation via property setter
-        self._emit_can_run_simulation_changed()
+        self.emit_can_run_simulation_changed()
 
     def _start_layout_plot_generation(self) -> None:
         """Initiate the background task for generating layout plots."""
@@ -372,7 +372,7 @@ class MainWindowViewModel(QObject):  # type: ignore[misc]
             logger.error("Cannot generate plots, no layout loaded.")
             self.is_busy = False
             self.initial_layout_plots_ready.emit(False)  # noqa: FBT003
-            self._emit_can_run_simulation_changed()
+            self.emit_can_run_simulation_changed()
             return
 
         logger.info("Starting layout plot generation task...")
@@ -420,7 +420,7 @@ class MainWindowViewModel(QObject):  # type: ignore[misc]
             conversion_task = PixmapConversionTask(distance_svgs, presence_svgs)
             conversion_task.signals.conversion_pair_finished.connect(self._handle_pixmap_conversion_finished)
             self._thread_pool.start(conversion_task)
-        self._emit_can_run_simulation_changed()
+        self.emit_can_run_simulation_changed()
 
     @pyqtSlot(list, list)  # type: ignore[misc]
     def _handle_pixmap_conversion_finished(

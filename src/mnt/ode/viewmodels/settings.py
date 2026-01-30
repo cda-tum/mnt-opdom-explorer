@@ -50,7 +50,7 @@ class SettingsViewModel(QObject):  # type: ignore[misc]
         self._random_samples_range = (1, 10000)  # TODO(marcel): might want to change to ~50,000
         self._random_samples_step = 10
         self._random_samples_default = 100
-        self._update_dependent_ui_states()
+        self.update_dependent_ui_states()
 
     @property
     def current_settings(self) -> ApplicationSettingsModel:
@@ -64,9 +64,9 @@ class SettingsViewModel(QObject):  # type: ignore[misc]
     def _emit_settings_changed(self) -> None:
         """Emits the settings_changed signal, and updates dependent UI states."""
         self.settings_changed.emit(self._settings.model_copy(deep=True))
-        self._update_dependent_ui_states()
+        self.update_dependent_ui_states()
 
-    def _update_dependent_ui_states(self) -> None:
+    def update_dependent_ui_states(self) -> None:
         """Updates and emits signals for UI states that depend on current settings."""
         is_grid_search = self._settings.operational_domain.algorithm == OperationalDomainAlgorithm.GRID_SEARCH
         is_random_sampling = self._settings.operational_domain.algorithm == OperationalDomainAlgorithm.RANDOM_SAMPLING

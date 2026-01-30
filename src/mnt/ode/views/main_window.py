@@ -55,7 +55,7 @@ class MainWindow(QMainWindow):  # type: ignore[misc]
         self._create_actions()
         self._create_menus()
         self._connect_signals_and_bind_vm()
-        self._vm._emit_can_run_simulation_changed()  # noqa: SLF001
+        self._vm.emit_can_run_simulation_changed()
         logger.info("MainWindow initialized.")
 
     def _init_ui(self) -> None:
