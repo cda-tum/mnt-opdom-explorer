@@ -170,7 +170,11 @@ class OperationalDomainViewModel(QObject):  # type: ignore[misc]
     single_point_simulation_status_updated = pyqtSignal(int, str)  # percentage, message
     single_point_simulation_finished = pyqtSignal(SinglePointResult, str)  # result, error_message
     single_point_layout_svgs_ready = pyqtSignal(list)  # list[bytes | None]
-    layout_visualization_reset_requested = pyqtSignal()
+    layout_visualization_reset_requested = pyqtSignal()  # request layout visualization reset
+    status_message_requested = pyqtSignal(str)  # message to display in status bar
+    status_progress_requested = pyqtSignal(int, str)  # percentage, message
+    status_clear_requested = pyqtSignal(str)  # final message
+    settings_navigation_requested = pyqtSignal()  # request navigation back to settings
 
     def __init__(
         self,

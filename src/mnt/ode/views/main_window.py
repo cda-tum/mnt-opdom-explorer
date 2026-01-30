@@ -356,13 +356,13 @@ class MainWindow(QMainWindow):  # type: ignore[misc]
         """Handles the signal that the OperationalDomainViewModel is ready."""
         logger.info("OperationalDomainViewModel is ready. Creating view and starting simulation.")
         self.operational_domain_plot_vm = op_domain_vm
-        self.operational_domain_plot_widget = OperationalDomainView(
-            op_domain_vm, self.settings_widget, self.status_bar, parent=self.right_pane_stack
-        )
+        self.operational_domain_plot_widget = OperationalDomainView(op_domain_vm, parent=self.right_pane_stack)
 
         op_domain_vm.simulation_started.connect(self._on_simulation_started)
         op_domain_vm.simulation_finished.connect(self._on_simulation_finished)
         op_domain_vm.error_occurred.connect(self._on_simulation_error)
+        op_domain_vm.single_point_simulation_status_updated.connect(self._on_single_point_status_update)
+        op_domain_vm.settings_navigation_requested.connect(self._on_settings_navigation_requested)
 
         if self.right_pane_stack.widget(1) is not self.settings_widget:
             old_widget = self.right_pane_stack.widget(1)
@@ -392,6 +392,21 @@ class MainWindow(QMainWindow):  # type: ignore[misc]
     def _on_simulation_error(self, _message: str) -> None:
         """Handles simulation errors."""
         self.status_bar.hide_progress("Error occurred.")
+        self.settings_widget.enable_run_button()
+        self.right_pane_stack.setCurrentWidget(self.settings_widget)
+
+    @pyqtSlot(int, str)  # type: ignore[misc]
+    def _on_single_point_status_update(self, percentage: int, message: str) -> None:
+        """Handles status updates from single point simulations."""
+        if 0 <= percentage < 100:
+            self.status_bar.show_progress(percentage, 100, message)
+        else:
+            self.status_bar.show_indeterminate(message)
+
+    @pyqtSlot()  # type: ignore[misc]
+    def _on_settings_navigation_requested(self) -> None:
+        """Handles navigation back to settings view."""
+        self.settings_widget.setDisabled(False)
         self.settings_widget.enable_run_button()
         self.right_pane_stack.setCurrentWidget(self.settings_widget)
 

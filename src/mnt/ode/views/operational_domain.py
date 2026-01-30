@@ -15,7 +15,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from ..models import OperationalDomainPlotOptions, SinglePointResult
+from ..models import OperationalDomainPlotOptions
 from ..utils import IconLoader
 from .theme import (
     BUTTON_BG_COLOR,
@@ -30,8 +30,6 @@ if TYPE_CHECKING:
     from matplotlib.backend_bases import MouseEvent
 
     from ..viewmodels import OperationalDomainViewModel
-    from .settings import Settings
-    from .widgets import StatusBarWidget
 
 
 # TODO(marcel): if reloaded, close the old plot to reduce memory usage
@@ -43,22 +41,16 @@ class OperationalDomainView(QWidget):  # type: ignore[misc]
     def __init__(
         self,
         view_model: OperationalDomainViewModel,
-        settings_widget: Settings,
-        status_bar: StatusBarWidget,
         parent: QWidget | None = None,
     ) -> None:
         """Initializes the OperationalDomainView.
 
         Args:
             view_model: The ViewModel for operational domain logic.
-            settings_widget: The widget for simulation settings.
-            status_bar: The status bar for showing busy indicators.
             parent: Optional parent widget.
         """
         super().__init__(parent)
         self._vm = view_model
-        self._settings_widget = settings_widget
-        self._status_bar = status_bar
         self._icon_loader = IconLoader()
         self._canvas: FigureCanvas | None = None
         self._ax: Axes | None = None
@@ -139,21 +131,16 @@ class OperationalDomainView(QWidget):  # type: ignore[misc]
         self._vm.error_occurred.connect(self._on_error)
         self._rerun_button.clicked.connect(self._on_rerun_clicked)
         self._vm.highlight_point_changed.connect(self._on_highlight_point_changed)
-        self._vm.single_point_simulation_status_updated.connect(self._on_single_point_sim_status_update)
-        self._vm.single_point_simulation_finished.connect(self._on_single_point_sim_finished)
         self.plot_clicked.connect(self._vm.on_plot_clicked)
 
     @pyqtSlot()  # type: ignore[misc]
     def _on_simulation_started(self) -> None:
         """Handles UI updates when simulation starts."""
-        self._settings_widget.disable_run_button()
         self._rerun_button.setEnabled(False)
-        self._status_bar.show_indeterminate("Running simulation...")
 
     @pyqtSlot()  # type: ignore[misc]
     def _on_simulation_finished(self) -> None:
         """Handles UI updates when simulation finishes."""
-        self._status_bar.hide_progress("Operational domain reconstruction finished.")
         self._rerun_button.setEnabled(True)
 
     @pyqtSlot(Figure)  # type: ignore[misc]
@@ -252,24 +239,6 @@ class OperationalDomainView(QWidget):  # type: ignore[misc]
             else:  # Click outside data area but inside axes
                 self._vm.clear_highlight()
 
-    @pyqtSlot(int, str)  # type: ignore[misc]
-    def _on_single_point_sim_status_update(self, percentage: int, message: str) -> None:
-        """Updates the status bar with the single point simulation progress."""
-        if 0 <= percentage < 100:
-            self._status_bar.show_progress(value=percentage, message=message)
-        else:  # For 100% or indeterminate cases if message is still relevant
-            self._status_bar.show_indeterminate(message)
-
-    @pyqtSlot(SinglePointResult, str)  # type: ignore[misc]
-    def _on_single_point_sim_finished(self, result: SinglePointResult | None, error_message: str) -> None:
-        """Handles completion of the single point simulation for UI feedback."""
-        if error_message:
-            self._status_bar.hide_progress(f"Single point sim error: {error_message}")
-        elif result is not None:
-            self._status_bar.hide_progress("Single point simulation complete.")
-        else:  # Fallback or unexpected result type
-            self._status_bar.hide_progress("Single point simulation finished with an unknown state.")
-
     @pyqtSlot(str)  # type: ignore[misc]
     def _on_error(self, message: str) -> None:
         """Displays an error message on the rerun button.
@@ -284,7 +253,4 @@ class OperationalDomainView(QWidget):  # type: ignore[misc]
     def _on_rerun_clicked(self) -> None:
         """Handles rerun button click to return to the settings widget."""
         self._vm.request_layout_visualization_reset()
-        self._settings_widget.setDisabled(False)
-        parent = self.parent()
-        if parent and hasattr(parent, "setCurrentWidget"):
-            parent.setCurrentWidget(self._settings_widget)
+        self._vm.settings_navigation_requested.emit()
