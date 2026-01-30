@@ -215,8 +215,7 @@ class MainWindowViewModel(QObject):  # type: ignore[misc]
 
         self._sqd_file_service = sqd_file_service
         self._layout_viz_service = layout_viz_service
-
-        self._thread_pool = QThreadPool.globalInstance()
+        self._thread_pool = QThreadPool(self)
         logger.info(
             "MainWindowViewModel initialized. Max QThreadPool threads: %d",
             self._thread_pool.maxThreadCount(),

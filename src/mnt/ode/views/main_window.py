@@ -8,10 +8,12 @@ from typing import TYPE_CHECKING
 from PyQt6.QtCore import Qt, QThreadPool, QUrl, pyqtSlot
 from PyQt6.QtGui import QAction, QCloseEvent, QDesktopServices, QKeyEvent, QKeySequence, QPixmap
 from PyQt6.QtWidgets import (
+    QApplication,
     QFileDialog,
     QHBoxLayout,
     QMainWindow,
     QMenuBar,
+    QMessageBox,
     QPushButton,
     QSplitter,
     QStackedWidget,
@@ -21,6 +23,7 @@ from PyQt6.QtWidgets import (
 
 from ..models import ApplicationSettingsModel
 from ..utils.icon_loader import IconLoader
+from ..utils.metadata import get_app_display_name, get_organization_name, get_package_metadata
 from ..viewmodels.operational_domain import OperationalDomainViewModel
 from .layout_visualization import LayoutVisualizationWidget
 from .operational_domain import OperationalDomainView
@@ -152,6 +155,7 @@ class MainWindow(QMainWindow):  # type: ignore[misc]
         self.email_support_action.triggered.connect(self._open_email)
 
         self.about_action = QAction("&About...", self)
+        self.about_action.triggered.connect(self._show_about_dialog)
 
     def _create_menus(self) -> None:
         """Creates the main menu bar."""
@@ -211,6 +215,52 @@ class MainWindow(QMainWindow):  # type: ignore[misc]
         self.layout_visualization_widget.set_active_input_encoding(settings_model.gate_function.input_signal_encoding)
 
     @pyqtSlot()  # type: ignore[misc]
+    def _show_about_dialog(self) -> None:
+        """Displays the About dialog."""
+        # Get metadata from package
+        metadata = get_package_metadata()
+
+        # Use QApplication metadata (which was set from package metadata)
+        app_name = QApplication.applicationName() or get_app_display_name()
+        app_version = QApplication.applicationVersion() or metadata["version"]
+        org_name = QApplication.organizationName() or get_organization_name()
+
+        # Build authors section from metadata
+        authors_html = ""
+        if isinstance(metadata.get("authors"), list):
+            for author in metadata["authors"]:
+                if isinstance(author, dict):
+                    name = author.get("name", "")
+                    email = author.get("email", "")
+                    authors_html += f"{name} ({email})<br>"
+
+        # Build about text with all metadata
+        about_text = (
+            f"<h2>{app_name}</h2>"
+            f"<p><b>Version:</b> {app_version}</p>"
+            f"<p>{metadata.get('description', 'An explorer for SiDB operational domains.')}</p>"
+            f"<p><b>Developed by:</b><br>{org_name}</p>"
+        )
+
+        if authors_html:
+            about_text += f"<p><b>Authors:</b><br>{authors_html}</p>"
+
+        # Add license information if available
+        license_name = metadata.get("license", "")
+        license_url = metadata.get("license_url", "")
+        if license_name:
+            if license_url:
+                about_text += f'<p><b>License:</b> <a href="{license_url}">{license_name}</a></p>'
+            else:
+                about_text += f"<p><b>License:</b> {license_name}</p>"
+
+        # Add repository link if available
+        repo_url = metadata.get("repository", "")
+        if repo_url:
+            about_text += f'<p>For more information, visit the <a href="{repo_url}">GitHub repository</a>.</p>'
+
+        QMessageBox.about(self, f"About {app_name}", about_text)
+
     def _trigger_open_file_dialog(self) -> None:
         """Opens a file dialog and calls the ViewModel's load command."""
         logger.debug("Open file dialog triggered.")

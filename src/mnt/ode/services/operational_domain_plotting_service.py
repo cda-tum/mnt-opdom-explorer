@@ -240,7 +240,7 @@ class OperationalDomainPlottingService:
 
         colors = color_start * (1 - z_normalized[:, np.newaxis]) + color_end * y_normalized[:, np.newaxis]
 
-        return np.clip(colors, 0, 1)  # type: ignore[no-any-return]
+        return np.clip(colors, 0, 1)
 
     @staticmethod
     def _plot_data(
@@ -343,7 +343,7 @@ class OperationalDomainPlottingService:
             if plot_options.z_range:
                 ax.set_zlim(plot_options.z_range[0], plot_options.z_range[1])  # type: ignore[attr-defined]
             if plot_options.x_range:
-                ax.set_xticks(np.linspace(plot_options.x_range[0], plot_options.x_range[1], 6))  # type: ignore[operator]
+                ax.set_xticks(np.linspace(plot_options.x_range[0], plot_options.x_range[1], 6))
             if plot_options.y_range:
                 ax.set_yticks(np.linspace(plot_options.y_range[0], plot_options.y_range[1], 6))  # type: ignore[operator]
             if plot_options.z_range:
@@ -359,7 +359,7 @@ class OperationalDomainPlottingService:
         else:
             ax = fig.add_subplot(111, facecolor=bg_color)
             if plot_options.x_range:
-                ax.set_xticks(np.linspace(plot_options.x_range[0], plot_options.x_range[1], 6))  # type: ignore[operator]
+                ax.set_xticks(np.linspace(plot_options.x_range[0], plot_options.x_range[1], 6))
             if plot_options.y_range:
                 ax.set_yticks(np.linspace(plot_options.y_range[0], plot_options.y_range[1], 6))  # type: ignore[operator]
 
