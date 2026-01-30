@@ -47,9 +47,6 @@ class SettingsViewModel(QObject):  # type: ignore[misc]
         """
         super().__init__(parent)
         self._settings = initial_settings or ApplicationSettingsModel()
-        self._random_samples_range = (1, 10000)  # TODO(marcel): might want to change to ~50,000
-        self._random_samples_step = 10
-        self._random_samples_default = 100
         self.update_dependent_ui_states()
 
     @property
@@ -69,19 +66,9 @@ class SettingsViewModel(QObject):  # type: ignore[misc]
     def update_dependent_ui_states(self) -> None:
         """Updates and emits signals for UI states that depend on current settings."""
         is_grid_search = self._settings.operational_domain.algorithm == OperationalDomainAlgorithm.GRID_SEARCH
-        is_random_sampling = self._settings.operational_domain.algorithm == OperationalDomainAlgorithm.RANDOM_SAMPLING
         is_3d_sweep = self._settings.operational_domain.z_sweep.dimension != SweepDimension.NONE
 
         self.random_samples_enabled_changed.emit(not is_grid_search)
-
-        if is_random_sampling:
-            self._random_samples_range = (1, 10000)
-            self._random_samples_step = 100
-            self._random_samples_default = 1000
-        else:
-            self._random_samples_range = (1, 10000)
-            self._random_samples_step = 10
-            self._random_samples_default = 100
 
         contour_tracing_enabled = not is_3d_sweep
         self.contour_tracing_enabled_changed.emit(contour_tracing_enabled)
@@ -208,8 +195,6 @@ class SettingsViewModel(QObject):  # type: ignore[misc]
         Args:
             value: The number of random samples.
         """
-        min_val, max_val = self._random_samples_range
-        value = max(min_val, min(max_val, value))
         if self._settings.operational_domain.random_samples != value:
             self._settings.operational_domain.random_samples = value
             self._emit_settings_changed()
