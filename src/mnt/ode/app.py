@@ -9,10 +9,7 @@ from typing import TYPE_CHECKING
 
 from PyQt6.QtWidgets import QApplication
 
-from mnt.ode.services import (
-    LayoutVisualizationService,
-    SQDFileService,
-)
+from mnt.ode.container import get_service_container
 from mnt.ode.utils import (
     IconLoader,
     get_app_display_name,
@@ -20,7 +17,6 @@ from mnt.ode.utils import (
     get_organization_name,
     get_package_metadata,
 )
-from mnt.ode.viewmodels import MainWindowViewModel
 from mnt.ode.views import MainWindow
 
 if TYPE_CHECKING:
@@ -107,25 +103,20 @@ def run_app() -> int:
     app.setOrganizationName(get_organization_name())
     app.setOrganizationDomain(get_organization_domain())
 
-    # Instantiate IconLoader
-    icon_loader = IconLoader()
+    # --- Dependency Injection via Service Container ---
+    logger.debug("Initializing service container...")
+    container = get_service_container()
+
+    # Get IconLoader from container
+    icon_loader = container.icon_loader
 
     # Set platform specifics, including the icon
     app_icon = set_platform_specifics(app, icon_loader, logger)
 
-    # --- Dependency Instantiation (Manual for now) ---
-    logger.debug("Instantiating services...")
-    sqd_file_service = SQDFileService()
-    layout_viz_service = LayoutVisualizationService()
-    logger.debug("Services instantiated.")
-
-    # --- ViewModel Instantiation ---
-    logger.debug("Instantiating MainWindowViewModel...")
-    main_view_model = MainWindowViewModel(
-        sqd_file_service=sqd_file_service,
-        layout_viz_service=layout_viz_service,
-    )
-    logger.debug("MainWindowViewModel instantiated.")
+    # --- ViewModel Instantiation via Container ---
+    logger.debug("Creating MainWindowViewModel with injected dependencies...")
+    main_view_model = container.create_main_window_viewmodel()
+    logger.debug("MainWindowViewModel created with dependencies injected.")
 
     # --- View Instantiation ---
     logger.debug("Instantiating MainWindow...")
