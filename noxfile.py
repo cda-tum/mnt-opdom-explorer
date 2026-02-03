@@ -13,16 +13,11 @@ if TYPE_CHECKING:
 
 
 nox.needs_version = ">=2024.3.2"
-nox.options.default_venv_backend = "uv|virtualenv"
+nox.options.default_venv_backend = "uv"
 
+nox.options.sessions = ["lint", "tests", "minimums"]
 
-PYTHON_ALL_VERSIONS = ["3.9", "3.10", "3.11", "3.12"]
-
-BUILD_REQUIREMENTS = [
-    "setuptools>=66.1",
-    "setuptools_scm>=8.1",
-    "wheel>=0.40",
-]
+PYTHON_ALL_VERSIONS = ["3.10", "3.11", "3.12", "3.13"]
 
 if os.environ.get("CI", None):
     nox.options.error_on_missing_interpreters = True
@@ -40,22 +35,25 @@ def lint(session: nox.Session) -> None:
 def _run_tests(
     session: nox.Session,
     *,
+    # Arguments passed to uv install (e.g., --resolution)
     install_args: Sequence[str] = (),
-    run_args: Sequence[str] = (),
-    extras: Sequence[str] = (),
+    # Arguments passed directly to the pytest command
+    pytest_args: Sequence[str] = (),
 ) -> None:
-    posargs = list(session.posargs)
-    env = {"PIP_DISABLE_PIP_VERSION_CHECK": "1"}
+    """Installs dependencies and runs pytest using uv via session.install."""
+    env = {"UV_PROJECT_ENVIRONMENT": session.virtualenv.location}
 
-    extras_ = ["test", *extras]
-    if "--cov" in posargs:
-        extras_.append("coverage")
-        posargs.append("--cov-config=pyproject.toml")
+    # Install the current project. uv (as the backend) handles the installation.
+    # Pass install_args for resolution strategy (e.g., lowest-direct).
+    session.install(".", "--group", "test", *install_args)
 
-    session.install(*BUILD_REQUIREMENTS, *install_args, env=env)
-    install_arg = f"-ve.[{','.join(extras_)}]"
-    session.install("--no-build-isolation", install_arg, *install_args, env=env)
-    session.run("pytest", *run_args, *posargs, env=env)
+    session.run(
+        "pytest",
+        *pytest_args,
+        *session.posargs,
+        "--cov-config=pyproject.toml",
+        env=env,
+    )
 
 
 @nox.session(reuse_venv=True, python=PYTHON_ALL_VERSIONS)
@@ -69,7 +67,9 @@ def minimums(session: nox.Session) -> None:
     """Test the minimum versions of dependencies."""
     _run_tests(
         session,
-        install_args=["--resolution=lowest-direct"],
-        run_args=["-Wdefault"],
+        install_args=["--resolution=lowest-direct"],  # Passed to session.install
+        pytest_args=["-Wdefault"],  # Passed to session.run("pytest", ...)
     )
-    session.run("uv", "pip", "list")
+    env = {"UV_PROJECT_ENVIRONMENT": session.virtualenv.location}
+    session.run("uv", "tree", "--frozen", env=env)
+    session.run("uv", "lock", "--refresh", env=env)

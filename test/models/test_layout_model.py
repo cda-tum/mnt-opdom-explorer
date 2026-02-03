@@ -1,0 +1,63 @@
+"""Tests for the Pydantic layout model in src/mnt/ode/models/layout_model.py."""
+
+from __future__ import annotations
+
+from pathlib import Path
+
+import pytest
+from pydantic import ValidationError
+
+from mnt.ode.models import LayoutModel
+from mnt.pyfiction import sidb_100_lattice
+
+
+@pytest.fixture
+def default_100_lattice() -> sidb_100_lattice:
+    """Pytest fixture to provide an empty sidb_100_lattice object.
+
+    Returns:
+        A default-constructed sidb_100_lattice instance.
+    """
+    # Create a default instance of the layout
+    return sidb_100_lattice()
+
+
+@pytest.fixture
+def valid_path() -> Path:
+    """Pytest fixture for a valid Path object.
+
+    Returns:
+        A Path object pointing towards a dummy file name in the test directory.
+    """
+    return Path(__file__).parent / "dummy_layout.sqd"
+
+
+def test_layout_model_valid(valid_path: Path, default_100_lattice: sidb_100_lattice) -> None:
+    """Test successful instantiation with valid data."""
+    model = LayoutModel(source_file_path=valid_path, sidb_layout=default_100_lattice)
+    assert model.source_file_path == valid_path
+    assert model.sidb_layout is default_100_lattice
+    assert isinstance(model.sidb_layout, sidb_100_lattice)
+
+
+def test_layout_model_missing_path(default_100_lattice: sidb_100_lattice) -> None:
+    """Test ValidationError when source_file_path is missing."""
+    with pytest.raises(ValidationError, match=R"Field required"):
+        LayoutModel.model_validate({"sidb_layout": default_100_lattice})
+
+
+def test_layout_model_missing_layout(valid_path: Path) -> None:
+    """Test ValidationError when sidb_layout is missing."""
+    with pytest.raises(ValidationError, match=R"Field required"):
+        LayoutModel.model_validate({"source_file_path": valid_path})
+
+
+def test_layout_model_invalid_path_type(default_100_lattice: sidb_100_lattice) -> None:
+    """Test ValidationError when source_file_path has the wrong type."""
+    with pytest.raises(ValidationError, match=R"Input is not a valid path"):
+        LayoutModel(source_file_path=123, sidb_layout=default_100_lattice)
+
+    # Accept both 'pathlib.Path' and 'pathlib._local.Path' (Python 3.13 compatibility)
+    path_regex = r"Input is not a valid path for <class 'pathlib(\._local)?\.Path'>"
+    with pytest.raises(ValidationError, match=path_regex):
+        LayoutModel(source_file_path=None, sidb_layout=default_100_lattice)
