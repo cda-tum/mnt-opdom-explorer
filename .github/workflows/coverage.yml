@@ -18,10 +18,10 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.13.x"
           cache: "pip"
@@ -38,7 +38,7 @@ jobs:
           coverage xml -o coverage.xml
 
       - name: Upload Coverage Report
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
         with:
           files: coverage.xml
           fail_ci_if_error: true
