@@ -10,12 +10,12 @@ keywords = ["MNT", "field-coupled nanocomputing", "silicon dangling-bonds", "log
 license = { file = "LICENSE.md" }
 requires-python = ">=3.10"
 dependencies = [
-    "PyQt6==6.8.1",
-    "matplotlib==3.10.1",
-    "mnt.pyfiction==0.6.10",
-    "pandas==2.2.3",
-    "qtawesome==1.4.0",
-    "scikit-learn==1.6.1",
+    "PyQt6==6.11.0",
+    "matplotlib==3.10.9",
+    "mnt.pyfiction==0.6.12",
+    "pandas==2.3.3",
+    "qtawesome==1.4.2",
+    "scikit-learn==1.7.2",
 ]
 dynamic = ["version"]
 
@@ -140,12 +140,12 @@ build = [
 docs = [
     "nox>=2024.10.9",
 
-    "PyQt6==6.8.1",
-    "matplotlib==3.10.1",
-    "mnt.pyfiction==0.6.10",
-    "pandas==2.2.3",
-    "qtawesome==1.4.0",
-    "scikit-learn==1.6.1",
+    "PyQt6==6.11.0",
+    "matplotlib==3.10.9",
+    "mnt.pyfiction==0.6.12",
+    "pandas==2.3.3",
+    "qtawesome==1.4.2",
+    "scikit-learn==1.7.2",
 ]
 test = [
     "nox>=2024.10.9",
@@ -157,5 +157,5 @@ dev = [
     { include-group = "build" },
     { include-group = "docs" },
     { include-group = "test" },
-    "pre-commit==4.1.0",
+    "pre-commit==4.6.0",
 ]
