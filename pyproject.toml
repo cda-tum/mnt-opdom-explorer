@@ -14,7 +14,7 @@ dependencies = [
     "matplotlib==3.10.1",
     "mnt.pyfiction==0.6.10",
     "pandas==2.2.3",
-    "qtawesome==1.4.0",
+    "qtawesome==1.4.2",
     "scikit-learn==1.6.1",
 ]
 dynamic = ["version"]
@@ -144,7 +144,7 @@ docs = [
     "matplotlib==3.10.1",
     "mnt.pyfiction==0.6.10",
     "pandas==2.2.3",
-    "qtawesome==1.4.0",
+    "qtawesome==1.4.2",
     "scikit-learn==1.6.1",
 ]
 test = [
